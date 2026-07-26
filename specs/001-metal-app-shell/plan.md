@@ -51,14 +51,14 @@ renderer, one simulation instance. No assets.
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-Evaluated against `.specify/memory/constitution.md` v1.0.0.
+Evaluated against `.specify/memory/constitution.md` v1.1.0.
 
 ### Initial evaluation (pre-design)
 
 | Principle | Gate | Status |
 |-----------|------|--------|
 | I. Architecture Discipline | Three layers separated; logic free of Metal/SwiftUI; unidirectional input→update→render; platform code behind a thin boundary; no global mutable state | **PASS** — three library targets with inward-only dependencies (FR-010–FR-015); `SwiftSkySimulation` imports nothing |
-| II. Test Coverage Discipline | Tests required for non-trivial logic; deterministic and headless; visual code exempt | **PASS with recorded deferral** — simulation logic fully tested headlessly; rendering exempt; **CI clause deferred, no remote configured** (see Complexity Tracking) |
+| II. Test Coverage Discipline | Tests required for non-trivial logic; deterministic and headless; runnable by a single checked-in command; CI once a remote exists, with the gap recorded until then; visual code exempt | **PASS** — simulation logic fully tested headlessly; rendering exempt; `Scripts/verify.sh` (FR-019a) is the single checked-in command; no remote exists so the CI absence is recorded in Complexity Tracking, which is what v1.1.0 requires |
 | III. Performance & Resource Efficiency | Frame budget on minimum device; no hot-path allocation; stated memory budgets; before/after measurement | **PASS** — budgets and baseline devices named above; instrumentation is FR-021d–f |
 | IV. Accessibility & Platform UX | Dynamic Type, VoiceOver, contrast; reduced motion; per-platform HIG; multi-channel critical info | **PASS** — FR-009 (surface description), FR-025 (notice is Dynamic Type + screen-reader readable); reduced motion vacuous (no motion); HIG satisfied via native `Window` scene and landscape-only iOS |
 | V. Simplicity & YAGNI | Simplest thing that satisfies the requirement; no speculative abstraction; dependencies justified; deviations recorded | **PASS with justified violations** — see Complexity Tracking below |
@@ -70,7 +70,7 @@ Evaluated against `.specify/memory/constitution.md` v1.0.0.
 | Principle | Status after design | Change from initial |
 |-----------|--------------------|---------------------|
 | I | **PASS** | Strengthened. R6 confirmed the platform layer needs only a bare layer-backed view; the renderer owns no window or view type at all. |
-| II | **PASS with recorded deferral** | Unchanged. Swift Testing chosen (R9); still headless; CI still deferred for the same recorded reason. |
+| II | **PASS** | Swift Testing chosen (R9); still headless. The v1.1.0 amendment closed what had been a recorded deferral: `Scripts/verify.sh` satisfies the single-checked-in-command clause, and the CI absence is recorded as required rather than justified as an exception. |
 | III | **PASS** | Materially sharpened, and **the news is worse than assumed**: R2 established the macOS baseline is an *Intel* Mac, not Apple silicon. The budget still holds trivially for a black quad, but no unified-memory or Apple-GPU assumption may enter the codebase. |
 | IV | **PASS** | Unchanged. |
 | V | **PASS with justified violations** | **One anticipated violation removed by design.** R7 found that SwiftUI's `Window` scene delivers single-window *and* close-to-quit as platform behaviour, so FR-006c/FR-006d need no custom machinery — the spec had anticipated defensive code that turns out to be unnecessary. Remaining violations unchanged. |
@@ -150,7 +150,8 @@ layer free of measurement concerns.
 
 ## Complexity Tracking
 
-> Violations of Principle V (Simplicity & YAGNI) and Principle II (CI), each justified.
+> Principle V (Simplicity & YAGNI) violations, each justified, plus the CI-absence record that
+> Principle II (v1.1.0) requires while no remote exists.
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|

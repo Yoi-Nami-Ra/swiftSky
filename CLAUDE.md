@@ -10,10 +10,11 @@ there is no application source code, build system, tests, or `specs/` features y
 is named `swiftSky`: a **cross-platform game for iOS and macOS built in Swift with a Metal
 rendering pipeline** (SwiftUI shell). It is a git repository (`main`), with no remote configured yet.
 
-The project constitution (`.specify/memory/constitution.md`, v1.0.0) is ratified and enforces
+The project constitution (`.specify/memory/constitution.md`, v1.1.0) is ratified and enforces
 five principles: **Architecture Discipline** (logic / Metal rendering / platform-UI layers kept
 separate, unidirectional data flow), **Test Coverage Discipline** (tests required for non-trivial
-logic; test-first recommended but not mandated; visual/render code exempt), **Performance &
+logic; test-first recommended but not mandated; visual/render code exempt; tests must be runnable by
+a single checked-in command, and wired into CI once a remote exists), **Performance &
 Resource Efficiency** (frame budget, no hot-path allocations, memory budgets), **Accessibility &
 Platform UX** (Dynamic Type/VoiceOver/HIG, reduced-motion), and **Simplicity & YAGNI**.
 
@@ -26,7 +27,9 @@ Work flows through ordered phases, each invoked as a skill (slash command). Run 
 `specify → plan → tasks` each gate on human review before the next:
 
 1. `/speckit.constitution` — establish/update project principles in `.specify/memory/constitution.md`
-   (ratified at **v1.0.0**; amendments must bump the version and Sync Impact Report).
+   (currently **v1.1.0**; amendments must bump the version and add a Sync Impact Report. Note that
+   amendments also invalidate version references in `plan.md`'s Constitution Check, this file, and
+   feature checklists — grep for the old version after any bump).
 2. `/speckit.specify` — create a feature spec. This creates `specs/NNN-short-name/spec.md` and its branch.
 3. `/speckit.clarify` — (optional) ask targeted questions to de-risk the spec before planning.
 4. `/speckit.plan` — generate design artifacts (`plan.md`, and supporting docs) for the feature.

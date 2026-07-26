@@ -55,7 +55,7 @@ The third pass broke that. Requirements and criteria now name platform technolog
 So the three items are marked failed against the criterion as literally worded. **All three are
 accepted as-is and none blocks planning.** The alternative — restating them as "the second Mac
 variant" and "the compiler's data-race checking" — would obscure exactly which switches must be
-thrown, trading a real, actionable requirement for a passing checkbox. The constitution (v1.0.0,
+thrown, trading a real, actionable requirement for a passing checkbox. The constitution (v1.1.0,
 *Technology & Platform Standards*) already ratifies Swift + Metal + SwiftUI, so naming the platform is
 not smuggling in an unmade decision.
 
