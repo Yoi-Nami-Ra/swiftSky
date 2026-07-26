@@ -24,6 +24,9 @@ about US2's reliance on US1.
 - **[P]**: Can run in parallel (different files, no dependencies on incomplete tasks)
 - **[Story]**: Which user story this task belongs to (US1, US2, US3)
 - Exact file paths included in every task
+- Execution order is given by phase placement, not by task ID. IDs are append-only, so tasks added
+  after the first generation (T056, T057) sit in the phase where they belong rather than at the end —
+  this keeps earlier ID references stable
 
 ## Path Conventions
 
@@ -61,7 +64,7 @@ compile-time boundary itself, so every story depends on them.
 - [ ] T011 [P] Implement `SimulationState` value type holding only `tickCount: UInt64` in `Sources/SwiftSkySimulation/SimulationState.swift` (FR-012a, FR-012b, data-model.md)
 - [ ] T012 Implement `TimeAccumulator` value type with `consume(elapsed:) -> Int`, clamping at 4 ticks and discarding excess, in `Sources/SwiftSkySimulation/TimeAccumulator.swift` (depends on T010; FR-021a, FR-021b)
 - [ ] T013 Implement the pure `Simulation.advance(_:ticks:)` function in `Sources/SwiftSkySimulation/Simulation.swift` (depends on T011; FR-012c, FR-033)
-- [ ] T014 Audit `Sources/SwiftSkySimulation/` for zero `import` statements and no `actor`, `@MainActor`, or lock usage — the logic layer must carry no concurrency constructs (FR-012c, quickstart check 18)
+- [ ] T014 Audit all three layers for forbidden constructs — zero `import` statements and no `actor`, `@MainActor`, or lock usage in `Sources/SwiftSkySimulation/`; no `static var`, `nonisolated(unsafe)`, or top-level `var` in any layer; no interpolation between simulation states in `Sources/SwiftSkyRendering/` — and record in `specs/001-metal-app-shell/quickstart.md` checks 18 and 42 (FR-012c, FR-015, FR-021c)
 - [ ] T015 [P] Implement `RenderSurface` value type with `widthPixels`, `heightPixels`, `backingScale`, and `isRenderable` in `Sources/SwiftSkyRendering/RenderSurface.swift` (data-model.md)
 - [ ] T016 [P] Implement `RendererError` with all initialisation failure cases and `userFacingDescription` in `Sources/SwiftSkyRendering/RendererError.swift` (FR-024, FR-026, contracts/layer-interfaces.md)
 
@@ -92,6 +95,7 @@ performance gate.
 - [ ] T020 [P] [US1] Implement the `SurfaceEvent` enum with `resized`, `backingScaleChanged`, `visibilityChanged`, `willTerminate` in `Sources/SwiftSkyPlatform/SurfaceEvent.swift` (FR-029, data-model.md)
 - [ ] T021 [P] [US1] Implement `MetalSurfaceView` — a bare `NSView`/`UIView` backed by a `CAMetalLayer` configured `bgra8Unorm_srgb`, opaque, sRGB — that draws nothing itself and exposes an accessibility description, in `Sources/SwiftSkyPlatform/MetalSurfaceView.swift` (FR-001, FR-002c, FR-007, FR-009, research.md R6, R10)
 - [ ] T022 [P] [US1] Implement allocation-free `Instrumentation` recording frame duration, draw-path allocation count, and separate skipped-frame and dropped-frame counters, gated on `SWIFTSKY_INSTRUMENTATION`, in `Sources/SwiftSkyPlatform/Instrumentation.swift` (FR-021d, FR-021e, FR-021f, FR-027c)
+- [ ] T056 [US1] Log the `SimulationState.tickCount` the renderer received each frame from `Sources/SwiftSkyPlatform/Instrumentation.swift` under `SWIFTSKY_INSTRUMENTATION`, so the live logic→render hand-off is observable, and verify quickstart check 40 (depends on T022; SC-020, FR-012a)
 - [ ] T023 [US1] Implement `MetalSurfaceRepresentable` as `NSViewRepresentable` for macOS in `Sources/SwiftSkyPlatform/MetalSurfaceRepresentable.swift` (depends on T021; FR-007)
 - [ ] T024 [US1] Implement `FrameLoop` — serial `.userInteractive` queue, `CAMetalDisplayLink` callback on that queue, and the normative six-step per-frame sequence — in `Sources/SwiftSkyPlatform/FrameLoop.swift` (depends on T012, T013, T019, T020, T022; FR-020, FR-021, FR-028, FR-031, FR-033, contracts/frame-loop.md)
 - [ ] T025 [US1] Implement non-blocking `post(_:)` event marshalling and frame-boundary event application in `Sources/SwiftSkyPlatform/FrameLoop.swift` (depends on T024; FR-029, FR-031)
@@ -175,8 +179,9 @@ each fails to build.
 - [ ] T051 [P] Temporarily force intermittent drawable-acquisition failure in `Sources/SwiftSkyRendering/Renderer.swift`, confirm the app keeps running with skips counted separately from drops, nothing shown to the user, and tick count tracking elapsed time within the clamp; revert and record in `specs/001-metal-app-shell/quickstart.md` check 35 (SC-021, FR-027a–c)
 - [ ] T052 [P] Temporarily rename a shader function in `Sources/SwiftSkyRendering/Shaders.metal` to force renderer initialisation failure, confirm on both platforms that the text-only notice names the cause, exits on dismissal, leaves a matching diagnostic, traps in debug builds, and is readable with a screen reader active; revert and record in `specs/001-metal-app-shell/quickstart.md` checks 32–34 (SC-012, FR-024–FR-026)
 - [ ] T053 [P] Verify with VoiceOver that the accessibility description set in `Sources/SwiftSkyPlatform/MetalSurfaceView.swift` is reported meaningfully rather than skipped or announced as unlabelled, and that enabling Reduce Motion changes nothing and raises no assertion; record in `specs/001-metal-app-shell/quickstart.md` checks 36–37 (SC-011, FR-009)
+- [ ] T057 [P] Audit `Sources/SwiftSkyPlatform/` for user-visible drawing — grep for `backgroundColor`, `NSColor`, `UIColor`, `draw(`, `.background(`, `Rectangle(`, `Color.` — confirming zero matches outside `RendererFailureNotice.swift`, and record in `specs/001-metal-app-shell/quickstart.md` check 41 (SC-002, FR-001, FR-007)
 - [ ] T054 [P] Confirm zero third-party package dependencies in `swiftSky.xcodeproj` and that `git status` is clean after a full build (SC-010, FR-018, FR-019)
-- [ ] T055 Complete a full pass of all 39 checks in `specs/001-metal-app-shell/quickstart.md`, with the SC-009 and SC-005 fill-in blocks populated
+- [ ] T055 Complete a full pass of all 42 checks in `specs/001-metal-app-shell/quickstart.md`, with the SC-009 and SC-005 fill-in blocks populated
 
 ---
 
@@ -282,7 +287,8 @@ already finished, so it cannot conflict with US1's work in `Sources/SwiftSkyRend
 
 ## Notes
 
-- Total: **55 tasks** — 9 setup, 7 foundational, 17 US1, 5 US2, 6 US3, 11 polish
+- Total: **57 tasks** — 9 setup, 7 foundational, 18 US1, 5 US2, 6 US3, 12 polish (T056 and T057 were
+  added by `/speckit-analyze` to close SC-020 and SC-002 coverage gaps)
 - [P] tasks touch different files with no incomplete dependencies
 - Rendering code has no unit tests by design (Principle II exemption); it is gated on visual
   verification and the performance criteria instead

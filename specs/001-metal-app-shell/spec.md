@@ -522,11 +522,11 @@ requirement and FR-031's frame-boundary rule.
   safety, no drain-on-teardown ordering. The off-main model was chosen for headroom as the simulation
   grows. Principle V requires the rejected simpler alternative and the reason to be recorded, so the
   plan must carry that entry rather than presenting FR-028–FR-033 as the obvious default.
-- **The constitution's CI requirement is deferred, with reason.** Principle II requires tests to run
-  headlessly in CI. No git remote is configured for this repository yet, so there is nowhere for a
-  pipeline to execute. This feature therefore delivers CI-*ready* tests plus the verification script
-  CI will call (FR-019a), and the pipeline itself is deferred to whenever a remote is added. This is a
-  recorded deviation, not an oversight.
+- **No CI pipeline in this feature, and that is now compliant rather than a deviation.** Constitution
+  v1.1.0 amended Principle II so that CI is required once the repository has a remote, and until then a
+  single checked-in, argument-free test command is the required substitute with the gap recorded in the
+  plan's Complexity Tracking. `Scripts/verify.sh` (FR-019a) is that command. The pipeline itself arrives
+  whenever a remote is added.
 - **No localisation.** The FR-024 failure notice — the only user-facing string in the feature — is
   English-only. Strings are not externalised into a catalogue yet. Adding localisation later affects one
   string, so deferring costs nothing.
