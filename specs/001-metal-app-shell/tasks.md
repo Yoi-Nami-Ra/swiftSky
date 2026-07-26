@@ -218,7 +218,7 @@ each fails to build.
 - Phase 2: T010, T011, T015, T016 all in parallel; then T012 (needs T010) and T013 (needs T011)
 - Phase 3: T020, T021, T022 in parallel; T029 and T032 in parallel with the loop work
 - Phase 5: T040 and T041 in parallel once T039 lands
-- Phase 6: T046, T047, T048, T051, T052, T053, T054 all in parallel
+- Phase 6: T046, T047, T048, T051, T052, T053, T054, T057 all in parallel
 - **Cross-phase**: all of Phase 5 in parallel with all of Phase 3
 
 ---
