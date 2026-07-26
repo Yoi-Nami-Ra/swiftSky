@@ -54,6 +54,7 @@ CI job will use verbatim once a remote exists (FR-019a, SC-008a).
 | 4 | Capture a frame in the GPU debugger | Each frame contains a shader-backed draw call covering the surface — **not** a clear-only pass | SC-019, FR-002a |
 | 5 | Inspect the render pass | Pipeline state and vertex buffer created once at init, reused each frame | FR-002b |
 | 6 | Inspect layer configuration | `bgra8Unorm_srgb`, opaque, sRGB colour space | FR-002c |
+| 40 | Run a Debug build, watch the instrumentation log | Tick count the renderer receives increases monotonically across frames, and the surface stays uniformly black | SC-020, FR-012a, FR-012b |
 
 ### Window and scene behaviour
 
@@ -77,6 +78,8 @@ CI job will use verbatim once a remote exists (FR-019a, SC-008a).
 | 17 | Add `import SwiftSkyPlatform` to a file in `SwiftSkyRendering`, build | **Build fails.** Revert. Record the error here. | SC-009 |
 | 18 | Grep `Sources/SwiftSkySimulation` for `import`, `actor`, `NSLock` | No matches | FR-012c |
 | 19 | Grep `Sources/SwiftSkyRendering` for `NSView`, `UIView`, `SwiftUI`, `NSWindow` | No matches | FR-010 |
+| 41 | Audit the platform layer for drawing | No background colours, no `draw(_:)`/`drawRect` overrides, and no SwiftUI drawing primitives anywhere in `Sources/SwiftSkyPlatform/` except `RendererFailureNotice.swift` | SC-002, FR-001, FR-007 |
+| 42 | Grep all three layers for mutable global state | No `static var`, `nonisolated(unsafe)`, or top-level `var` in any layer; no render-side interpolation in `Sources/SwiftSkyRendering/` | FR-015, FR-021c |
 
 > **SC-009 evidence — fill in during implementation.** Paste the three compiler errors below. This is
 > the one-time proof; there is no standing automated gate, because a permanently failing build cannot be
@@ -147,7 +150,9 @@ CI job will use verbatim once a remote exists (FR-019a, SC-008a).
 
 ## Definition of done
 
-All 39 checks pass, and the three fill-in blocks above are completed: SC-009's compiler errors, and
-SC-005's measured memory and frame-time baselines. The spec's remaining unchecked quality-checklist
+All 42 checks pass, and the three fill-in blocks above are completed: SC-009's compiler errors, and
+SC-005's measured memory and frame-time baselines. Checks 40–42 are numbered out of sequence because
+they were added by `/speckit-analyze` after the original 39; they sit in the tables where they belong
+topically rather than at the end. The spec's remaining unchecked quality-checklist
 items are accepted and do not block completion — see
 [checklists/requirements.md](./checklists/requirements.md) Notes 1 and 2.
