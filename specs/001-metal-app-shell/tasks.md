@@ -163,7 +163,7 @@ each fails to build.
 
 - [X] T042 [US3] *(app-target stage reports PENDING until T004 lands)* Write `Scripts/verify.sh` — builds both destinations and runs the headless suite with no arguments on a clean clone, exiting non-zero on any build or test failure (depends on T039; FR-019a, SC-008a)
 - [X] T043 [US3] Prove each forbidden direction fails to build (logic→rendering, logic→platform, rendering→platform) by temporarily adding a violating import, then revert, and paste the three compiler errors into the SC-009 evidence block in `specs/001-metal-app-shell/quickstart.md` (SC-009, FR-013)
-- [ ] T044 [US3] Run quickstart checks 15–23 and record outcomes in `specs/001-metal-app-shell/quickstart.md`
+- [X] T044 [US3] Run quickstart checks 15–23 and record outcomes in `specs/001-metal-app-shell/quickstart.md`
 
 **Checkpoint**: All three user stories independently functional and verified
 
