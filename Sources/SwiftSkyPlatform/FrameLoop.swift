@@ -32,6 +32,16 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     private var lastTimestamp: CFTimeInterval?
     private var framesSinceReport: UInt64 = 0
 
+    /// The display's nominal frame interval, learned from the display link.
+    ///
+    /// SC-003's budget is "16.6 ms, **or the display's native rate**", so a fixed 1/60 is only correct
+    /// on a 60 Hz display. Left hardcoded it silently over-reports success: on a 120 Hz display a 12 ms
+    /// frame misses its deadline and is not counted as dropped, making the gate pass by being wrong.
+    private var displayInterval: Double?
+
+    /// A shorter gap awaiting a second sighting before it is believed. See `learnDisplayInterval`.
+    private var candidateInterval: Double?
+
     private let renderer: Renderer
     private let layer: CAMetalLayer
 
@@ -129,6 +139,51 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
         drained.withLock { $0 = true }
     }
 
+    /// Narrows the frame budget towards the display's true interval. Allocation-free.
+    ///
+    /// The **minimum** observed gap is taken, not the mean, and that is the whole trick: consecutive
+    /// `targetTimestamp`s are *scheduled* presentation times, so a gap is always a whole number of
+    /// display intervals. A missed frame can only ever double a gap, never halve it — so the minimum
+    /// converges on one interval and a dropped frame cannot inflate the budget that is supposed to
+    /// detect it. Averaging would let exactly the frames SC-003 forbids raise the bar they must clear.
+    ///
+    /// On a variable-refresh display this settles on the fastest rate the display actually ran at,
+    /// which is the reading of "native rate" that makes the gate strictest.
+    private func learnDisplayInterval(from gap: Double) {
+        // A paused-and-resumed loop, a first frame, or a stalled display produces gaps that are not
+        // display intervals at all. Only plausible ones teach us anything.
+        guard gap >= Self.fastestPlausibleInterval, gap <= Self.slowestPlausibleInterval else { return }
+        if let known = displayInterval, known <= gap { return }
+
+        // Shorter than we believed — but adopted only once a second gap agrees, because a single
+        // anomalous short gap does occur around startup and would otherwise lock in a budget the
+        // display never actually meets, failing SC-003 for a reason that is purely an artefact.
+        // Measurement on a 120 Hz panel: real gaps are exactly 8.333333 ms at p10, median and p90, so
+        // a genuine interval always has a partner and a spurious one never does.
+        if let candidate = candidateInterval, abs(candidate - gap) <= candidate * Self.intervalTolerance {
+            let interval = min(candidate, gap)
+            displayInterval = interval
+            candidateInterval = nil
+            instrumentation.updateBudget(seconds: interval)
+        } else {
+            candidateInterval = gap
+        }
+    }
+
+    /// Drops what was learned, so the next frames relearn on the display we are now on.
+    private func forgetDisplayInterval() {
+        displayInterval = nil
+        candidateInterval = nil
+        instrumentation.updateBudget(seconds: 1.0 / 60.0)
+    }
+
+    /// How close two gaps must be to count as the same display interval.
+    private static let intervalTolerance = 0.05
+
+    /// 250 Hz and 20 Hz. Nothing outside this is a real display interval.
+    private static let fastestPlausibleInterval = 1.0 / 250.0
+    private static let slowestPlausibleInterval = 1.0 / 20.0
+
     /// Applies queued events. Runs at a frame boundary only, which is what makes FR-031 hold rather
     /// than merely being intended.
     ///
@@ -143,8 +198,14 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
 
         for event in events {
             switch event {
-            case .resized(let new), .backingScaleChanged(let new):
+            case .resized(let new):
                 surface = new
+            case .backingScaleChanged(let new):
+                surface = new
+                // A backing-property change is the signal that the surface may have moved to another
+                // display (FR-031), which may refresh at a different rate. Relearn it rather than
+                // keeping a budget belonging to the display we left.
+                forgetDisplayInterval()
             case .visibilityChanged(let isVisible):
                 displayLink?.isPaused = !isVisible
             case .willTerminate:
@@ -180,6 +241,7 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
             elapsed = 0
         }
         lastTimestamp = now
+        learnDisplayInterval(from: elapsed)
 
         // 4. Advance on the fixed timestep. `ticks` may be 0 — the frame still draws (FR-021).
         let ticks = accumulator.consume(elapsed: elapsed)

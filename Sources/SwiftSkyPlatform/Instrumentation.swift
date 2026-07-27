@@ -62,9 +62,15 @@ struct Instrumentation {
 
     /// Emits a summary. Called on a reporting interval, never per frame — this is the only place that
     /// formats a string.
+    ///
+    /// `notice`, not `info`, and that is the entire reason FR-021d's output was invisible: `info`-level
+    /// messages live in a memory ring buffer and are not written to the log store, so `log show` — which
+    /// reads the store — finds nothing, with no error to say why. `notice` is the lowest level that
+    /// persists by default, so the measurements can simply be read back after a run. Debug and
+    /// profiling builds only (FR-021e), so this adds no release logging.
     func summary() {
         let mean = presentedFrames > 0 ? totalFrameSeconds / Double(presentedFrames) : 0
-        Self.log.info(
+        Self.log.notice(
             """
             frames=\(self.presentedFrames, privacy: .public) \
             skipped=\(self.skippedFrames, privacy: .public) \
