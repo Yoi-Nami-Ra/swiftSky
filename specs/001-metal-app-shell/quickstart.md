@@ -94,13 +94,25 @@ explaining that the layer deliberately has none.
 | 41 | Audit the platform layer for drawing | No background colours, no `draw(_:)`/`drawRect` overrides, and no SwiftUI drawing primitives anywhere in `Sources/SwiftSkyPlatform/` except `RendererFailureNotice.swift` | SC-002, FR-001, FR-007 |
 | 42 | Grep all three layers for mutable global state | No `static var`, `nonisolated(unsafe)`, or top-level `var` in any layer; no render-side interpolation in `Sources/SwiftSkyRendering/` | FR-015, FR-021c |
 
-> **SC-009 evidence — fill in during implementation.** Paste the three compiler errors below. This is
-> the one-time proof; there is no standing automated gate, because a permanently failing build cannot be
-> committed.
+> **SC-009 evidence — PASS (2026-07-27).** All three forbidden directions fail the build.
 >
-> - Check 15: `_(error text)_`
-> - Check 16: `_(error text)_`
-> - Check 17: `_(error text)_`
+> **Enforcement requires `--explicit-target-dependency-import-check=error`**, which `Scripts/verify.sh`
+> always passes. This was discovered the hard way: a bare `swift build` reports directions 15 and 16 as
+> a *warning* from SwiftPM's dependency scanner and **exits 0**. Compiler-level warnings-as-errors does
+> not reach it, because the diagnostic is not from the compiler. Only direction 17 fails without the
+> flag, and then only incidentally, as a module cycle.
+>
+> - **Check 15** (logic → rendering): `error: 'SwiftSkySimulation' is missing a dependency on
+>   'SwiftSkyRendering' because dependency scan of Swift module 'SwiftSkySimulation' discovered a
+>   dependency on 'SwiftSkyRendering'`
+> - **Check 16** (logic → platform): `error: 'SwiftSkySimulation' is missing a dependency on
+>   'SwiftSkyPlatform' because dependency scan of Swift module 'SwiftSkySimulation' discovered a
+>   dependency on 'SwiftSkyPlatform'`
+> - **Check 17** (rendering → platform): `error: module dependency cycle: 'SwiftSkyRendering (Source
+>   Target) -> SwiftSkyPlatform.swiftmodule -> SwiftSkyRendering.swiftmodule'`
+>
+> The clean build passes with the flag enabled, so enforcement costs nothing. Probe files were removed
+> and the tree verified clean after each direction.
 
 ### Tests
 

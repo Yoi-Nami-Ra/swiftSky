@@ -12,8 +12,19 @@
 
 import PackageDescription
 
-/// Swift 6 language mode with strict concurrency checking, required by FR-030 and SC-015.
-let strictConcurrency: [SwiftSetting] = [.swiftLanguageMode(.v6)]
+/// Swift 6 language mode with strict concurrency checking (FR-030), plus warnings-as-errors so that
+/// SC-015's "zero strict-concurrency warnings" is enforced mechanically rather than by inspection.
+///
+/// NOTE ON FR-013: these settings do *not* enforce the layer boundary. SwiftPM reports a forbidden
+/// cross-layer import as a warning from its dependency scanner — not from the Swift compiler — so
+/// compiler-level warnings-as-errors does not reach it, and a bare `swift build` exits 0 on a
+/// violation. Enforcement comes from `--explicit-target-dependency-import-check=error`, which
+/// `Scripts/verify.sh` always passes. Verified: with that flag all three forbidden directions fail
+/// the build; without it, two of the three succeed with only a warning (SC-009).
+let layerSettings: [SwiftSetting] = [
+    .swiftLanguageMode(.v6),
+    .treatAllWarnings(as: .error),
+]
 
 let package = Package(
     name: "swiftSky",
@@ -29,21 +40,21 @@ let package = Package(
         // LOGIC LAYER — imports nothing. Pure value types and pure functions (FR-011, FR-012c).
         .target(
             name: "SwiftSkySimulation",
-            swiftSettings: strictConcurrency
+            swiftSettings: layerSettings
         ),
 
         // RENDER LAYER — depends on the logic layer only. Owns Metal, shaders, and the black colour.
         .target(
             name: "SwiftSkyRendering",
             dependencies: ["SwiftSkySimulation"],
-            swiftSettings: strictConcurrency
+            swiftSettings: layerSettings
         ),
 
         // PLATFORM LAYER — depends on both. Owns the frame loop, surface hosting, and lifecycle.
         .target(
             name: "SwiftSkyPlatform",
             dependencies: ["SwiftSkyRendering", "SwiftSkySimulation"],
-            swiftSettings: strictConcurrency
+            swiftSettings: layerSettings
         ),
 
         // Headless, GPU-free test target for the logic layer (FR-017, SC-007).
@@ -51,7 +62,7 @@ let package = Package(
         .testTarget(
             name: "SwiftSkySimulationTests",
             dependencies: ["SwiftSkySimulation"],
-            swiftSettings: strictConcurrency
+            swiftSettings: layerSettings
         ),
     ]
 )
