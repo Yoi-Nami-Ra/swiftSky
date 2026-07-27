@@ -24,6 +24,12 @@ import PackageDescription
 let layerSettings: [SwiftSetting] = [
     .swiftLanguageMode(.v6),
     .treatAllWarnings(as: .error),
+
+    // FR-021e: instrumentation is compiled into debug builds and must be provably absent from
+    // release. SwiftPM has only debug and release configurations, so the third "Profiling"
+    // configuration named in research.md R12 lives in the Xcode project and passes this define
+    // through to the package (task T007).
+    .define("SWIFTSKY_INSTRUMENTATION", .when(configuration: .debug)),
 ]
 
 let package = Package(
