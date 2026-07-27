@@ -77,6 +77,19 @@ CI job will use verbatim once a remote exists (FR-019a, SC-008a).
 | 16 | Add `import SwiftSkyPlatform` to a file in `SwiftSkySimulation`, build | **Build fails.** Revert. Record the error here. | SC-009 |
 | 17 | Add `import SwiftSkyPlatform` to a file in `SwiftSkyRendering`, build | **Build fails.** Revert. Record the error here. | SC-009 |
 | 18 | Grep `Sources/SwiftSkySimulation` for `import`, `actor`, `NSLock` | No matches | FR-012c |
+
+**Check 18 — PASS (2026-07-27).** Zero code matches for `^import`, `actor`, `@MainActor`, `NSLock`,
+`DispatchQueue`, `os_unfair_lock` across all four simulation files; each file has exactly 0 import
+statements. The only textual hit is the word "actor" inside a doc comment in `Simulation.swift`
+explaining that the layer deliberately has none.
+
+**Check 42 — PASS (2026-07-27).** Zero matches for `static var`, `nonisolated(unsafe)`, or top-level
+`var` across all three layers. Zero matches for `interpolat`, `lerp`, `mix(` in
+`Sources/SwiftSkyRendering/`.
+
+**Check 19 — PASS (2026-07-27).** Zero matches for `NSView`, `UIView`, `SwiftUI`, `NSWindow`,
+`UIWindow` in `Sources/SwiftSkyRendering/`.
+
 | 19 | Grep `Sources/SwiftSkyRendering` for `NSView`, `UIView`, `SwiftUI`, `NSWindow` | No matches | FR-010 |
 | 41 | Audit the platform layer for drawing | No background colours, no `draw(_:)`/`drawRect` overrides, and no SwiftUI drawing primitives anywhere in `Sources/SwiftSkyPlatform/` except `RendererFailureNotice.swift` | SC-002, FR-001, FR-007 |
 | 42 | Grep all three layers for mutable global state | No `static var`, `nonisolated(unsafe)`, or top-level `var` in any layer; no render-side interpolation in `Sources/SwiftSkyRendering/` | FR-015, FR-021c |

@@ -63,13 +63,13 @@ compile-time boundary itself, so every story depends on them.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T010 [P] Implement `FixedTimestep` constants — `tickRate` 60, `tickDuration` 1.0/60.0, `catchUpClamp` 4 — in `Sources/SwiftSkySimulation/FixedTimestep.swift` (FR-021a, FR-021b)
-- [ ] T011 [P] Implement `SimulationState` value type holding only `tickCount: UInt64` in `Sources/SwiftSkySimulation/SimulationState.swift` (FR-012a, FR-012b, data-model.md)
-- [ ] T012 Implement `TimeAccumulator` value type with `consume(elapsed:) -> Int`, clamping at 4 ticks and discarding excess, in `Sources/SwiftSkySimulation/TimeAccumulator.swift` (depends on T010; FR-021a, FR-021b)
-- [ ] T013 Implement the pure `Simulation.advance(_:ticks:)` function in `Sources/SwiftSkySimulation/Simulation.swift` (depends on T011; FR-012c, FR-033)
-- [ ] T014 Audit all three layers for forbidden constructs — zero `import` statements and no `actor`, `@MainActor`, or lock usage in `Sources/SwiftSkySimulation/`; no `static var`, `nonisolated(unsafe)`, or top-level `var` in any layer; no interpolation between simulation states in `Sources/SwiftSkyRendering/` — and record in `specs/001-metal-app-shell/quickstart.md` checks 18 and 42 (FR-012c, FR-015, FR-021c)
-- [ ] T015 [P] Implement `RenderSurface` value type with `widthPixels`, `heightPixels`, `backingScale`, and `isRenderable` in `Sources/SwiftSkyRendering/RenderSurface.swift` (data-model.md)
-- [ ] T016 [P] Implement `RendererError` with all initialisation failure cases and `userFacingDescription` in `Sources/SwiftSkyRendering/RendererError.swift` (FR-024, FR-026, contracts/layer-interfaces.md)
+- [X] T010 [P] Implement `FixedTimestep` constants — `tickRate` 60, `tickDuration` 1.0/60.0, `catchUpClamp` 4 — in `Sources/SwiftSkySimulation/FixedTimestep.swift` (FR-021a, FR-021b)
+- [X] T011 [P] Implement `SimulationState` value type holding only `tickCount: UInt64` in `Sources/SwiftSkySimulation/SimulationState.swift` (FR-012a, FR-012b, data-model.md)
+- [X] T012 Implement `TimeAccumulator` value type with `consume(elapsed:) -> Int`, clamping at 4 ticks and discarding excess, in `Sources/SwiftSkySimulation/TimeAccumulator.swift` (depends on T010; FR-021a, FR-021b)
+- [X] T013 Implement the pure `Simulation.advance(_:ticks:)` function in `Sources/SwiftSkySimulation/Simulation.swift` (depends on T011; FR-012c, FR-033)
+- [X] T014 Audit all three layers for forbidden constructs — zero `import` statements and no `actor`, `@MainActor`, or lock usage in `Sources/SwiftSkySimulation/`; no `static var`, `nonisolated(unsafe)`, or top-level `var` in any layer; no interpolation between simulation states in `Sources/SwiftSkyRendering/` — and record in `specs/001-metal-app-shell/quickstart.md` checks 18 and 42 (FR-012c, FR-015, FR-021c)
+- [X] T015 [P] Implement `RenderSurface` value type with `widthPixels`, `heightPixels`, `backingScale`, and `isRenderable` in `Sources/SwiftSkyRendering/RenderSurface.swift` (data-model.md)
+- [X] T016 [P] Implement `RendererError` with all initialisation failure cases and `userFacingDescription` in `Sources/SwiftSkyRendering/RendererError.swift` (FR-024, FR-026, contracts/layer-interfaces.md)
 
 **Checkpoint**: Foundation ready — the simulation layer is complete and independently compilable, so
 US3's test tasks (T038–T040) may begin in parallel with US1 from here
@@ -95,7 +95,7 @@ performance gate.
 - [ ] T017 [US1] Write the vertex and fragment shaders — full-screen quad in clip space, fragment returns `(0, 0, 0, 1)` — in `Sources/SwiftSkyRendering/Shaders.metal` (FR-002a, FR-002c, research.md R11)
 - [ ] T018 [US1] Implement `FullscreenQuad` creating the vertex buffer and pipeline state exactly once at initialisation in `Sources/SwiftSkyRendering/FullscreenQuad.swift` (depends on T017; FR-002b)
 - [ ] T019 [US1] Implement `Renderer` — throwing `init(device:pixelFormat:)` and allocation-free `render(state:surface:into:) -> Bool` returning `false` when no drawable is available — in `Sources/SwiftSkyRendering/Renderer.swift` (depends on T015, T016, T018; FR-002a, FR-020, FR-027a, contracts/layer-interfaces.md)
-- [ ] T020 [P] [US1] Implement the `SurfaceEvent` enum with `resized`, `backingScaleChanged`, `visibilityChanged`, `willTerminate` in `Sources/SwiftSkyPlatform/SurfaceEvent.swift` (FR-029, data-model.md)
+- [X] T020 [P] [US1] *(completed early with Phase 2 — SwiftPM requires every declared target to have sources, and `SwiftSkyPlatform` was otherwise empty)* Implement the `SurfaceEvent` enum with `resized`, `backingScaleChanged`, `visibilityChanged`, `willTerminate` in `Sources/SwiftSkyPlatform/SurfaceEvent.swift` (FR-029, data-model.md)
 - [ ] T021 [P] [US1] Implement `MetalSurfaceView` — a bare `NSView`/`UIView` backed by a `CAMetalLayer` configured `bgra8Unorm_srgb`, opaque, sRGB — that draws nothing itself and exposes an accessibility description, in `Sources/SwiftSkyPlatform/MetalSurfaceView.swift` (FR-001, FR-002c, FR-007, FR-009, research.md R6, R10)
 - [ ] T022 [P] [US1] Implement allocation-free `Instrumentation` recording frame duration, draw-path allocation count, and separate skipped-frame and dropped-frame counters, gated on `SWIFTSKY_INSTRUMENTATION`, in `Sources/SwiftSkyPlatform/Instrumentation.swift` (FR-021d, FR-021e, FR-021f, FR-027c)
 - [ ] T056 [US1] Log the `SimulationState.tickCount` the renderer received each frame from `Sources/SwiftSkyPlatform/Instrumentation.swift` under `SWIFTSKY_INSTRUMENTATION`, so the live logic→render hand-off is observable, and verify quickstart check 40 (depends on T022; SC-020, FR-012a)
