@@ -44,11 +44,11 @@ Xcode project holds only the two app targets, so T004, T007 and T008 land with t
 - [X] T001 Create the root `Package.swift` declaring the layer targets and platform floor (topology B, research.md R1 revised). The three Xcode build configurations — Debug, Release, Profiling — move to `swiftSky.xcodeproj` when the app targets are added in T004 (per research.md R12)
 - [X] T002 [P] Create the directory skeleton: `Sources/SwiftSkySimulation/`, `Sources/SwiftSkyRendering/`, `Sources/SwiftSkyPlatform/`, `Apps/iOS/`, `Apps/macOS/`, `Tests/SwiftSkySimulationTests/`, `Scripts/`
 - [X] T003 Declare the three library targets in `Package.swift` — `SwiftSkySimulation` (no dependencies), `SwiftSkyRendering` (depends on Simulation), `SwiftSkyPlatform` (depends on Rendering + Simulation) — establishing FR-013's compile-time enforcement
-- [ ] T004 Add the two app targets `swiftSky (iOS)` and `swiftSky (macOS)` to `swiftSky.xcodeproj`, each depending on `SwiftSkyPlatform`
+- [X] T004 Add the two app targets `swiftSky (iOS)` and `swiftSky (macOS)` to `swiftSky.xcodeproj`, each depending on `SwiftSkyPlatform`
 - [X] T005 [P] Set Swift 6 language mode and strict concurrency checking on every target via `swiftLanguageMode(.v6)` in `Package.swift` (FR-030, SC-015)
 - [X] T006 [P] Set the platform floor to iOS 26.0 and macOS 26.0 in `Package.swift` (requires `swift-tools-version: 6.2`), with no availability fallbacks (FR-022)
-- [ ] T007 [P] Define the `SWIFTSKY_INSTRUMENTATION` custom Swift compilation condition in `swiftSky.xcodeproj` for Debug and Profiling only, never Release (FR-021e)
-- [ ] T008 [P] Restrict the iOS target's Supported Destinations in `swiftSky.xcodeproj` to iPhone and iPad — remove "Mac (Designed for iPad)" and do not enable Mac Catalyst (FR-016a, SC-018)
+- [X] T007 [P] Define the `SWIFTSKY_INSTRUMENTATION` custom Swift compilation condition in `swiftSky.xcodeproj` for Debug and Profiling only, never Release (FR-021e)
+- [X] T008 [P] Restrict the iOS target's Supported Destinations in `swiftSky.xcodeproj` to iPhone and iPad — remove "Mac (Designed for iPad)" and do not enable Mac Catalyst (FR-016a, SC-018)
 - [X] T009 [P] Extend `.gitignore` to cover Xcode project user state (`*.xcodeproj/xcuserdata/`, `*.xcodeproj/project.xcworkspace/xcuserdata/`) (FR-019)
 
 **Checkpoint**: `Package.swift` resolves, the layer dependency graph is in place, and
@@ -109,7 +109,7 @@ performance gate.
 - [X] T030 [US1] Implement renderer construction on the main thread before loop start, routing any `RendererError` to the notice plus an FR-026 diagnostic and a debug-build trap, with no fallback surface, in `Sources/SwiftSkyPlatform/FrameLoop.swift` (depends on T019, T029; FR-024, FR-026, FR-027, contracts/frame-loop.md)
 - [X] T031 [US1] Implement the macOS app entry point using a SwiftUI `Window` scene (not `WindowGroup`) with `.defaultSize(width: 1280, height: 720)`, content `.frame(minWidth: 640, minHeight: 360)` and `.windowResizability(.contentMinSize)` in `Apps/macOS/SwiftSkyApp.swift` (depends on T023, T030; FR-006, FR-006a, FR-006c, FR-006d, research.md R7, R8)
 - [X] T032 [P] [US1] Configure `Apps/macOS/Info.plist` with a black initial window background so no light frame appears before the first draw (FR-004a)
-- [ ] T033 [US1] Run quickstart checks 1, 2, 4, 5, 6, 7, 8, 9, 10, 13 against the macOS build and record outcomes in `specs/001-metal-app-shell/quickstart.md`
+- [X] T033 [US1] Run quickstart checks 1, 2, 4, 5, 6, 7, 8, 9, 10, 13 against the macOS build and record outcomes in `specs/001-metal-app-shell/quickstart.md`
 
 **Checkpoint**: macOS app launches to a black window drawn by a real shader pass; MVP is deliverable
 
@@ -132,10 +132,10 @@ false; it is independently *testable*, which is what matters for the checkpoint.
 
 ### Implementation for User Story 2
 
-- [ ] T034 [US2] Add the `UIViewRepresentable` variant for iOS to `Sources/SwiftSkyPlatform/MetalSurfaceRepresentable.swift` (depends on T023; FR-005, FR-007)
-- [ ] T035 [US2] Implement the iOS app entry point with a single scene in `Apps/iOS/SwiftSkyApp.swift` (depends on T034, T030; FR-005, FR-006c)
-- [ ] T036 [P] [US2] Configure `Apps/iOS/Info.plist` — supported orientations limited to `UIInterfaceOrientationLandscapeLeft` and `UIInterfaceOrientationLandscapeRight`, `UIApplicationSupportsMultipleScenes` set to `false`, and a `UILaunchScreen` dictionary with a black background and no image (FR-004a, FR-006b, FR-006c, research.md R13)
-- [ ] T037 [US2] Wire iOS scene visibility and orientation/size changes into `SurfaceEvent` delivery, tolerating arbitrary surface dimensions including portrait-shaped iPad multitasking sizes, in `Sources/SwiftSkyPlatform/MetalSurfaceView.swift` (depends on T035; FR-006b, FR-008, FR-029)
+- [X] T034 [US2] Add the `UIViewRepresentable` variant for iOS to `Sources/SwiftSkyPlatform/MetalSurfaceRepresentable.swift` (depends on T023; FR-005, FR-007)
+- [X] T035 [US2] Implement the iOS app entry point with a single scene in `Apps/iOS/SwiftSkyApp.swift` (depends on T034, T030; FR-005, FR-006c)
+- [X] T036 [P] [US2] Configure `Apps/iOS/Info.plist` — supported orientations limited to `UIInterfaceOrientationLandscapeLeft` and `UIInterfaceOrientationLandscapeRight`, `UIApplicationSupportsMultipleScenes` set to `false`, and a `UILaunchScreen` dictionary with a black background and no image (FR-004a, FR-006b, FR-006c, research.md R13)
+- [X] T037 [US2] Wire iOS scene visibility and orientation/size changes into `SurfaceEvent` delivery, tolerating arbitrary surface dimensions including portrait-shaped iPad multitasking sizes, in `Sources/SwiftSkyPlatform/MetalSurfaceView.swift` (depends on T035; FR-006b, FR-008, FR-029)
 - [ ] T038 [US2] Run quickstart checks 3, 11, 12 against the iOS build and record outcomes in `specs/001-metal-app-shell/quickstart.md`
 
 **Checkpoint**: Both platforms present an identical black surface from shared code
@@ -184,6 +184,7 @@ each fails to build.
 - [ ] T053 [P] Verify with VoiceOver that the accessibility description set in `Sources/SwiftSkyPlatform/MetalSurfaceView.swift` is reported meaningfully rather than skipped or announced as unlabelled, and that enabling Reduce Motion changes nothing and raises no assertion; record in `specs/001-metal-app-shell/quickstart.md` checks 36–37 (SC-011, FR-009)
 - [ ] T057 [P] Audit `Sources/SwiftSkyPlatform/` for user-visible drawing — grep for `backgroundColor`, `NSColor`, `UIColor`, `draw(`, `.background(`, `Rectangle(`, `Color.` — confirming zero matches outside `RendererFailureNotice.swift`, and record in `specs/001-metal-app-shell/quickstart.md` check 41 (SC-002, FR-001, FR-007)
 - [ ] T054 [P] Confirm zero third-party package dependencies in `swiftSky.xcodeproj` and that `git status` is clean after a full build (SC-010, FR-018, FR-019)
+- [ ] T058 Diagnose why `os_log` output from `Sources/SwiftSkyPlatform/Instrumentation.swift` does not appear in `log show`, so FR-021d's per-frame reporting is observable without temporary file-based diagnostics (FR-021d, quickstart check 40)
 - [ ] T055 Complete a full pass of all 42 checks in `specs/001-metal-app-shell/quickstart.md`, with the SC-009 and SC-005 fill-in blocks populated
 
 ---
