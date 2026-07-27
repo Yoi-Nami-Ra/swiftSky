@@ -29,6 +29,25 @@ satisfies SC-007's headless requirement more directly than `xcodebuild test`.
 **Requires `swift-tools-version: 6.2`** — the `.iOS(.v26)` and `.macOS(.v26)` platform cases were
 introduced in PackageDescription 6.2. Verified against the Swift 6.4 toolchain.
 
+**Correction to the revision's own claim (2026-07-27).** The revision above asserted that package
+target dependencies give FR-013's enforcement "more cleanly" than Xcode target dependencies. That was
+wrong as stated, and testing caught it: **a bare `swift build` does not enforce the boundary.** SwiftPM
+reports a forbidden cross-layer import as a warning from its dependency scanner and exits 0. Two of the
+three forbidden directions built successfully; only rendering→platform failed, and incidentally, as a
+module cycle. Compiler-level `treatAllWarnings(as: .error)` does not reach it, because the diagnostic
+does not come from the compiler.
+
+Enforcement requires SwiftPM's `--explicit-target-dependency-import-check=error`, which
+`Scripts/verify.sh` now always passes. With it, all three directions hard-error and the clean build
+still passes. The practical consequence: **the layer boundary is enforced by the verification script,
+not by any `swift build` a developer happens to type.** That satisfies FR-013's intent — a violation
+fails the build gate rather than passing review — but it is weaker than the "structurally impossible"
+framing the plan originally used, and worth knowing before relying on it.
+
+If stronger enforcement is ever wanted, splitting each layer into its own package would make a
+forbidden import an unresolvable module rather than a suppressible diagnostic. Not done here: three
+package manifests for one small app is disproportionate under Principle V while the flag works.
+
 **Original decision, superseded**: a single Xcode project with three library targets plus two app
 targets and one test target, chosen because Xcode targets handle `.metal` compilation as a
 first-class build phase. This is still true; it simply is not exclusive to Xcode targets.

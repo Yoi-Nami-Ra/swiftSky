@@ -155,14 +155,14 @@ each fails to build.
 
 ### Tests for User Story 3
 
-- [ ] T039 [US3] Add the `SwiftSkySimulationTests` test target to `swiftSky.xcodeproj` using Swift Testing, depending on `SwiftSkySimulation` only, with no app host (FR-017, research.md R9)
-- [ ] T040 [P] [US3] Write `TimeAccumulator` tests covering sub-tick accumulation returning zero ticks, exact multiples, remainder carry, and the clamp — including that a 10-second span advances exactly 4 ticks, not 600 — in `Tests/SwiftSkySimulationTests/TimeAccumulatorTests.swift` (depends on T039; FR-021b, SC-013)
-- [ ] T041 [P] [US3] Write `Simulation` determinism tests asserting identical tick sequences produce byte-identical state, and that one long elapsed span and many short ones agree subject to the clamp, in `Tests/SwiftSkySimulationTests/SimulationTests.swift` (depends on T039; SC-013)
+- [X] T039 [US3] Declare the `SwiftSkySimulationTests` test target in `Package.swift` using Swift Testing, depending on `SwiftSkySimulation` only, with no app host (FR-017, research.md R9)
+- [X] T040 [P] [US3] Write `TimeAccumulator` tests covering sub-tick accumulation returning zero ticks, exact multiples, remainder carry, and the clamp — including that a 10-second span advances exactly 4 ticks, not 600 — in `Tests/SwiftSkySimulationTests/TimeAccumulatorTests.swift` (depends on T039; FR-021b, SC-013)
+- [X] T041 [P] [US3] Write `Simulation` determinism tests asserting identical tick sequences produce byte-identical state, and that one long elapsed span and many short ones agree subject to the clamp, in `Tests/SwiftSkySimulationTests/SimulationTests.swift` (depends on T039; SC-013)
 
 ### Implementation for User Story 3
 
-- [ ] T042 [US3] Write `Scripts/verify.sh` — builds both destinations and runs the headless suite with no arguments on a clean clone, exiting non-zero on any build or test failure (depends on T039; FR-019a, SC-008a)
-- [ ] T043 [US3] Prove each forbidden direction fails to build (logic→rendering, logic→platform, rendering→platform) by temporarily adding a violating import, then revert, and paste the three compiler errors into the SC-009 evidence block in `specs/001-metal-app-shell/quickstart.md` (SC-009, FR-013)
+- [X] T042 [US3] *(app-target stage reports PENDING until T004 lands)* Write `Scripts/verify.sh` — builds both destinations and runs the headless suite with no arguments on a clean clone, exiting non-zero on any build or test failure (depends on T039; FR-019a, SC-008a)
+- [X] T043 [US3] Prove each forbidden direction fails to build (logic→rendering, logic→platform, rendering→platform) by temporarily adding a violating import, then revert, and paste the three compiler errors into the SC-009 evidence block in `specs/001-metal-app-shell/quickstart.md` (SC-009, FR-013)
 - [ ] T044 [US3] Run quickstart checks 15–23 and record outcomes in `specs/001-metal-app-shell/quickstart.md`
 
 **Checkpoint**: All three user stories independently functional and verified
