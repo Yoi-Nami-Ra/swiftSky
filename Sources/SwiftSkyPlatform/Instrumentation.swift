@@ -55,9 +55,21 @@ struct Instrumentation {
         skippedFrames += 1
     }
 
-    /// Updates the display's refresh interval when the surface moves to a different display.
+    /// Updates the frame budget, and **restarts the measurement**.
+    ///
+    /// The restart is the point, not a side effect. Counters accumulated against the previous budget
+    /// are not comparable with ones accumulated against the new budget, and mixing them produces a
+    /// self-contradictory report: a real run showed `worst=11.0ms dropped=0 budget=8.3ms`, because that
+    /// worst frame was judged against the 16.6 ms default in force before the display's true interval
+    /// was known. A reader cannot tell from such a line whether SC-003 was met. Discarding the
+    /// pre-budget-change frames makes every reported number belong to one budget.
     mutating func updateBudget(seconds: Double) {
         budgetSeconds = seconds
+        presentedFrames = 0
+        skippedFrames = 0
+        droppedFrames = 0
+        totalFrameSeconds = 0
+        worstFrameSeconds = 0
     }
 
     /// Emits a summary. Called on a reporting interval, never per frame — this is the only place that

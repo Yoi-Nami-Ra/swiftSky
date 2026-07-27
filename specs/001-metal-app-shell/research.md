@@ -86,12 +86,24 @@ GPU, on a high-resolution display. For a black quad this is not in doubt, but it
 budget conversation for every later feature and it means the plan must not quietly assume unified
 memory.
 
-**Verification status**: the iOS list is confirmed. The macOS list could not be extracted in full —
-Apple's page resisted text extraction across two locales — so `MacBook Pro (16-inch, 2019)` and
-`MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)` come from Apple's own search summary rather
-than from reading the complete table. **Action for implementation**: confirm the oldest model against
-<https://support.apple.com/en-us/122867> before recording baseline measurements. The Intel-not-Apple-
-silicon conclusion is solid either way; only the exact model name needs confirming.
+**Verification status — CONFIRMED (2026-07-28, T045).** Apple's own page still resists text
+extraction (it renders its table client-side), so the confirmation is from Apple's search summary plus
+two independent secondary sources. All agree:
+
+- The only Intel MacBook Pros on the macOS 26 list are the **MacBook Pro (16-inch, 2019)** and the
+  **MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)**. The 13-inch 2019, the whole 2018 line, the
+  2019 iMacs, the iMac Pro (2017) and the Mac mini (2018) are all dropped.
+- macOS 26 is the last release to support any Intel Mac.
+
+**The baseline in the table above stands unchanged.** One wording caveat, recorded rather than
+silently smoothed over: the **Mac Pro (2019)** is also Intel and also 2019, so "oldest Mac on the list"
+is a tie by year rather than an outright winner. `MacBook Pro (16-inch, 2019)` is unambiguously the
+oldest supported *portable*, which is the machine FR-023's budget should be held on, so it remains the
+right baseline. The Intel-not-Apple-silicon conclusion — the finding that actually matters — is firm.
+
+Sources: [Apple](https://support.apple.com/en-us/122867),
+[iClarified](https://www.iclarified.com/97613/macos-tahoe-supported-devices-the-full-list-of-compatible-macs),
+[Mac Install Guide](https://mac.install.guide/macos/compatibility).
 
 ---
 
@@ -276,8 +288,8 @@ turned off, which is why the spec called it out.
 
 ## Open items deliberately left to implementation
 
-- The exact oldest macOS 26 Mac model (R2) — conclusion about Intel support is firm; the model name
-  needs confirming against Apple's page.
+- ~~The exact oldest macOS 26 Mac model (R2)~~ — **closed 2026-07-28 (T045)**: confirmed as
+  `MacBook Pro (16-inch, 2019)`, unchanged. See R2's verification status.
 - Measured idle memory and frame-time baselines — these are *outputs* of implementation (SC-005),
   recorded once the app runs on the baseline devices.
 - The `.metal`-in-library-target risk (R1) with its documented fallback.
