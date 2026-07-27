@@ -37,19 +37,22 @@ Per [plan.md](./plan.md) Project Structure: layer libraries in `Sources/<Layer>/
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Xcode project, targets, and the build configuration that later requirements depend on
+**Purpose**: Package manifest, layer targets, and the build configuration that later requirements
+depend on. Under topology B (research.md R1 revised) the layer targets live in `Package.swift`; the
+Xcode project holds only the two app targets, so T004, T007 and T008 land with the app entry points.
 
-- [ ] T001 Create `swiftSky.xcodeproj` at repository root with three build configurations — Debug, Release, and Profiling (per research.md R12)
-- [ ] T002 [P] Create the directory skeleton: `Sources/SwiftSkySimulation/`, `Sources/SwiftSkyRendering/`, `Sources/SwiftSkyPlatform/`, `Apps/iOS/`, `Apps/macOS/`, `Tests/SwiftSkySimulationTests/`, `Scripts/`
-- [ ] T003 Add three static library targets to `swiftSky.xcodeproj` — `SwiftSkySimulation` (no dependencies), `SwiftSkyRendering` (depends on Simulation), `SwiftSkyPlatform` (depends on Rendering + Simulation) — establishing FR-013's compile-time enforcement
+- [X] T001 Create the root `Package.swift` declaring the layer targets and platform floor (topology B, research.md R1 revised). The three Xcode build configurations — Debug, Release, Profiling — move to `swiftSky.xcodeproj` when the app targets are added in T004 (per research.md R12)
+- [X] T002 [P] Create the directory skeleton: `Sources/SwiftSkySimulation/`, `Sources/SwiftSkyRendering/`, `Sources/SwiftSkyPlatform/`, `Apps/iOS/`, `Apps/macOS/`, `Tests/SwiftSkySimulationTests/`, `Scripts/`
+- [X] T003 Declare the three library targets in `Package.swift` — `SwiftSkySimulation` (no dependencies), `SwiftSkyRendering` (depends on Simulation), `SwiftSkyPlatform` (depends on Rendering + Simulation) — establishing FR-013's compile-time enforcement
 - [ ] T004 Add the two app targets `swiftSky (iOS)` and `swiftSky (macOS)` to `swiftSky.xcodeproj`, each depending on `SwiftSkyPlatform`
-- [ ] T005 [P] Set Swift 6 language mode and strict concurrency checking on every target in `swiftSky.xcodeproj` (FR-030, SC-015)
-- [ ] T006 [P] Set deployment targets to iOS 26.0 and macOS 26.0 in `swiftSky.xcodeproj`, with no availability fallbacks (FR-022)
+- [X] T005 [P] Set Swift 6 language mode and strict concurrency checking on every target via `swiftLanguageMode(.v6)` in `Package.swift` (FR-030, SC-015)
+- [X] T006 [P] Set the platform floor to iOS 26.0 and macOS 26.0 in `Package.swift` (requires `swift-tools-version: 6.2`), with no availability fallbacks (FR-022)
 - [ ] T007 [P] Define the `SWIFTSKY_INSTRUMENTATION` custom Swift compilation condition in `swiftSky.xcodeproj` for Debug and Profiling only, never Release (FR-021e)
 - [ ] T008 [P] Restrict the iOS target's Supported Destinations in `swiftSky.xcodeproj` to iPhone and iPad — remove "Mac (Designed for iPad)" and do not enable Mac Catalyst (FR-016a, SC-018)
-- [ ] T009 [P] Extend `.gitignore` to cover Xcode project user state (`*.xcodeproj/xcuserdata/`, `*.xcodeproj/project.xcworkspace/xcuserdata/`) (FR-019)
+- [X] T009 [P] Extend `.gitignore` to cover Xcode project user state (`*.xcodeproj/xcuserdata/`, `*.xcodeproj/project.xcworkspace/xcuserdata/`) (FR-019)
 
-**Checkpoint**: Project opens, all five targets build empty, dependency graph is in place
+**Checkpoint**: `Package.swift` resolves, the layer dependency graph is in place, and
+`swift build`/`swift test` become meaningful once Phase 2 supplies target sources
 
 ---
 

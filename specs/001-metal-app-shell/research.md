@@ -9,28 +9,42 @@ requirements imply but do not name. Each entry gives the decision, why, and what
 
 ## R1. Module topology for build-time layer enforcement (FR-013)
 
-**Decision**: A single Xcode project containing three internal library targets — `SwiftSkySimulation`,
-`SwiftSkyRendering`, `SwiftSkyPlatform` — plus two thin app targets (iOS, macOS) and one test target
-for the simulation library. Layer enforcement comes from Xcode target dependencies: a target can only
-`import` a module it declares a dependency on, so a forbidden import fails to compile.
+> **REVISED during implementation, 2026-07-27.** The original decision and its rationale are kept
+> below for the record, followed by the revision and the evidence that forced it.
 
-**Rationale**: Target dependencies give exactly the compile-time enforcement FR-013 requires, with no
-third-party tooling (FR-018). Critically, Xcode targets handle `.metal` shader compilation into a
-default `.metallib` as a first-class build phase, which FR-002a now depends on.
+**Decision (revised)**: A root `Package.swift` declaring the three layer targets —
+`SwiftSkySimulation`, `SwiftSkyRendering`, `SwiftSkyPlatform` — plus the `SwiftSkySimulationTests`
+test target, with a minimal hand-written `swiftSky.xcodeproj` holding only the two app targets and
+referencing the package. Layer enforcement comes from package target dependencies: a target can only
+`import` a module it declares as a dependency, so a forbidden import fails to compile.
+
+**Rationale for the revision**: the original decision rested on an unverified claim — that SwiftPM
+could not be relied on to compile `.metal` files in a library target. Tested empirically at
+implementation time, **SwiftPM does support them**: it invokes `CompileMetalFile` and emits a resource
+bundle. The stated reason for preferring hand-written Xcode targets therefore evaporated, while the
+cost of that choice (authoring ~600 lines of `project.pbxproj` for five targets, with no generator
+available and `xcodegen`/`tuist` both absent and forbidden by FR-018) remained. `swift test` also
+satisfies SC-007's headless requirement more directly than `xcodebuild test`.
+
+**Requires `swift-tools-version: 6.2`** — the `.iOS(.v26)` and `.macOS(.v26)` platform cases were
+introduced in PackageDescription 6.2. Verified against the Swift 6.4 toolchain.
+
+**Original decision, superseded**: a single Xcode project with three library targets plus two app
+targets and one test target, chosen because Xcode targets handle `.metal` compilation as a
+first-class build phase. This is still true; it simply is not exclusive to Xcode targets.
 
 **Alternatives rejected**:
 
-- **Local Swift package for the three layers.** Attractive — `swift test` on the simulation target
-  would be a very clean headless story for SC-007. Rejected because Metal shader compilation inside a
-  SwiftPM library target is not something this plan could verify, and FR-002a makes shaders
-  load-bearing rather than optional. Adopting it and discovering the shader path doesn't work would
-  strand the feature. Worth revisiting once shaders are proven working under Xcode targets.
 - **One app target per platform with folder conventions.** No build-time enforcement at all — a
   forbidden import would compile happily. Fails FR-013 outright.
+- **Package only, no app targets.** Not viable: FR-006 requires a real Mac window, which needs an
+  app target that SwiftPM cannot produce.
 
-**Risk to carry into implementation**: if Xcode's library-target Metal build phase turns out to need
-an app-target host, move `Shaders.metal` into the two app targets and have the renderer receive the
-compiled library by injection. This keeps the layer boundary intact and is a contained change.
+**Discovered blocker, unrelated to topology**: the Metal compiler is a separately downloadable Xcode
+27 component (`xcodebuild -downloadComponent MetalToolchain`) and is **not installed** on this
+machine. No `.metal` file can be compiled by any route until it is. This blocks T017–T019 and
+therefore FR-002a. The Metal *framework* is present in the SDK, so Swift code that imports Metal
+still compiles; only shader compilation is blocked.
 
 ---
 

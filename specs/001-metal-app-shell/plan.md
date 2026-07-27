@@ -98,8 +98,14 @@ specs/001-metal-app-shell/
 
 ### Source Code (repository root)
 
+> **Revised during implementation (2026-07-27)**: the three layer targets and the test target live in
+> a root `Package.swift`, not in the Xcode project. `swiftSky.xcodeproj` holds only the two app
+> targets and references the package. See [research.md](./research.md) R1 for the evidence — SwiftPM's
+> `.metal` support was verified, voiding the original rationale for hand-authoring five Xcode targets.
+
 ```text
-swiftSky.xcodeproj                      # 3 library targets, 2 app targets, 1 test target
+Package.swift                           # 3 library targets + 1 test target, dependency graph
+swiftSky.xcodeproj                      # 2 app targets only, references the package
 
 Sources/
 ├── SwiftSkySimulation/                 # LOGIC LAYER — imports nothing
@@ -140,9 +146,9 @@ Scripts/
 └── verify.sh                           # FR-019a: builds both destinations, runs headless suite
 ```
 
-**Structure Decision**: Three library targets under `Sources/` give FR-013 its compile-time
-enforcement — `SwiftSkySimulation` declares no dependencies, so a forbidden `import SwiftSkyRendering`
-inside it cannot compile. App targets under `Apps/` hold only the `@main` entry point and Info.plist,
+**Structure Decision**: Three package targets under `Sources/` give FR-013 its compile-time
+enforcement — `SwiftSkySimulation` declares no dependencies in `Package.swift`, so a forbidden
+`import SwiftSkyRendering` inside it cannot compile. App targets under `Apps/` hold only the `@main` entry point and Info.plist,
 keeping FR-014's platform boundary as thin as possible: everything except the scene declaration and
 plist configuration lives in shared code. `Instrumentation.swift` sits in the platform layer rather
 than the render layer because the frame loop is what brackets the draw call, which keeps the render
