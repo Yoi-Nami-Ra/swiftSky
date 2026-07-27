@@ -123,6 +123,17 @@ explaining that the layer deliberately has none.
 | 22 | Clamp behaviour | Included in suite | 10 s elapsed span advances exactly 4 ticks, not 600 | SC-013, FR-021b |
 | 23 | Break a test deliberately, run `verify.sh` | Exits non-zero. Revert. | SC-008a |
 
+**Checks 20–23 — PASS (2026-07-27).**
+
+- **20**: `swift test` runs 23 tests in 2 suites, ~2.3 s, no GPU and no simulator UI. (Command is
+  `swift test`, not `xcodebuild test` — topology B, research.md R1.)
+- **21**: 10 consecutive runs, all reporting "23 tests in 2 suites passed", 23 s total wall clock.
+- **22**: `tenSecondStall` asserts a 10-second span advances exactly 4 ticks. Also covered:
+  clamp boundary, one-over-clamp, repeated stalls not compounding, and that a clamped frame leaves
+  under one tick unconsumed so the next frame does not immediately clamp again.
+- **23**: with `SimulationState().tickCount == 999` substituted, `verify.sh` exited **1**; after
+  revert, exited **0**; `git diff` on `Tests/` was empty, confirming a clean revert.
+
 ### Performance (baseline devices only)
 
 | # | Check | Expected | Criterion |
