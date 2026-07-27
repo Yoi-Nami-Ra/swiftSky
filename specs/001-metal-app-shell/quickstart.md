@@ -56,6 +56,34 @@ CI job will use verbatim once a remote exists (FR-019a, SC-008a).
 | 6 | Inspect layer configuration | `bgra8Unorm_srgb`, opaque, sRGB colour space | FR-002c |
 | 40 | Run a Debug build, watch the instrumentation log | Tick count the renderer receives increases monotonically across frames, and the surface stays uniformly black | SC-020, FR-012a, FR-012b |
 
+**Checks 1, 40 — PASS on macOS (2026-07-27).** The app launches to a 1280×720 window with a uniformly
+black content area. Runtime samples, taken every 120 frames from the frame loop:
+
+```
+presented=true tickCount=60  rendererSaw=60  frameMs=0.152
+presented=true tickCount=120 rendererSaw=120 frameMs=0.145
+presented=true tickCount=180 rendererSaw=180 frameMs=0.189
+presented=true tickCount=240 rendererSaw=240 frameMs=0.064
+presented=true tickCount=300 rendererSaw=300 frameMs=0.161
+presented=true tickCount=360 rendererSaw=360 frameMs=0.133
+```
+
+Three requirements evidenced at once:
+
+- **SC-020 / FR-012a**: `rendererSaw` equals `tickCount` at every sample, so the logic→render hand-off
+  carries live state every frame rather than existing as an unused type.
+- **FR-021a**: 120 frames elapse per 60 ticks. The display is 120 Hz and the simulation holds exactly
+  60 Hz — the fixed timestep is genuinely decoupled from refresh rate, not merely declared to be.
+- **SC-003 (indicative)**: frame times 0.064–0.189 ms against an 8.3 ms budget at 120 Hz. Not the
+  formal gate, which must run on the baseline devices (T047, T048).
+
+`presented=true` throughout confirms real draw calls, not skipped frames.
+
+> **These samples came from temporary file-based diagnostics, since `os_log` output from this app was
+> not reaching `log show`.** The diagnostics have been removed; the permanent instrumentation in
+> `Instrumentation.swift` remains. Getting `FR-021d`'s log output visible is outstanding work — see
+> tasks.md T058.
+
 ### Window and scene behaviour
 
 | # | Check | Expected | Criterion |
@@ -77,6 +105,9 @@ CI job will use verbatim once a remote exists (FR-019a, SC-008a).
 | 16 | Add `import SwiftSkyPlatform` to a file in `SwiftSkySimulation`, build | **Build fails.** Revert. Record the error here. | SC-009 |
 | 17 | Add `import SwiftSkyPlatform` to a file in `SwiftSkyRendering`, build | **Build fails.** Revert. Record the error here. | SC-009 |
 | 18 | Grep `Sources/SwiftSkySimulation` for `import`, `actor`, `NSLock` | No matches | FR-012c |
+| 19 | Grep `Sources/SwiftSkyRendering` for `NSView`, `UIView`, `SwiftUI`, `NSWindow` | No matches | FR-010 |
+| 41 | Audit the platform layer for drawing | No background colours, no `draw(_:)`/`drawRect` overrides, and no SwiftUI drawing primitives anywhere in `Sources/SwiftSkyPlatform/` except `RendererFailureNotice.swift` | SC-002, FR-001, FR-007 |
+| 42 | Grep all three layers for mutable global state | No `static var`, `nonisolated(unsafe)`, or top-level `var` in any layer; no render-side interpolation in `Sources/SwiftSkyRendering/` | FR-015, FR-021c |
 
 **Check 18 — PASS (2026-07-27).** Zero code matches for `^import`, `actor`, `@MainActor`, `NSLock`,
 `DispatchQueue`, `os_unfair_lock` across all four simulation files; each file has exactly 0 import
@@ -90,9 +121,6 @@ explaining that the layer deliberately has none.
 **Check 19 — PASS (2026-07-27).** Zero matches for `NSView`, `UIView`, `SwiftUI`, `NSWindow`,
 `UIWindow` in `Sources/SwiftSkyRendering/`.
 
-| 19 | Grep `Sources/SwiftSkyRendering` for `NSView`, `UIView`, `SwiftUI`, `NSWindow` | No matches | FR-010 |
-| 41 | Audit the platform layer for drawing | No background colours, no `draw(_:)`/`drawRect` overrides, and no SwiftUI drawing primitives anywhere in `Sources/SwiftSkyPlatform/` except `RendererFailureNotice.swift` | SC-002, FR-001, FR-007 |
-| 42 | Grep all three layers for mutable global state | No `static var`, `nonisolated(unsafe)`, or top-level `var` in any layer; no render-side interpolation in `Sources/SwiftSkyRendering/` | FR-015, FR-021c |
 
 > **SC-009 evidence — PASS (2026-07-27).** All three forbidden directions fail the build.
 >
@@ -118,7 +146,7 @@ explaining that the layer deliberately has none.
 
 | # | Check | Command | Expected | Criterion |
 |---|-------|---------|----------|-----------|
-| 20 | Headless suite | `xcodebuild test -scheme SwiftSkySimulationTests` | Passes, under 10 s, no GPU or simulator UI | SC-007, FR-017 |
+| 20 | Headless suite | `swift test` | Passes, under 10 s, no GPU or simulator UI | SC-007, FR-017 |
 | 21 | Determinism | Run the suite 10 times | Identical results every run | SC-007, SC-013 |
 | 22 | Clamp behaviour | Included in suite | 10 s elapsed span advances exactly 4 ticks, not 600 | SC-013, FR-021b |
 | 23 | Break a test deliberately, run `verify.sh` | Exits non-zero. Revert. | SC-008a |

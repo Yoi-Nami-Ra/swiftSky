@@ -56,6 +56,10 @@ final class MetalSurfaceView: PlatformView {
         #endif
 
         configureAccessibility()
+
+        #if os(iOS)
+        registerForScaleChanges()
+        #endif
     }
 
     /// FR-009: the surface must not be an unlabelled dead zone for assistive technology.
@@ -132,10 +136,53 @@ final class MetalSurfaceView: PlatformView {
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
-        // Occlusion drives loop start/stop (FR-008). Reported as a visibility change; the loop
-        // decides what to do with it.
-        onSurfaceChange?(.visibilityChanged(isVisible: window?.occlusionState.contains(.visible) ?? false))
+        observeOcclusion()
+        reportVisibility()
+        scheduleVisibilityRecheck()
         surfaceGeometryChanged(scaleChanged: true)
+    }
+
+    /// Occlusion drives loop start/stop (FR-008), and it *must* be observed rather than sampled once.
+    ///
+    /// `viewDidMoveToWindow` runs before the window is on screen, so a single reading there reports
+    /// not-visible, pauses the loop, and nothing ever resumes it — the app then renders zero frames
+    /// while looking perfectly correct, because a stalled black surface and a working black surface are
+    /// indistinguishable. This was a real bug, found by the absence of instrumentation output.
+    private func observeOcclusion() {
+        NotificationCenter.default.removeObserver(
+            self, name: NSWindow.didChangeOcclusionStateNotification, object: nil
+        )
+        // Registered for ANY window rather than a specific one, then re-evaluating our own window's
+        // state. Binding to a particular window object made the observer miss the transition that
+        // matters, because the window is not yet on screen when this view is created.
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(occlusionChanged),
+            name: NSWindow.didChangeOcclusionStateNotification,
+            object: nil
+        )
+    }
+
+    @objc private func occlusionChanged() {
+        reportVisibility()
+    }
+
+    private func reportVisibility() {
+        let visible = (window?.occlusionState.contains(.visible) ?? false) || (window?.isVisible ?? false)
+        onSurfaceChange?(.visibilityChanged(isVisible: visible))
+    }
+
+    /// Re-evaluates visibility on the next main-loop turn.
+    ///
+    /// `viewDidMoveToWindow` runs *before* the window is ordered on screen, so a reading taken there is
+    /// always "not visible". That single reading paused the display link permanently and the app rendered
+    /// exactly one frame — while looking completely correct, because a stalled black surface and a
+    /// working black surface are the same picture. Re-checking after the window has been shown is what
+    /// makes FR-008's resume actually happen.
+    private func scheduleVisibilityRecheck() {
+        DispatchQueue.main.async { [weak self] in
+            self?.reportVisibility()
+        }
     }
 
     #else
@@ -151,10 +198,12 @@ final class MetalSurfaceView: PlatformView {
         surfaceGeometryChanged(scaleChanged: true)
     }
 
-    override func traitCollectionDidChange(_ previous: UITraitCollection?) {
-        super.traitCollectionDidChange(previous)
-        if previous?.displayScale != traitCollection.displayScale {
-            surfaceGeometryChanged(scaleChanged: true)
+    /// Display-scale changes via the trait registration API. `traitCollectionDidChange` was deprecated
+    /// in iOS 17, and warnings-as-errors turned using it into a build failure — which is the setting
+    /// earning its keep.
+    private func registerForScaleChanges() {
+        registerForTraitChanges([UITraitDisplayScale.self]) { (view: MetalSurfaceView, _) in
+            view.surfaceGeometryChanged(scaleChanged: true)
         }
     }
 

@@ -1,0 +1,424 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA0000000000000000000001 /* SwiftSkyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000000001 /* SwiftSkyApp.swift */; };
+		AA0000000000000000000002 /* SwiftSkyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000000002 /* SwiftSkyApp.swift */; };
+		AA0000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000000005 /* Assets.xcassets */; };
+		AA0000000000000000000004 /* SwiftSkyPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000001 /* SwiftSkyPlatform */; };
+		AA0000000000000000000005 /* SwiftSkyPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000002 /* SwiftSkyPlatform */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		FF0000000000000000000001 /* SwiftSkyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftSkyApp.swift; sourceTree = "<group>"; };
+		FF0000000000000000000002 /* SwiftSkyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftSkyApp.swift; sourceTree = "<group>"; };
+		FF0000000000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FF0000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FF0000000000000000000005 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		EE0000000000000000000001 /* swiftSky.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = swiftSky.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE0000000000000000000002 /* swiftSky.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = swiftSky.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BB0000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0000000000000000000004 /* SwiftSkyPlatform in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB0000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0000000000000000000005 /* SwiftSkyPlatform in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		CC0000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				CC0000000000000000000002 /* Apps */,
+				CC0000000000000000000005 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		CC0000000000000000000002 /* Apps */ = {
+			isa = PBXGroup;
+			children = (
+				CC0000000000000000000003 /* macOS */,
+				CC0000000000000000000004 /* iOS */,
+			);
+			path = Apps;
+			sourceTree = "<group>";
+		};
+		CC0000000000000000000003 /* macOS */ = {
+			isa = PBXGroup;
+			children = (
+				FF0000000000000000000001 /* SwiftSkyApp.swift */,
+				FF0000000000000000000003 /* Info.plist */,
+			);
+			path = macOS;
+			sourceTree = "<group>";
+		};
+		CC0000000000000000000004 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				FF0000000000000000000002 /* SwiftSkyApp.swift */,
+				FF0000000000000000000004 /* Info.plist */,
+				FF0000000000000000000005 /* Assets.xcassets */,
+			);
+			path = iOS;
+			sourceTree = "<group>";
+		};
+		CC0000000000000000000005 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EE0000000000000000000001 /* swiftSky.app */,
+				EE0000000000000000000002 /* swiftSky.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1100000000000000000001 /* swiftSky (macOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3300000000000000000001 /* Build configuration list for PBXNativeTarget "swiftSky (macOS)" */;
+			buildPhases = (
+				2200000000000000000001 /* Sources */,
+				BB0000000000000000000001 /* Frameworks */,
+				2200000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "swiftSky (macOS)";
+			packageProductDependencies = (
+				DD0000000000000000000001 /* SwiftSkyPlatform */,
+			);
+			productName = swiftSky;
+			productReference = EE0000000000000000000001 /* swiftSky.app */;
+			productType = "com.apple.product-type.application";
+		};
+		1100000000000000000002 /* swiftSky (iOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3300000000000000000002 /* Build configuration list for PBXNativeTarget "swiftSky (iOS)" */;
+			buildPhases = (
+				2200000000000000000002 /* Sources */,
+				BB0000000000000000000002 /* Frameworks */,
+				2200000000000000000004 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "swiftSky (iOS)";
+			packageProductDependencies = (
+				DD0000000000000000000002 /* SwiftSkyPlatform */,
+			);
+			productName = swiftSky;
+			productReference = EE0000000000000000000002 /* swiftSky.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					1100000000000000000001 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					1100000000000000000002 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+				};
+			};
+			buildConfigurationList = 3300000000000000000003 /* Build configuration list for PBXProject "swiftSky" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = CC0000000000000000000001;
+			packageReferences = (
+				4400000000000000000001 /* XCLocalSwiftPackageReference "." */,
+			);
+			productRefGroup = CC0000000000000000000005 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1100000000000000000001 /* swiftSky (macOS) */,
+				1100000000000000000002 /* swiftSky (iOS) */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2200000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2200000000000000000004 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0000000000000000000003 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2200000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0000000000000000000001 /* SwiftSkyApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2200000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0000000000000000000002 /* SwiftSkyApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		5500000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG SWIFTSKY_INSTRUMENTATION";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		5500000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		5500000000000000000003 /* Profiling */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = SWIFTSKY_INSTRUMENTATION;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Profiling;
+		};
+		6600000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Apps/macOS/Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swiftsky.app;
+				PRODUCT_NAME = swiftSky;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+			};
+			name = Debug;
+		};
+		6600000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Apps/macOS/Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swiftsky.app;
+				PRODUCT_NAME = swiftSky;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+			};
+			name = Release;
+		};
+		6600000000000000000003 /* Profiling */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Apps/macOS/Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swiftsky.app;
+				PRODUCT_NAME = swiftSky;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+			};
+			name = Profiling;
+		};
+		7700000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Apps/iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swiftsky.app;
+				PRODUCT_NAME = swiftSky;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7700000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Apps/iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swiftsky.app;
+				PRODUCT_NAME = swiftSky;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		7700000000000000000003 /* Profiling */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Apps/iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swiftsky.app;
+				PRODUCT_NAME = swiftSky;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Profiling;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3300000000000000000001 /* Build configuration list for PBXNativeTarget "swiftSky (macOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6600000000000000000001 /* Debug */,
+				6600000000000000000003 /* Profiling */,
+				6600000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3300000000000000000002 /* Build configuration list for PBXNativeTarget "swiftSky (iOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7700000000000000000001 /* Debug */,
+				7700000000000000000003 /* Profiling */,
+				7700000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3300000000000000000003 /* Build configuration list for PBXProject "swiftSky" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5500000000000000000001 /* Debug */,
+				5500000000000000000003 /* Profiling */,
+				5500000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		4400000000000000000001 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DD0000000000000000000001 /* SwiftSkyPlatform */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftSkyPlatform;
+		};
+		DD0000000000000000000002 /* SwiftSkyPlatform */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftSkyPlatform;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 1000000000000000000001 /* Project object */;
+}

@@ -61,14 +61,17 @@ fi
 # ---------------------------------------------------------------------------
 section "Building app targets (iOS + macOS)"
 if [ -d swiftSky.xcodeproj ]; then
-    for destination in 'platform=macOS' 'generic/platform=iOS'; do
-        if xcodebuild build -project swiftSky.xcodeproj -scheme swiftSky \
-            -destination "$destination" -quiet; then
-            pass "xcodebuild $destination"
+    build_app() {  # $1=scheme  $2=destination
+        if xcodebuild build -project swiftSky.xcodeproj -scheme "$1" \
+            -configuration Debug -destination "$2" \
+            CODE_SIGNING_ALLOWED=NO -quiet; then
+            pass "xcodebuild $1"
         else
-            fail "xcodebuild $destination"
+            fail "xcodebuild $1"
         fi
-    done
+    }
+    build_app 'swiftSky (macOS)' 'platform=macOS'
+    build_app 'swiftSky (iOS)' 'generic/platform=iOS Simulator'
 else
     printf '\033[33mPENDING\033[0m swiftSky.xcodeproj does not exist yet (task T004).\n'
     printf '        App-target builds are NOT covered by this run.\n'
