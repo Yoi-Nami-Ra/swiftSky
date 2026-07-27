@@ -136,10 +136,25 @@ final class MetalSurfaceView: PlatformView {
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
+        configureWindowBackground()
         observeOcclusion()
         reportVisibility()
         scheduleVisibilityRecheck()
         surfaceGeometryChanged(scaleChanged: true)
+    }
+
+    /// FR-004a: the *window's* initial background, which the OS shows in the gap between the window
+    /// appearing and the first frame being presented.
+    ///
+    /// This is the one exception FR-004a carves out of FR-001, and it is deliberately taken here rather
+    /// than by putting a coloured view in the hierarchy: a black `NSWindow` background is the platform's
+    /// pre-first-frame appearance, whereas a black SwiftUI view would be the platform-UI layer drawing a
+    /// user-visible pixel — the thing SC-002's audit exists to catch.
+    ///
+    /// The Info.plist's `NSRequiresAquaSystemAppearance = false` alone is not enough: it forces dark
+    /// appearance, whose window background is dark grey, not black. Grey is a non-black frame (FR-004).
+    private func configureWindowBackground() {
+        window?.backgroundColor = .black
     }
 
     /// Occlusion drives loop start/stop (FR-008), and it *must* be observed rather than sampled once.
