@@ -24,6 +24,15 @@ struct MetalSurface {
     /// view pushes surface events into, which the loop drains at a frame boundary (FR-029, FR-031).
     let attach: (CAMetalLayer) -> (SurfaceEvent) -> Void
 
+    /// `@MainActor` because everything it touches is: `MetalSurfaceView` is an `NSView`/`UIView`
+    /// subclass, so its initialiser and properties are main-actor isolated.
+    ///
+    /// The annotation is needed even though both callers are already on the main actor. The isolation
+    /// `NSViewRepresentable`/`UIViewRepresentable` confers reaches `makeNSView`/`makeUIView` in the
+    /// extensions below, not this struct's own body — a conformance declared in an extension does not
+    /// isolate the original type declaration. Without it, Swift 6 reports three main-actor violations
+    /// here (SC-015).
+    @MainActor
     fileprivate func makeSurfaceView() -> MetalSurfaceView {
         let view = MetalSurfaceView(device: device)
         view.onSurfaceChange = attach(view.metalLayer)

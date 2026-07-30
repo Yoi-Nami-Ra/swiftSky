@@ -48,6 +48,22 @@ If stronger enforcement is ever wanted, splitting each layer into its own packag
 forbidden import an unresolvable module rather than a suppressible diagnostic. Not done here: three
 package manifests for one small app is disproportionate under Principle V while the flag works.
 
+**Second correction — `.metal` support is build-system-specific (2026-07-30).** The revision above
+states flatly that "SwiftPM does support them: it invokes `CompileMetalFile` and emits a resource
+bundle." That is true of SwiftPM's **`swiftbuild`** build system — the one Xcode drives — and false of
+the **`native`** build system, which is what a bare `swift build` selects by default. Under `native`,
+`Shaders.metal` is reported as `found 1 file(s) which are unhandled`, no resource bundle is emitted,
+`Bundle.module` is therefore never synthesised, and the build fails in `Renderer.swift` with `type
+'Bundle' has no member 'module'` — an error naming a file that is not wrong.
+
+The original verification was real; it simply did not record *which* build system produced it. The
+evidence is legible after the fact from the output path: the resource bundle left behind sat under
+`.build/out/`, which is `swiftbuild`'s directory, not `native`'s `.build/<triple>/debug/`.
+
+`Scripts/verify.sh` now passes `--build-system swiftbuild` explicitly. This is the same shape of
+mistake as the first correction above: a capability confirmed once, then generalised past the
+configuration that produced it.
+
 **Original decision, superseded**: a single Xcode project with three library targets plus two app
 targets and one test target, chosen because Xcode targets handle `.metal` compilation as a
 first-class build phase. This is still true; it simply is not exclusive to Xcode targets.
@@ -60,10 +76,17 @@ first-class build phase. This is still true; it simply is not exclusive to Xcode
   app target that SwiftPM cannot produce.
 
 **Discovered blocker, unrelated to topology**: the Metal compiler is a separately downloadable Xcode
-27 component (`xcodebuild -downloadComponent MetalToolchain`) and is **not installed** on this
-machine. No `.metal` file can be compiled by any route until it is. This blocks T017–T019 and
-therefore FR-002a. The Metal *framework* is present in the SDK, so Swift code that imports Metal
-still compiles; only shader compilation is blocked.
+component (`xcodebuild -downloadComponent MetalToolchain`, ~690 MB). No `.metal` file can be compiled by
+any route until it is installed. The Metal *framework* is present in the SDK, so Swift code that imports
+Metal still compiles; only shader compilation is blocked.
+
+**This recurred, and that is the point (2026-07-30).** The component was installed to unblock T017–T019,
+then found **missing again** on the same machine on 2026-07-30 — every build stage failed. It is
+environment state, not repository state, so a clean clone carries no guarantee of it and nothing in the
+build fails in a way that names it. `Scripts/verify.sh` now checks for it first and prints the remedy,
+because the unaided failure points at `Renderer.swift` (see the second correction under R1) and costs
+real time to trace. `xcrun -f metal` is insufficient as a probe — the shim resolves to a path even when
+the toolchain behind it is absent — so the check executes `xcrun metal --version`.
 
 ---
 

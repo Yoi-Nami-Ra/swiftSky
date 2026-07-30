@@ -49,7 +49,10 @@
 
 	<key>UIStatusBarHidden</key>
 	<true/>
-	<key>UIRequiresFullScreen</key>
-	<false/>
+
+	<!-- NOTE: UIRequiresFullScreen is deliberately absent. It was here set to <false/>, which is
+	     already the default, and it is deprecated as of iOS 26.0 and ignored in a future release — so it
+	     bought nothing and cost a deprecation warning. Multitasking sizes are handled in code instead
+	     (T037): the surface fills whatever dimensions it is given. Do not re-add it. -->
 </dict>
 </plist>
