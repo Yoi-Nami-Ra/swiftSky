@@ -12,8 +12,23 @@
 
 import PackageDescription
 
-/// Swift 6 language mode with strict concurrency checking (FR-030), plus warnings-as-errors so that
-/// SC-015's "zero strict-concurrency warnings" is enforced mechanically rather than by inspection.
+/// Swift 6 language mode with strict concurrency checking (FR-030).
+///
+/// NOTE ON SC-015 — why warnings-as-errors is NOT set here. `.treatAllWarnings(as: .error)` used to
+/// sit in this list, justified as making "zero strict-concurrency warnings" mechanical rather than
+/// inspected. It did the exact opposite, and the failure mode is worth recording so it is not
+/// reintroduced:
+///
+/// Xcode passes `-suppress-warnings` when it builds package targets. Combined with this setting's
+/// `-warnings-as-errors` that is a hard `error: conflicting options`, so **both app targets failed to
+/// build before a single Swift file was compiled** — while the command-line `swift build` path failed
+/// even earlier, in Renderer.swift. Neither path ever reached `SwiftSkyPlatform`, so the three
+/// main-actor violations that were actually present in `MetalSurfaceRepresentable.swift` went
+/// unreported for as long as the setting was here. A gate that breaks the build for an unrelated
+/// reason enforces nothing; it only hides what it was meant to catch.
+///
+/// Enforcement now lives in `Scripts/verify.sh`, which fails on any `warning:` emitted by any build
+/// stage. That covers the SwiftPM *and* xcodebuild paths, which this setting could not.
 ///
 /// NOTE ON FR-013: these settings do *not* enforce the layer boundary. SwiftPM reports a forbidden
 /// cross-layer import as a warning from its dependency scanner — not from the Swift compiler — so
@@ -23,7 +38,6 @@ import PackageDescription
 /// the build; without it, two of the three succeed with only a warning (SC-009).
 let layerSettings: [SwiftSetting] = [
     .swiftLanguageMode(.v6),
-    .treatAllWarnings(as: .error),
 
     // FR-021e: instrumentation is compiled into debug builds and must be provably absent from
     // release. SwiftPM has only debug and release configurations, so the third "Profiling"

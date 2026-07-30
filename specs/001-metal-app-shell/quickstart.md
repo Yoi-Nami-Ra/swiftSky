@@ -37,8 +37,22 @@ full-screen surface in landscape.
 ./Scripts/verify.sh
 ```
 
-Builds both destinations and runs the headless suite. Exits non-zero on any failure. This is the body a
-CI job will use verbatim once a remote exists (FR-019a, SC-008a).
+Builds both destinations and runs the headless suite. Exits non-zero on any failure, **including on any
+stage that exits 0 but emits a `warning:` line** — that gate is what enforces SC-015 (see check 28).
+This is the body a CI job will use verbatim once a remote exists (FR-019a, SC-008a).
+
+**One prerequisite the script cannot satisfy for itself**: Xcode 26 ships the Metal compiler as a
+separately downloadable component, so a complete Xcode plus a clean clone is still not enough to compile
+`Shaders.metal`. The script checks for it first and names the remedy:
+
+```bash
+xcodebuild -downloadComponent MetalToolchain
+```
+
+It is checked because the failure without it is actively misleading — SwiftPM stops treating
+`Shaders.metal` as compilable, no resource bundle is emitted, and the build dies in `Renderer.swift`
+complaining that `Bundle` has no member `module`. That was observed for real on 2026-07-30, when the
+component was found missing on a machine where everything had previously built.
 
 ---
 
@@ -230,7 +244,7 @@ Zero SwiftUI drawing primitives, zero `draw(_:)`/`drawRect` overrides, zero view
 
 | # | Check | Command | Expected | Criterion |
 |---|-------|---------|----------|-----------|
-| 20 | Headless suite | `swift test` | Passes, under 10 s, no GPU or simulator UI | SC-007, FR-017 |
+| 20 | Headless suite | `swift test --build-system swiftbuild` | Passes, under 10 s, no GPU or simulator UI | SC-007, FR-017 |
 | 21 | Determinism | Run the suite 10 times | Identical results every run | SC-007, SC-013 |
 | 22 | Clamp behaviour | Included in suite | 10 s elapsed span advances exactly 4 ticks, not 600 | SC-013, FR-021b |
 | 23 | Break a test deliberately, run `verify.sh` | Exits non-zero. Revert. | SC-008a |
@@ -239,6 +253,20 @@ Zero SwiftUI drawing primitives, zero `draw(_:)`/`drawRect` overrides, zero view
 
 - **20**: `swift test` runs 23 tests in 2 suites, ~2.3 s, no GPU and no simulator UI. (Command is
   `swift test`, not `xcodebuild test` — topology B, research.md R1.)
+
+**Check 20 — command corrected (2026-07-30).** `swift test` alone does **not** work, and did not on
+2026-07-27 either; the original evidence was gathered through a build system the recorded command does
+not select. SwiftPM's default `native` build system does not compile `.metal` sources — it reports
+`found 1 file(s) which are unhandled` for `Shaders.metal`, emits no resource bundle, so `Bundle.module`
+is never synthesised, and the build dies in `Renderer.swift:43` with `type 'Bundle' has no member
+'module'` — naming a file that is not wrong. `--build-system swiftbuild` (what Xcode drives) compiles it.
+research.md R1's verification of SwiftPM `.metal` support holds for that build system only.
+
+Confirmed by artefact path: the resource bundle left from the 2026-07-28 session sat under `.build/out/`,
+which is `swiftbuild`'s output directory, not `native`'s `.build/<triple>/debug/`.
+
+Re-verified 2026-07-30 with the corrected command: 23 tests in 2 suites pass, exit 0. Determinism
+(check 21) re-confirmed over 10 consecutive runs, all reporting "23 tests in 2 suites passed".
 - **21**: 10 consecutive runs, all reporting "23 tests in 2 suites passed", 23 s total wall clock.
 - **22**: `tenSecondStall` asserts a 10-second span advances exactly 4 ticks. Also covered:
   clamp boundary, one-over-clamp, repeated stalls not compounding, and that a clamped frame leaves
@@ -328,10 +356,81 @@ for a symbol that carries no instrumentation. Recorded as a judgement, not hidde
 | 30 | Sustained run under Address Sanitizer | Zero memory errors | SC-015 |
 | 31 | Launch and quit 20 times, some quits mid-draw | Zero crashes, zero hangs on exit | SC-017, FR-032 |
 
-**Check 28 — PASS (2026-07-28).** Both app targets and all three library targets build with
-`swiftLanguageMode(.v6)` and `-warnings-as-errors`. Under warnings-as-errors a strict-concurrency
-warning is a build failure, so "zero warnings" is not an observation that could drift — `verify.sh`
-reports all four stages green, which is the same statement enforced.
+**Check 28 — PASS after a fix (2026-07-30). The previous PASS was wrong, and its reasoning was the
+reason it was wrong.**
+
+That earlier entry argued: warnings-as-errors is on, so a strict-concurrency warning would be a build
+failure, so "zero warnings" cannot drift. Every step is true and the conclusion still did not hold,
+because the build was **failing for an unrelated reason before any Swift file compiled**. Re-verifying
+on 2026-07-30 found:
+
+1. `.treatAllWarnings(as: .error)` in `Package.swift` conflicts with the `-suppress-warnings` Xcode
+   passes to package targets — `error: conflicting options '-warnings-as-errors' and
+   '-suppress-warnings'`. **Both app targets failed to build outright.**
+2. The command-line `swift build`/`swift test` path failed even earlier, in `Renderer.swift`, because
+   SwiftPM's default `native` build system does not compile `.metal` (see check 20).
+3. So neither path ever reached `SwiftSkyPlatform` — and it held three genuine violations:
+
+```
+MetalSurfaceRepresentable.swift:28:20: warning: call to main actor-isolated initializer 'init(device:)' in a synchronous nonisolated context
+MetalSurfaceRepresentable.swift:29:14: warning: main actor-isolated property 'onSurfaceChange' can not be mutated from a nonisolated context
+MetalSurfaceRepresentable.swift:29:44: warning: main actor-isolated property 'metalLayer' can not be referenced from a nonisolated context
+```
+
+Cause: `makeSurfaceView()` sits in the nonisolated `struct MetalSurface` body while touching
+main-actor-isolated `NSView`/`UIView` members. The isolation conferred by
+`NSViewRepresentable`/`UIViewRepresentable` reaches `makeNSView`/`makeUIView` in the extensions, not the
+struct's own declaration — a conformance declared in an extension does not isolate the original type.
+
+Fixed by annotating `makeSurfaceView()` `@MainActor`. The gate was moved too: warnings-as-errors is
+gone from `Package.swift` (it cannot coexist with Xcode's package build) and `Scripts/verify.sh` now
+fails any stage that emits a `warning:` line, which covers the SwiftPM *and* xcodebuild paths that the
+manifest setting could not.
+
+**The lesson worth keeping**: a mechanical gate is only as good as its reachability. This one broke the
+build for an unrelated reason and thereby hid exactly what it existed to catch, while presenting as
+enforcement. When a gate's failure mode is "the build fails," a green build is evidence; a *red* build
+is not evidence that the gate is working.
+
+**The new gate then immediately earned its place.** On its first run it failed the iOS stage — which had
+exited 0 — on a warning nothing else had surfaced:
+
+```
+warning: 'UIRequiresFullScreen' has been deprecated starting in iOS 26.0 and will be ignored in a
+future release. (in target 'swiftSky (iOS)')
+```
+
+`Apps/iOS/Info.plist` carried `UIRequiresFullScreen = false`. That key appears nowhere in spec.md,
+plan.md, research.md, or tasks.md — T036 specifies three keys for this file and this is not one of them
+— and `false` is already the iOS 26 default, so it changed no behaviour while contradicting FR-022's
+"no availability fallbacks below the floor". Removed, with a note in the plist against re-adding it;
+iPad multitasking sizes are handled in code per T037 regardless.
+
+Post-fix: `swift build`, `swift test`, and both `xcodebuild` schemes each exit 0 with zero `warning:`
+lines, from a clean `.build` — `verify.sh` reports `VERIFICATION PASSED`.
+
+**Live-run re-confirmation (2026-07-30).** Because the fix touched the view-creation path, the macOS app
+was run for ~10 s to confirm it still renders rather than merely compiles:
+
+```
+frames=113 skipped=0 dropped=3 mean=7.615262ms worst=495.790667ms budget=8.333333ms ticks=174
+frames=473 skipped=0 dropped=3 mean=1.951242ms worst=495.790667ms budget=8.333333ms ticks=356
+frames=953 skipped=0 dropped=3 mean=1.045552ms worst=495.790667ms budget=8.333333ms ticks=609
+```
+
+953 frames on a 120 Hz display, `ticks` advancing at 60 Hz as the fixed timestep requires, mean frame
+time converging to ~1 ms against an 8.33 ms budget, `skipped=0`.
+
+**Two things here are not clean and should not be read as passing:**
+
+- `dropped=3`, with `worst=495.79 ms`. Both are launch artefacts — the count is already 3 at the first
+  sample and never rises again, and 496 ms is window and pipeline creation. But SC-003 says *zero*
+  dropped frames, and this run does not show zero. T048's recorded "0 dropped / 0 skipped over 60 s"
+  was presumably measured after warm-up; whether launch frames are in scope for SC-003 is an open
+  question, not one this entry settles.
+- The log format no longer matches what check 40 records (`presented=… tickCount=… rendererSaw=…
+  frameMs=…`). The T048/T058 fixes changed it to the aggregate form above. `ticks=` still evidences the
+  logic→render hand-off, but check 40's literal transcript is stale.
 
 **Check 30 — PASS (2026-07-28).** Address Sanitizer build, 35-second sustained run: 2,994 frames,
 zero ASan reports, zero bytes on stderr.
