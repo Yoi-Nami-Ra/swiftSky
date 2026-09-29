@@ -1,0 +1,31 @@
+id: 29
+title: "Add the live debug overlay"
+type: feature
+description: |
+  A debug overlay in the top-left corner (inside the safe area on iOS),
+  compiled into Debug and Profiling builds only and provably absent from
+  Release, like the 001 instrumentation (FR-021e, SC-004a). Drawn with the
+  Metal text renderer (SKY-28). Spec 002 has to relax FR-021e's "never on the
+  rendered surface" for this overlay in those builds only — see SKY-22.
+
+  Shows, refreshed a few times per second so it stays readable:
+  - frame stats already collected by Instrumentation: mean and worst frame
+    time, budget, dropped and skipped frames, tick count
+  - the ship (once SKY-24 lands): position, velocity, speed, heading, angular
+    velocity
+  - the active order (once SKY-25 lands): autopilot phase, destination,
+    distance remaining
+
+  Frame stats can ship first; the ship and order lines follow as their
+  tickets land.
+
+  Done when the overlay shows live values on both platforms in Debug, is
+  absent from a Release build (symbol check as in check 27), and adds no
+  per-frame allocation. Default refresh rate: 4 Hz.
+platform: macos
+status: ready
+phase: MVP
+priority: medium
+parent: 22
+blocked_by: [28]
+designs: []

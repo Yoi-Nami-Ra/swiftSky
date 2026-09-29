@@ -1,0 +1,32 @@
+id: 22
+title: "First playable: click-to-move ship"
+type: feature
+description: |
+  The first gameplay slice on top of specs/001-metal-app-shell: a ship sprite
+  in a flat, top-down world that the player orders around by clicking (macOS)
+  or tapping (iOS) a destination. The ship gets there as fast as its physics
+  allow — turn to face, burn, flip, brake — and an order overlay shows the
+  destination and planned path. A debug overlay in the top-left corner shows
+  live data in debug builds.
+
+  This is a new feature for the Spec Kit cycle (/speckit.specify → spec 002).
+  That spec has to supersede two rules from 001: FR-002 (the surface is
+  uniformly black) and FR-021e (instrumentation never reaches the rendered
+  surface — relaxed for the debug overlay in Debug/Profiling builds only).
+  Everything visible stays Metal-drawn (FR-001, FR-007 unchanged).
+
+  Children, roughly in build order: SKY-23 (game space), SKY-24 (ship physics),
+  SKY-25 (autopilot), SKY-26 (path prediction), SKY-27 (ship sprite), SKY-10 and
+  SKY-11 (tap/click orders), SKY-30 (order overlay), SKY-28 and SKY-29 (debug
+  overlay), SKY-12 (interpolation). Shared across platforms; `platform` is set
+  to macos because a ticket can hold only one.
+
+  Done when all children are done and the spec 002 quickstart passes on both
+  platforms.
+platform: macos
+status: refine
+phase: MVP
+priority: high
+parent: null
+blocked_by: []
+designs: []

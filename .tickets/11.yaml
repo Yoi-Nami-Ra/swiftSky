@@ -1,15 +1,23 @@
 id: 11
-title: "Route keyboard/mouse input into simulation on macOS"
+title: "Click to order the ship on macOS"
 type: feature
 description: |
-  The macOS counterpart of SKY-10: carry keyboard and mouse (and possibly game
-  controller) input from the platform layer into the logic layer, completing
-  the input leg of FR-010's data flow from specs/001-metal-app-shell. The input
-  representation should be shared with SKY-10 where the inputs overlap.
+  Part of SKY-22, the macOS counterpart of SKY-10. A mouse click on the game
+  surface issues a move order: the platform layer converts the click from
+  view points to world coordinates (camera transform from SKY-23) and hands it
+  to the logic layer as a plain value for the autopilot (SKY-25). It shares
+  the order type and the conversion with SKY-10.
+
+  A new click mid-flight replaces the current order. Keyboard and game
+  controller input are out of scope here.
+
+  Done when clicking anywhere in the window sends the ship there at any window
+  size, including full screen, and the screen → world conversion is
+  unit-tested.
 platform: macos
-status: idea
+status: ready
 phase: MVP
 priority: high
-parent: null
-blocked_by: []
+parent: 22
+blocked_by: [23, 25]
 designs: []

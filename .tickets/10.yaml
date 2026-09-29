@@ -1,17 +1,25 @@
 id: 10
-title: "Route touch input into the simulation on iOS"
+title: "Tap to order the ship on iOS"
 type: feature
 description: |
-  specs/001-metal-app-shell specifies FR-010's unidirectional data flow (input →
-  logic → render) but defers input to a later feature, so the input leg is
-  unexercised. Carry touch input from the platform layer into the logic layer
-  as plain values consumed by the fixed-timestep simulation, without the logic
-  layer learning about UIKit/SwiftUI. What the input drives depends on the
-  gameplay, which isn't defined yet. The macOS counterpart is SKY-11.
+  Part of SKY-22. A tap on the game surface issues a move order to the ship:
+  the platform layer converts the tap from view points to world coordinates
+  (camera transform from SKY-23) and hands it to the logic layer as a plain
+  value, where the autopilot (SKY-25) takes over. This is the first real use
+  of the input → logic direction of 001's FR-010; the logic layer learns
+  nothing about UIKit or SwiftUI.
+
+  A new tap mid-flight replaces the current order. Input crosses into the
+  frame loop's isolation domain by value, like surface events do today
+  (FR-030), and the main thread never blocks on a frame.
+
+  Done when tapping anywhere on the surface sends the ship there, including
+  in iPad Split View sizes, and the screen → world conversion is unit-tested.
+  The macOS counterpart is SKY-11.
 platform: ios
-status: idea
+status: ready
 phase: MVP
 priority: high
-parent: null
-blocked_by: []
+parent: 22
+blocked_by: [23, 25]
 designs: []
