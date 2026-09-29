@@ -1,0 +1,19 @@
+id: 3
+title: "Verify zero draw-path allocations on iOS"
+type: task
+description: |
+  Quickstart check 25 (SC-004) of specs/001-metal-app-shell is not verified.
+  Attach the Instruments Allocations template to the iOS app during a sustained
+  run and confirm zero heap allocations in the per-frame draw path. Today there
+  is only structural evidence: the draw path calls no allocating API, and the
+  FR-021f instrumentation counts frame timing, not allocations.
+
+  Done when the check is recorded as PASS (or a found allocation is fixed) in
+  the quickstart. The macOS run is SKY-4.
+platform: ios
+status: ready
+phase: MVP
+priority: medium
+parent: null
+blocked_by: []
+designs: []

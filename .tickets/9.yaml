@@ -1,0 +1,20 @@
+id: 9
+title: "Add git remote and CI running verify.sh"
+type: task
+description: |
+  Constitution v1.1.0 Principle II requires CI once the repository has a remote;
+  until then Scripts/verify.sh is the required stand-in (specs/001-metal-app-shell
+  FR-019a). The repo still has no remote. Add one, then add a CI job that runs
+  Scripts/verify.sh verbatim on a macOS runner, and remove the "no CI" gap from
+  the plan's Complexity Tracking.
+
+  Open questions: which host (GitHub or other), which runner/Xcode version
+  (verify.sh needs a toolchain that builds iOS 26 and macOS 26), and whether
+  the iOS stage runs against a simulator in CI.
+platform: macos
+status: refine
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

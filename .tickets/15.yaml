@@ -1,0 +1,15 @@
+id: 15
+title: "Move user-facing strings to a string catalog"
+type: task
+description: |
+  The FR-024 renderer-failure notice is the app's only user-facing string, and
+  specs/001-metal-app-shell leaves it English-only and not externalised. Move it
+  into a String Catalog so it can be localised, and establish that as the
+  pattern before more UI text arrives. Shared by both platforms.
+platform: macos
+status: idea
+phase: Backlog
+priority: low
+parent: null
+blocked_by: []
+designs: []

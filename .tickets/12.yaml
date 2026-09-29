@@ -1,0 +1,17 @@
+id: 12
+title: "Interpolate rendering between simulation ticks"
+type: feature
+description: |
+  specs/001-metal-app-shell runs a 60 Hz fixed timestep decoupled from render
+  rate and explicitly defers render-side interpolation. On 120 Hz ProMotion
+  displays every other frame repeats the previous tick's state, which will show
+  as judder once anything moves. Interpolate between the last two simulation
+  states using the accumulator's leftover fraction. Shared logic for both
+  platforms. Reduce Motion must still be honoured (see SKY-7, SKY-8).
+platform: macos
+status: idea
+phase: Backlog
+priority: low
+parent: null
+blocked_by: []
+designs: []
