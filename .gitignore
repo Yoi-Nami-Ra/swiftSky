@@ -8,6 +8,8 @@ DerivedData/
 xcuserdata/
 .swiftpm/
 .build/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
 
 # Claude Code local (machine-specific) settings
 .claude/settings.local.json

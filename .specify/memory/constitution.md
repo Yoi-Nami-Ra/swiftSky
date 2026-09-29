@@ -1,5 +1,16 @@
 <!--
-Sync Impact Report
+Sync Impact Report (v1.1.0 — 2026-07-26)
+- Version change: 1.0.0 → 1.1.0 (MINOR — materially expanded guidance)
+- Amended: Principle II. The CI clause assumed a remote exists, which this repository does not yet
+  have. Determinism and headlessness remain unconditional; a new requirement for a single checked-in
+  test command is added; CI becomes mandatory the moment a remote exists, and its absence must be
+  recorded in Complexity Tracking until then. Net effect is stricter, not looser: the original
+  imposed no obligation at all when CI was unavailable.
+- Templates requiring updates: none — plan-template.md's Constitution Check gate is generic and
+  inherits the amended wording.
+- Follow-up TODOs: wire the checked-in command into CI when a remote is added.
+
+Sync Impact Report (v1.0.0 — 2026-07-24)
 - Version change: TEMPLATE (unversioned) → 1.0.0
 - Ratification: Initial adoption of the swiftSky constitution
 - Modified principles:
@@ -61,7 +72,12 @@ RECOMMENDED but NOT mandated.
 - Rendering, shader, and view code are EXEMPT from mandatory unit tests where behavior is
   purely visual; such code SHOULD instead be validated via the performance gate (Principle III)
   and manual/visual verification recorded in the feature's quickstart.
-- Tests MUST run deterministically and headlessly (no GPU dependency) in CI.
+- Tests MUST run deterministically and headlessly, with no GPU dependency.
+- Tests MUST be runnable by a single checked-in command that requires no arguments and no
+  machine-specific setup, so that every environment executes them identically.
+- Once the repository has a remote, that command MUST be wired into CI and MUST gate merges. Until a
+  remote exists, the checked-in command is the required substitute, and the absence of CI MUST be
+  recorded in the plan's Complexity Tracking table.
 
 **Rationale**: The team chose required-but-not-first testing. Mandating coverage for logic —
 where correctness bugs hide — while exempting purely visual glue keeps the suite meaningful and
@@ -150,4 +166,4 @@ features, refactors, and dependencies.
 - **Compliance**: Every plan MUST pass the Constitution Check gate; every review MUST confirm
   compliance. Violations MUST be justified in Complexity Tracking or resolved before merge.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-24 | **Last Amended**: 2026-07-24
+**Version**: 1.1.0 | **Ratified**: 2026-07-24 | **Last Amended**: 2026-07-26
