@@ -1,0 +1,22 @@
+id: 20
+title: "Verify macOS window resize range and minimum"
+type: task
+description: |
+  Quickstart checks 7 (SC-006) and 8 (FR-006a) of specs/001-metal-app-shell are
+  open; they need interactive window dragging.
+
+  - Check 7: resize the window through its full range, including full screen,
+    and confirm black fills the content area exactly — no letterboxing,
+    stretching, or non-black frames.
+  - Check 8: drag a resize handle inward past 640×360 and confirm the window
+    stops shrinking at that minimum.
+
+  Can be done in the same session as SKY-5 (continuous resize under TSan).
+  Record the results in the quickstart.
+platform: macos
+status: ready
+phase: MVP
+priority: medium
+parent: null
+blocked_by: []
+designs: []
