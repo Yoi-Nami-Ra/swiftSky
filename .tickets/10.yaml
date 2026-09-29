@@ -1,0 +1,17 @@
+id: 10
+title: "Route touch input into the simulation on iOS"
+type: feature
+description: |
+  specs/001-metal-app-shell specifies FR-010's unidirectional data flow (input →
+  logic → render) but defers input to a later feature, so the input leg is
+  unexercised. Carry touch input from the platform layer into the logic layer
+  as plain values consumed by the fixed-timestep simulation, without the logic
+  layer learning about UIKit/SwiftUI. What the input drives depends on the
+  gameplay, which isn't defined yet. The macOS counterpart is SKY-11.
+platform: ios
+status: idea
+phase: MVP
+priority: high
+parent: null
+blocked_by: []
+designs: []

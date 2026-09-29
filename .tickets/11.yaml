@@ -1,0 +1,15 @@
+id: 11
+title: "Route keyboard/mouse input into simulation on macOS"
+type: feature
+description: |
+  The macOS counterpart of SKY-10: carry keyboard and mouse (and possibly game
+  controller) input from the platform layer into the logic layer, completing
+  the input leg of FR-010's data flow from specs/001-metal-app-shell. The input
+  representation should be shared with SKY-10 where the inputs overlap.
+platform: macos
+status: idea
+phase: MVP
+priority: high
+parent: null
+blocked_by: []
+designs: []
