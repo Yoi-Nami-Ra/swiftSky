@@ -1,0 +1,15 @@
+id: 13
+title: "Add iOS app icon and launch branding"
+type: task
+description: |
+  specs/001-metal-app-shell ships with the platform's placeholder icon and no
+  visual identity. Add an iOS app icon to the asset catalog. The launch screen
+  must stay black and empty unless FR-004a is revisited. Needs a design first.
+  The macOS icon is SKY-14.
+platform: ios
+status: idea
+phase: Backlog
+priority: low
+parent: null
+blocked_by: []
+designs: []

@@ -1,0 +1,27 @@
+id: 24
+title: "Add ship state and Newtonian motion"
+type: feature
+description: |
+  Logic layer (SwiftSkySimulation). Extend SimulationState with one ship:
+  position, velocity, heading and angular velocity, plus its fixed
+  performance limits — maximum forward thrust acceleration, maximum angular
+  speed and maximum angular acceleration. Advance it in Simulation.advance at
+  the 60 Hz fixed tick with frictionless Newtonian motion (semi-implicit
+  Euler), driven by a per-tick control input: thrust (0…1, forward only) and
+  turn (-1…1).
+
+  Stays pure and deterministic like the rest of the layer (FR-015, FR-033):
+  plain value types, no clock, no allocation per tick.
+
+  Done when Swift Testing covers: at rest with no input it stays put; full
+  thrust matches the analytic kinematics within tolerance; turn rate and
+  angular acceleration are clamped to the limits; ten identical runs are
+  byte-identical (as SC-013). Default limits, to be tuned once SKY-23 fixes
+  the scale: 200 units/s² thrust, 180°/s turn, 360°/s² angular acceleration.
+platform: macos
+status: ready
+phase: MVP
+priority: high
+parent: 22
+blocked_by: []
+designs: []

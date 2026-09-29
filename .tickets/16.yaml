@@ -1,0 +1,17 @@
+id: 16
+title: "Verify no flash on iOS launch"
+type: task
+description: |
+  Quickstart check 2 (SC-001, FR-004, FR-004a) of specs/001-metal-app-shell is
+  open: it needs a human watching or screen recording, which this environment
+  lacks. Cold-launch the iOS app several times on a device and confirm no white
+  or grey flash appears before the first black frame, including the launch
+  screen. A slow-motion video of the screen is good evidence. Record the result
+  in the quickstart. The macOS run is SKY-17.
+platform: ios
+status: ready
+phase: MVP
+priority: medium
+parent: null
+blocked_by: []
+designs: []

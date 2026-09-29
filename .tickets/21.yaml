@@ -1,0 +1,21 @@
+id: 21
+title: "Verify single-window menus and close-to-quit"
+type: task
+description: |
+  Quickstart checks 9 (SC-014, FR-006c) and 10 (FR-006d) of
+  specs/001-metal-app-shell are open; Accessibility permission was denied, so
+  menus couldn't be inspected or the window closed by automation.
+
+  - Check 9: open the File and Window menus and confirm there is no New Window
+    command and no Window menu entry, as the check specifies.
+  - Check 10: close the window and confirm the app quits, with no windowless
+    process left (`pgrep swiftSky` returns nothing).
+
+  Record the results in the quickstart.
+platform: macos
+status: ready
+phase: MVP
+priority: medium
+parent: null
+blocked_by: []
+designs: []

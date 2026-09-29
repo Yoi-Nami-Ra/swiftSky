@@ -1,0 +1,13 @@
+id: 14
+title: "Add macOS app icon and branding"
+type: task
+description: |
+  The macOS counterpart of SKY-13: replace the placeholder icon with a macOS app
+  icon (macOS icon grid and shape rules differ from iOS). Needs a design first.
+platform: macos
+status: idea
+phase: Backlog
+priority: low
+parent: null
+blocked_by: []
+designs: []

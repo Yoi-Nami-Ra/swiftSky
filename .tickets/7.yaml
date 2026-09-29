@@ -1,0 +1,24 @@
+id: 7
+title: "Verify VoiceOver and Reduce Motion on iOS"
+type: task
+description: |
+  Quickstart checks 33, 36 and 37 of specs/001-metal-app-shell are not verified
+  on iOS; they need VoiceOver and Reduce Motion, which weren't available.
+
+  - Check 36 (FR-009): with VoiceOver on, focus the game surface and confirm it
+    is announced as "swiftSky game surface", not skipped or unlabelled.
+  - Check 37: enable Reduce Motion and confirm nothing changes and no assertion
+    or warning fires (the app has no animation, so this should be a no-op).
+  - Check 33 (SC-012, FR-025): force a renderer-init failure (for example,
+    rename the fragment shader entry point as in check 32), and confirm the
+    failure notice is read by VoiceOver, honours Dynamic Type, and that
+    dismissing it exits.
+
+  Record results in the quickstart. The macOS run is SKY-8.
+platform: ios
+status: ready
+phase: MVP
+priority: medium
+parent: null
+blocked_by: []
+designs: []

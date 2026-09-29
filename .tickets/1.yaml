@@ -1,0 +1,21 @@
+id: 1
+title: "Measure iOS idle baseline on iPhone 11"
+type: task
+description: |
+  Close the iOS half of SC-005, the only genuinely outstanding deliverable of
+  specs/001-metal-app-shell (quickstart checks 24 and 26, "SC-005 baseline —
+  STILL OPEN"). On an iPhone 11 — the plan's named iOS baseline device —
+  run a 60 s idle session with the Debug/instrumented build and record the idle
+  memory footprint (tripwire: under 150 MB) and the median frame time.
+
+  Numbers from any other device must not be substituted: later features regress
+  against this baseline with a 10% margin, so a wrong device would silently
+  mislabel the baseline. Record the values in the quickstart's SC-005 block.
+  The macOS half is SKY-2.
+platform: ios
+status: ready
+phase: MVP
+priority: high
+parent: null
+blocked_by: [32]
+designs: []

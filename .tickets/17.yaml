@@ -1,0 +1,16 @@
+id: 17
+title: "Verify no flash on macOS launch"
+type: task
+description: |
+  Quickstart check 2 (SC-001, FR-004, FR-004a) of specs/001-metal-app-shell is
+  open. Launch the macOS app several times and confirm the window never shows a
+  white or grey frame before the first black one. A screen recording (needs
+  Screen Recording permission) is good evidence. Record the result in the
+  quickstart. The iOS run is SKY-16.
+platform: macos
+status: ready
+phase: MVP
+priority: medium
+parent: null
+blocked_by: []
+designs: []
