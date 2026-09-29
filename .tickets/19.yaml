@@ -1,0 +1,16 @@
+id: 19
+title: "Verify draw call via GPU frame capture on macOS"
+type: task
+description: |
+  Quickstart checks 4 (SC-019, FR-002a) and 5 (FR-002b) of specs/001-metal-app-shell
+  are open. Capture a frame of the macOS app in Xcode's GPU debugger and confirm
+  a shader-backed draw call covers the surface (not a clear-only pass), and that
+  the pipeline state and vertex buffer are reused across frames rather than
+  rebuilt. Record the result in the quickstart. The iOS capture is SKY-18.
+platform: macos
+status: ready
+phase: MVP
+priority: medium
+parent: null
+blocked_by: []
+designs: []
