@@ -1,0 +1,25 @@
+id: 30
+title: "Draw the order overlay"
+type: feature
+description: |
+  Rendering layer. While a move order is active, draw:
+  - a marker at the destination
+  - a highlight around the controlled ship
+  - the planned path from SKY-26, as a line from the ship to the destination
+
+  The overlay disappears when the order completes. It is gameplay UI, so it
+  shows in all builds. Lines and markers are Metal-drawn through pipelines
+  built once, with fixed-capacity vertex buffers (no per-frame allocation).
+  No pulsing or other decorative animation unless it respects Reduce Motion
+  (constitution Principle IV).
+
+  Done when, after an order (SKY-10, SKY-11), the marker sits exactly where
+  the player clicked or tapped, the path ends at the marker, and everything
+  clears on arrival — on both platforms.
+platform: macos
+status: ready
+phase: MVP
+priority: medium
+parent: 22
+blocked_by: [23, 26, 27]
+designs: []

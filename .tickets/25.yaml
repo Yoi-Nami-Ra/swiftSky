@@ -1,0 +1,32 @@
+id: 25
+title: "Autopilot: turn, burn, flip and brake"
+type: feature
+description: |
+  Logic layer. Given the ship (SKY-24) and a move order (a destination in
+  world space), produce the control input each tick that gets the ship there
+  and stopped as fast as its limits allow: rotate to face the burn direction,
+  accelerate, turn around, then decelerate to arrive at rest.
+
+  Must handle:
+  - Starting while already moving (a new order mid-flight replaces the old
+    one): the burn direction accounts for current velocity, so sideways drift
+    is cancelled rather than carried into an orbit.
+  - Rotation time: the flip takes time, so the flip point comes earlier than
+    the halfway mark.
+  - Arrival: within a position and speed tolerance the order completes and the
+    ship holds still.
+
+  Exposes its current phase (aligning, burning, flipping, braking, arrived)
+  for the debug overlay (SKY-29) and the path prediction (SKY-26).
+
+  Done when tests show: from rest and from arbitrary initial velocities it
+  arrives within tolerance and at rest, without overshooting past the
+  tolerance; a new order mid-flight is followed; results are deterministic.
+  Default tolerances: 1 unit and 1 unit/s.
+platform: macos
+status: ready
+phase: MVP
+priority: high
+parent: 22
+blocked_by: [24]
+designs: []

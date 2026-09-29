@@ -1,0 +1,27 @@
+id: 23
+title: "Define the game space and camera"
+type: task
+description: |
+  The world is flat and seen top-down. Everything that places something on
+  screen or turns a click into a world position (SKY-27, SKY-10, SKY-11,
+  SKY-30) needs this pinned down first.
+
+  Open questions:
+  - World units: what one unit means, and how many units a ship is long
+    (the sprite in design/sprites/ship.png is 80×80 px).
+  - Extent: unbounded, bounded with edges, or wrapping.
+  - Camera: fixed to the window, following the ship, or pannable/zoomable —
+    and what resizing the window (or iPad Split View) does to the view.
+  - Coordinate conventions: origin, y-axis direction, heading zero and
+    rotation direction.
+  - Background: plain black, or a starfield/grid so motion is readable.
+
+  Done when the answers are written into this ticket (and spec 002), and the
+  world ↔ screen transform is defined precisely enough to unit-test.
+platform: macos
+status: refine
+phase: MVP
+priority: high
+parent: 22
+blocked_by: []
+designs: []
