@@ -1,0 +1,20 @@
+id: 32
+title: "Acquire an iPhone 11 for the iOS baseline"
+type: task
+description: |
+  SKY-1 can only be measured on the plan's iOS baseline device, an iPhone 11
+  (the oldest iPhone supported by iOS 26, per specs/001-metal-app-shell FR-023),
+  and numbers from any other iPhone must not be substituted. No iPhone 11 is
+  available. Get access to one (buy, borrow, or a test-device pool) running
+  iOS 26, registered for development so a Debug build can be installed from
+  Xcode. Confirm the model against Apple's iOS 26 compatibility list first, as
+  the quickstart advises. The macOS counterpart is SKY-31.
+
+  Done when the device is available to run SKY-1's measurement session.
+platform: ios
+status: ready
+phase: MVP
+priority: high
+parent: null
+blocked_by: []
+designs: []

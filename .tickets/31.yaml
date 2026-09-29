@@ -1,0 +1,19 @@
+id: 31
+title: "Acquire an Intel Mac for the macOS baseline"
+type: task
+description: |
+  SKY-2 can only be measured on the plan's macOS baseline device: a MacBook Pro
+  (16-inch, 2019 — Intel, discrete GPU), per specs/001-metal-app-shell research
+  R2. No Intel Mac is available, and Apple-silicon numbers must not be
+  substituted. Get access to one (buy, borrow, or a lab machine) that runs
+  macOS 26 and can run a Debug build from Xcode. Confirm the exact model against
+  Apple's macOS 26 compatibility list first, as the quickstart advises.
+
+  Done when the machine is available to run SKY-2's measurement session.
+platform: macos
+status: ready
+phase: MVP
+priority: high
+parent: null
+blocked_by: []
+designs: []

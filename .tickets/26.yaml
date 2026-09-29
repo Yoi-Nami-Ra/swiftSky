@@ -1,0 +1,21 @@
+id: 26
+title: "Predict the ship's planned path"
+type: feature
+description: |
+  Logic layer. For the order overlay (SKY-30), compute the path the ship will
+  try to cover by running the autopilot (SKY-25) forward on a copy of the
+  state until arrival, sampling positions into a fixed-capacity buffer
+  (default 256 points, downsampled for long trips). Recompute only when the
+  order changes, not every frame, and never allocate on the per-frame path
+  (constitution Principle III).
+
+  Done when tests show: the prediction's end point matches where the real
+  simulation arrives; the first point is the ship's current position; the
+  buffer never exceeds its capacity.
+platform: macos
+status: ready
+phase: MVP
+priority: medium
+parent: 22
+blocked_by: [25]
+designs: []

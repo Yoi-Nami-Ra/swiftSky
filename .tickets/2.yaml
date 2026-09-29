@@ -1,0 +1,21 @@
+id: 2
+title: "Measure macOS idle baseline on Intel MBP"
+type: task
+description: |
+  Close the macOS half of SC-005 in specs/001-metal-app-shell (quickstart checks
+  24 and 26). On a MacBook Pro (16-inch, 2019 — Intel, discrete GPU), the plan's
+  named macOS baseline, run a 60 s idle session with the Debug/instrumented build
+  and record the idle memory footprint (tripwire: under 250 MB) and the median
+  frame time.
+
+  The indicative M1 Pro figures already in the quickstart (101 MB, 0.16 ms mean)
+  are not the baseline — research R2 fixed the baseline as an Intel Mac, and an
+  Apple-silicon number would be a different machine's answer under the
+  baseline's label. The iOS half is SKY-1.
+platform: macos
+status: ready
+phase: MVP
+priority: high
+parent: null
+blocked_by: [31]
+designs: []

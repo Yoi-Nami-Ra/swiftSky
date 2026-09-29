@@ -1,0 +1,25 @@
+id: 28
+title: "Render text in Metal via a glyph atlas"
+type: feature
+description: |
+  Rendering layer, needed by the debug overlay (SKY-29). Rasterise a
+  monospaced system font into a glyph atlas texture with Core Text once at
+  startup, and draw strings as textured quads through one pipeline. No
+  third-party dependencies. Everything visible stays Metal-drawn (FR-001,
+  FR-007), which is why SwiftUI text is not used.
+
+  Text is built into a fixed-capacity vertex buffer from a fixed-size
+  character buffer, so updating it every frame allocates nothing (FR-021f).
+  ASCII only is enough for the debug overlay. Sized for the display's
+  backing scale so it stays sharp on Retina.
+
+  Done when a test string renders crisply on both platforms at 1× and 2×
+  backing scale, and the allocation check (as in SKY-3/SKY-4) stays at zero
+  with text updating every frame.
+platform: macos
+status: ready
+phase: MVP
+priority: medium
+parent: 22
+blocked_by: []
+designs: []

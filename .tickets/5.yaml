@@ -1,0 +1,19 @@
+id: 5
+title: "Verify continuous resize under Thread Sanitizer"
+type: task
+description: |
+  Quickstart check 29 (SC-015, SC-016) of specs/001-metal-app-shell is only
+  partial: a 30 s TSan run showed zero data races, but the continuous-resize
+  half was blocked because it needs UI automation. Resize is the path most
+  likely to race, since it crosses the main-thread → frame-loop boundary.
+
+  Run the TSan scheme, drag a window corner continuously for 10 seconds, and
+  confirm zero data races and no main-thread stall longer than one frame
+  interval. Record the result in the quickstart.
+platform: macos
+status: ready
+phase: MVP
+priority: medium
+parent: null
+blocked_by: []
+designs: []
