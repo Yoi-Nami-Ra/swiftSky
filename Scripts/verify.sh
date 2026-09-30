@@ -114,6 +114,20 @@ run_stage "swift build (layer boundary enforced)" \
 # Headless test suite — no GPU, no simulator, no app host (FR-017, SC-007).
 # ---------------------------------------------------------------------------
 section "Running headless test suite"
+
+# "Headless" is checked here rather than trusted (002 research.md R7). The rendering tests link
+# Metal, which is fine, but a test that creates a device, queue, buffer or texture needs a GPU and
+# would quietly pass on a developer's Mac while being meaningless — or failing — on a GPU-less
+# runner. Any such call anywhere under Tests/ fails the run, and the offending lines are printed.
+headless_guard() {
+    # Method calls only (a leading `.`), so a test helper that happens to share a name cannot trip it.
+    if grep -rnE 'MTLCreateSystemDefaultDevice|\.makeCommandQueue\(|\.makeBuffer\(|\.makeTexture\(' Tests/; then
+        return 1
+    fi
+    return 0
+}
+run_stage "tests create no Metal device, queue, buffer or texture" headless_guard
+
 run_stage "swift test" \
     swift test $BUILD_SYSTEM $IMPORT_CHECK
 

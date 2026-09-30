@@ -250,7 +250,7 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
         // 5. Draw. A `false` return is a skipped frame: retain accumulated time, count it, carry on
         //    (FR-027a, FR-027b).
         let frameStart = CACurrentMediaTime()
-        let presented = renderer.render(state: state, surface: surface, drawable: update.drawable)
+        let presented = renderer.render(state: state, surface: surface, drawable: update.drawable, timestamp: now)
         let frameSeconds = CACurrentMediaTime() - frameStart
 
         // 6. Instrumentation. Debug/profiling only, log only, allocation-free (FR-021d–f).

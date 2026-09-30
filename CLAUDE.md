@@ -5,10 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this repository is
 
 This is a **GitHub Spec Kit** project (v0.14.1) initialized with the Claude integration and
-Spec-Driven Development (SDD) workflow. As of now it contains **only the Spec Kit scaffold** —
-there is no application source code, build system, tests, or `specs/` features yet. The project
-is named `swiftSky`: a **cross-platform game for iOS and macOS built in Swift with a Metal
-rendering pipeline** (SwiftUI shell). It is a git repository (`main`), with no remote configured yet.
+Spec-Driven Development (SDD) workflow. The project is named `swiftSky`: a **cross-platform game for
+iOS and macOS built in Swift with a Metal rendering pipeline** (SwiftUI shell). It is a git
+repository (`main`), with no remote configured yet.
+
+Built so far: `specs/001-metal-app-shell` (a black Metal surface on both platforms, three layers,
+an off-main frame loop, instrumentation) and `specs/002-metal-text-rendering` (Metal-drawn text from
+a glyph atlas). Layer libraries and tests live in the root `Package.swift`, and the two app targets
+live in `swiftSky.xcodeproj`. `./Scripts/verify.sh` is the single checked-in verification command.
 
 The project constitution (`.specify/memory/constitution.md`, v1.1.0) is ratified and enforces
 five principles: **Architecture Discipline** (logic / Metal rendering / platform-UI layers kept
@@ -78,5 +82,12 @@ artifacts, keep them consistent with these templates.
 - `.specify/templates/` — source templates for all generated artifacts.
 - `.specify/scripts/bash/` — workflow scripts.
 - `.specify/workflows/` — workflow definitions and registry.
-- `specs/NNN-*/` — per-feature spec/plan/tasks (created on first `/speckit.specify`).
+- `specs/NNN-*/` — per-feature spec/plan/tasks and quickstart validation evidence.
+- `Sources/SwiftSky{Simulation,Rendering,Platform}/` — the three layers. Text rendering is in
+  `Sources/SwiftSkyRendering/Text/`, and the Debug/Profiling-only test pattern is in
+  `Sources/SwiftSkyRendering/Debug/`.
+- `Tests/SwiftSkySimulationTests/`, `Tests/SwiftSkyRenderingTests/` — headless Swift Testing suites.
+  They must never create a Metal device; `verify.sh` enforces this.
+- Debug launch arguments (Debug/Profiling builds only): `--debug-text` draws the test string with
+  live FPS, and `--debug-text-fill` fills the 1,024-character text capacity.
 - `.claude/skills/speckit-*/` — the skill definitions backing each `/speckit.*` command.
