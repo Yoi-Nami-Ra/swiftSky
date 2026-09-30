@@ -11,10 +11,13 @@ repository (`main`), with no remote configured yet.
 
 Built so far: `specs/001-metal-app-shell` (a black Metal surface on both platforms, three layers,
 an off-main frame loop, instrumentation), `specs/002-metal-text-rendering` (Metal-drawn text from
-a glyph atlas) and `specs/003-debug-overlay` (live frame statistics drawn on screen in Debug and
-Profiling builds) and `specs/004-ship-newtonian-motion` (one ship with frictionless Newtonian motion in
-the logic layer, driven by a per-tick control input; not drawn yet). Layer libraries and tests live in the root `Package.swift`, and the two app targets
-live in `swiftSky.xcodeproj`. `./Scripts/verify.sh` is the single checked-in verification command.
+a glyph atlas), `specs/003-debug-overlay` (live frame statistics drawn on screen in Debug and
+Profiling builds), `specs/004-ship-newtonian-motion` (one ship with frictionless Newtonian motion
+in the logic layer, driven by a per-tick control input; not drawn yet) and
+`specs/005-game-space-camera` (one world unit = one point, an unbounded world, and a fixed camera
+with the origin at the centre of the whole surface; nothing wired in yet). Layer libraries and
+tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
+`./Scripts/verify.sh` is the single checked-in verification command.
 
 The project constitution (`.specify/memory/constitution.md`, v1.1.0) is ratified and enforces
 five principles: **Architecture Discipline** (logic / Metal rendering / platform-UI layers kept
@@ -93,6 +96,11 @@ artifacts, keep them consistent with these templates.
   input and the per-tick rule. `ShipMotion.swift` is the logic layer's only file with an import
   (`Darwin`, for `cos`/`sin`). Angles are radians in code; tests compare states bit for bit with
   `Tests/SwiftSkySimulationTests/StateBits.swift`.
+- `Sources/SwiftSkyRendering/Camera.swift` and `GameSpace.swift` — the camera (world → view points,
+  view points → world, world → clip; `init?(surface:)` is `nil` for a zero-area surface or an
+  unusable backing scale) and
+  `GameSpace.shipLength` (40 units), with the sprite-orientation note for SKY-27. The rendering tests
+  also depend on the logic layer, to name `Vector2`.
 - `Tests/SwiftSkySimulationTests/`, `Tests/SwiftSkyRenderingTests/`, `Tests/SwiftSkyPlatformTests/`
   — headless Swift Testing suites. The platform tests cover pure measurement structs only.
   They must never create a Metal device; `verify.sh` enforces this.
