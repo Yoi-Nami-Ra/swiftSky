@@ -61,7 +61,7 @@ description: |
   - No per-frame allocation: Camera is a plain value rebuilt only when the
     surface changes.
 platform: macos
-status: ready
+status: done
 phase: MVP
 priority: high
 parent: 22
