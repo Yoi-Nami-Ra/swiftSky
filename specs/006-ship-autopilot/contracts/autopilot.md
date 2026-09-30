@@ -72,7 +72,7 @@ Inputs: the ship (`p`, `v`, heading `h`, rate of turn `ω`, limits `a`, `ωmax`,
    the current rate `ω` (`turnTime`, research R2/R11); `T = 0` when `d = 0`; `T = ∞` if the ship
    cannot turn and has an angle to cover.
 4. **Desired velocity** `v* = r̂ · s`, `s = min(vStop, k·d)`, `vStop = 2d / (T + √(T² + 2d/a′))`;
-   `s = 0` when `a′ = 0` or `T = ∞`. Its slope `s′ = ds/dd` is `1/(T + vStop/a′)` on the `vStop`
+   `s = 0` while arrived (station-keeping only cancels velocity), or when `a′ = 0` or `T = ∞`. Its slope `s′ = ds/dd` is `1/(T + vStop/a′)` on the `vStop`
    branch and `k` on the tail.
 5. **Error** `e = v* − v`. If `|e| ≤ settle` → input `.neutral`; phase by step 8 (coasting).
    Otherwise the **desired acceleration** is `A = e/τ + r̂ · (−(v·r̂) · s′)` — the error term plus the

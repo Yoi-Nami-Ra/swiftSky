@@ -135,12 +135,12 @@ orbiting or ringing.
 
 ### Tests for User Story 4
 
-- [ ] T018 [P] [US4] In `Tests/SwiftSkySimulationTests/AutopilotTests.swift`: a fresh state has `autopilot.order == nil`, `phase == nil`, `distanceRemaining == nil`, and advancing it 600 ticks is bit-identical to advancing with `input: .neutral` (US4-1, FR-011); after `setOrder(to: (300, 400))` on the launch ship, `phase != nil` straight away and `distanceRemaining == 500` (US4-3, FR-003); `order == nil ⇔ phase == nil` holds on every tick of a flight
-- [ ] T019 [P] [US4] In the same file, edge cases: an order within both tolerances of a resting ship is `.arrived` immediately and the ship does not move over 60 ticks; a ship with `ShipLimits(maxThrustAcceleration: 0, …)`, one with zero angular limits, and one with all zero limits, each ordered 1,000 units away for 3,600 ticks, keep every state component finite and the order stays in progress (FR-013, Edge Cases); a destination at (10⁶, −10⁶) is reached within tolerance (Edge Cases); the exactly-behind case turns counter-clockwise on its first turning tick (FR-012); `ArrivalTolerances(position: -1, speed: .nan)` sanitises to (0, 0) and `.default` is (1, 1); a flight with `state.autopilot = Autopilot(tolerances: ArrivalTolerances(position: 5, speed: 5))` arrives within 5 units and below 5 u/s, and no later than with the defaults (FR-010)
+- [X] T018 [P] [US4] In `Tests/SwiftSkySimulationTests/AutopilotTests.swift`: a fresh state has `autopilot.order == nil`, `phase == nil`, `distanceRemaining == nil`, and advancing it 600 ticks is bit-identical to advancing with `input: .neutral` (US4-1, FR-011); after `setOrder(to: (300, 400))` on the launch ship, `phase != nil` straight away and `distanceRemaining == 500` (US4-3, FR-003); `order == nil ⇔ phase == nil` holds on every tick of a flight
+- [X] T019 [P] [US4] In the same file, edge cases: an order within both tolerances of a resting ship is `.arrived` immediately and the ship does not move over 60 ticks; a ship with `ShipLimits(maxThrustAcceleration: 0, …)`, one with zero angular limits, and one with all zero limits, each ordered 1,000 units away for 3,600 ticks, keep every state component finite and the order stays in progress (FR-013, Edge Cases); a destination at (10⁶, −10⁶) is reached within tolerance (Edge Cases); the exactly-behind case turns counter-clockwise on its first turning tick (FR-012); `ArrivalTolerances(position: -1, speed: .nan)` sanitises to (0, 0) and `.default` is (1, 1); a flight with `state.autopilot = Autopilot(tolerances: ArrivalTolerances(position: 5, speed: 5))` arrives within 5 units and below 5 u/s, and no later than with the defaults (FR-010)
 
 ### Implementation for User Story 4
 
-- [ ] T020 [US4] Make T018–T019 pass in `Sources/SwiftSkySimulation/Autopilot.swift`, `AutopilotLaw.swift` and `SimulationState.swift`
+- [X] T020 [US4] Make T018–T019 pass in `Sources/SwiftSkySimulation/Autopilot.swift`, `AutopilotLaw.swift` and `SimulationState.swift`
 
 **Checkpoint**: downstream tickets (SKY-26, SKY-29) can read the autopilot.
 

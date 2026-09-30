@@ -197,5 +197,10 @@ contract's shape, and the contract now describes what shipped.
   needed, never thrusting. The hold rule now also requires the velocity to point within about 25° of
   the destination (`v·r̂ ≥ 0.9 |v|`); otherwise the ship always aims at `A`.
 
+- **Station-keeping only cancels velocity.** As first written, the arrived ship kept tracking the
+  profile towards the exact destination, which moved a resting ship that was already within tolerance
+  — against the spec's "already there" edge case. While arrived, the desired velocity is now zero; a
+  drift out of the position tolerance still resumes the manoeuvre (FR-009).
+
 Measured at the default limits: 1,000 units ahead arrives in 5.4 s (bound 5.69 s), 1,000 units
 behind in 6.9 s (bound 7.34 s), no overshoot.

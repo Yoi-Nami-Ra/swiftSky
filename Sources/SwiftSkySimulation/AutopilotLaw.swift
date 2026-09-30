@@ -88,7 +88,9 @@ extension Autopilot {
         let brakingAcceleration = Self.brakingMargin * maxThrust
         var desiredSpeed = 0.0
         var desiredSpeedSlope = 0.0
-        if distance > 0, brakingAcceleration > 0, flipTime.isFinite {
+        // While arrived, the desired velocity is zero: station-keeping cancels whatever motion is left,
+        // and a ship already at rest within the tolerance does not move (006 FR-009, Edge Cases).
+        if !arrived, distance > 0, brakingAcceleration > 0, flipTime.isFinite {
             let stopping = 2 * distance
                 / (flipTime + (flipTime * flipTime + 2 * distance / brakingAcceleration).squareRoot())
             if stopping < Self.tailGain * distance {
