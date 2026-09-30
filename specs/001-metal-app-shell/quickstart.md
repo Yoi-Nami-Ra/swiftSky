@@ -432,6 +432,32 @@ time converging to ~1 ms against an 8.33 ms budget, `skipped=0`.
   frameMs=…`). The T048/T058 fixes changed it to the aggregate form above. `ticks=` still evidences the
   logic→render hand-off, but check 40's literal transcript is stale.
 
+**Check 28 — PASS again after a gate exemption (2026-09-30), Xcode 27.0 RC (27A266a), Swift 6.4.**
+On this toolchain `verify.sh` failed from a clean `.build`: `swift build` and `swift test` both exited 0
+but printed
+
+```
+warning: missing creator for mutated node: ('<repo>/.build/out/Products/Debug/swiftSky_SwiftSkyRendering.bundle/Contents/MacOS')
+```
+
+This is not a concurrency warning, and not a code defect. It comes from swiftbuild's build-graph checks,
+not from the compiler. Because the resource bundle's Sources phase compiles `Shaders.metal`, swiftbuild
+treats the bundle as holding a binary, so its CodeSign task lists `Contents/MacOS`
+(`$(EXECUTABLE_FOLDER_PATH)`) as a node it mutates. A resource bundle has no executable, so no task
+creates that folder. The generated build manifest confirms it: there are MkDir tasks for the bundle,
+`Contents` and `Contents/Resources`, but none for `Contents/MacOS`. Our `Package.swift` declaration is
+not the cause. A minimal package with a single `.metal` resource warns identically, whether the file is
+picked up implicitly or declared with `.process`, and the same package with a `.txt` resource (`.process`
+or `.copy`) builds clean. An upstream fix, swiftlang/swift-build#1789, was closed unmerged on 2026-09-24.
+
+The source-level workarounds would change the shader pipeline itself, by checking in a precompiled
+`.metallib` or compiling the shader source at runtime. Neither is worth trading for a log line. Instead,
+`run_stage` in `Scripts/verify.sh` exempts exactly this line: the whole line must match, and the path
+must end in `swiftSky_SwiftSkyRendering.bundle/Contents/MacOS`. Every other `warning:` line still fails
+the stage. **Remove the exemption once a toolchain builds without it.**
+
+Post-change: `./Scripts/verify.sh` from a clean `.build` reports `VERIFICATION PASSED`.
+
 **Check 30 — PASS (2026-07-28).** Address Sanitizer build, 35-second sustained run: 2,994 frames,
 zero ASan reports, zero bytes on stderr.
 
