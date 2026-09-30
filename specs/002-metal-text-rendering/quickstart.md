@@ -56,6 +56,10 @@ The script is unchanged in how it is used. It now also:
 
 ## Validation matrix
 
+> **Since 003-debug-overlay**: a Debug build shows the live debug overlay by default. Check 12's
+> black-surface run therefore takes `--no-debug-overlay`. `--debug-text` and `--debug-text-fill`
+> replace the overlay, so checks 5 to 11 are unchanged.
+
 ### Automated (headless)
 
 | # | Check | Expected | Criterion |

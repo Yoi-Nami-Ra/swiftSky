@@ -94,5 +94,16 @@ let package = Package(
             dependencies: ["SwiftSkyRendering"],
             swiftSettings: layerSettings
         ),
+
+        // Headless tests for the platform layer's pure measurement structs: the debug overlay's
+        // one-second frame-time window and its refresh schedule (003 FR-016). Depends on
+        // SwiftSkyPlatform ONLY. These tests never create a view, a layer or a FrameLoop — only plain
+        // structs — so linking AppKit/UIKit is harmless and no GPU or app host is needed
+        // (003 research.md R9).
+        .testTarget(
+            name: "SwiftSkyPlatformTests",
+            dependencies: ["SwiftSkyPlatform"],
+            swiftSettings: layerSettings
+        ),
     ]
 )
