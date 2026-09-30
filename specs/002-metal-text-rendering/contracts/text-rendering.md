@@ -58,8 +58,10 @@ public final class Renderer {
     /// - it returns `false` when no instance-ring slot is free (research R5), and never blocks;
     /// - with no characters to draw, it takes no slot at all, so text-free frames are unaffected.
     @discardableResult
+    /// `timestamp` is the frame's `targetTimestamp`, already read once per frame by the loop (001 FR-033),
+    /// passed in so the debug FPS needs no second clock read (FR-014). CHANGED from 001's signature.
     public func render(state: SimulationState, surface: RenderSurface,
-                       drawable: any CAMetalDrawable) -> Bool
+                       drawable: any CAMetalDrawable, timestamp: Double) -> Bool
 }
 ```
 
@@ -134,10 +136,11 @@ public enum TextRenderingError: Error, Sendable, Equatable {
 public final class DebugTextPattern {
     public enum Mode: Sendable { case testString, fill }
     public init(mode: Mode)
-    public private(set) var framesDrawn: UInt64
-    /// Writes one frame's text, 8 pt in from the safe-area top-left (FR-006b), then counts the
-    /// frame. `.fill` stops at exactly `TextBuffer.capacity` and never sets `didOverflow` (FR-015a).
-    public func write(into buffer: TextBuffer, surface: RenderSurface)
+    /// Frames drawn in the past second, updated once a second; `nil` before the first full second.
+    public private(set) var framesPerSecond: UInt64?
+    /// Counts the frame for FPS, then writes one frame's text, 8 pt in from the safe-area top-left
+    /// (FR-006b). `.fill` stops at exactly `TextBuffer.capacity` and never sets `didOverflow` (FR-015a).
+    public func write(into buffer: TextBuffer, surface: RenderSurface, timestamp: Double)
 }
 #endif
 ```
@@ -149,7 +152,7 @@ public final class DebugTextPattern {
 | `MetalSurfaceView.currentSurface` | includes `safeAreaInsets`: `window?.safeAreaInsets` on iOS, the view's `safeAreaInsets` on macOS |
 | `MetalSurfaceView` (iOS) | overrides `safeAreaInsetsDidChange()` to report the new geometry |
 | `GameSurfaceView.buildSetup()` | resolves the `CTFont` (research R1). Under `SWIFTSKY_INSTRUMENTATION` it also parses the launch arguments into `DebugTextMode` and sets `renderer.debugTextPattern` before the loop starts. |
-| `FrameLoop` | unchanged |
+| `FrameLoop` | passes the frame's `targetTimestamp` (`now`) to `Renderer.render` |
 
 ## Launch arguments (new, Debug and Profiling builds only)
 

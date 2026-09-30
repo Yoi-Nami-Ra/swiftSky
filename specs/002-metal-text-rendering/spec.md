@@ -51,14 +51,19 @@ fonts, sizes or colours, and text input.
   test string and its opt-in are limited to Debug and Profiling builds (FR-016, SC-006).
 - Q: Where does the test string's per-frame counter come from? → A: From a count of frames drawn,
   kept by the rendering layer. It is not the simulation's tick count, so 001 FR-012b stays unchanged
-  (FR-014).
+  (FR-014). *Superseded during implementation, see the FPS bullet below.*
 - Q: Where on an iOS screen is the test string placed? → A: 8 points in from the top-left corner
   of the safe area. The platform layer passes the safe-area insets to the renderer and updates them
   whenever they change (FR-006a, FR-006b).
 - Q: How is the full-capacity frame-time check (SC-004, US3) produced? → A: With a second
   Debug/Profiling-only launch opt-in. It fills exactly the 1,024-character capacity every frame
-  with copies of the test string, each copy's counter changing. Release ignores it (FR-015a,
-  SC-004, SC-006).
+  with copies of the test string, rewritten every frame. Release ignores it (FR-015a, SC-004,
+  SC-006).
+- Q (during implementation): Should the fourth line show a frame counter or FPS? → A: FPS,
+  replacing the counter. It shows the whole number of frames drawn in the past second, updated once
+  a second, measured from the frame loop's per-frame timestamp rather than a second clock read. The
+  text is still rewritten every frame, so the per-frame write path that SC-003 measures is still
+  exercised (FR-014, SC-003).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -114,16 +119,16 @@ device, capture a screenshot of each, and compare them with the reference check 
 
 ### User Story 3 - Text changes every frame without cost (Priority: P3)
 
-The test string includes a counter that changes on every frame. The developer runs a sustained
-session while measuring, and sees that updating the text allocates no memory on the per-frame path
-and does not push the frame time over budget.
+The test string is rewritten on every frame, and its FPS line changes once a second. The developer
+runs a sustained session while measuring, and sees that rewriting the text allocates no memory on the
+per-frame path and does not push the frame time over budget.
 
 **Why this priority**: The debug overlay (SKY-29) rewrites its text continuously. If changing text
 cost allocations or frame time, the overlay would disturb the very numbers it shows. Checking this
 needs US1 or US2 working first.
 
 **Independent Test**: Run the allocation check used by SKY-3 and SKY-4 for 60 seconds with the
-counter updating every frame. Then measure frame time three ways: with no text, with the test
+test string rewritten every frame. Then measure frame time three ways: with no text, with the test
 string, and with the full-capacity opt-in (FR-015a).
 
 **Acceptance Scenarios**:
@@ -234,8 +239,8 @@ and pass.
 - **FR-012**: Changing the text on every frame, up to the full capacity, MUST NOT allocate memory on
   the per-frame path (001 FR-020, FR-021f, SC-004).
 - **FR-013**: Callers MUST be able to write text, including non-negative whole numbers up to the
-  largest 64-bit value, into the text without allocating memory, so the counter in the test string
-  can update every frame for free. A number may be zero-padded to a minimum width. A number longer
+  largest 64-bit value, into the text without allocating memory, so the FPS value in the test string
+  can be rewritten every frame for free. A number may be zero-padded to a minimum width. A number longer
   than that width is written in full, never cut short.
 
 **Builds and the test string**
@@ -243,19 +248,25 @@ and pass.
 - **FR-014**: The test string MUST contain all 95 supported characters in character-code order,
   split into three lines: space to `@`, `A` to the backtick, and `a` to tilde. Each line is at most
   33 characters, so it fits across the narrowest surface iOS can give this landscape-only app
-  (iPad Slide Over, about 320 points; 001 FR-006b). A fourth line MUST
-  show a counter of frames drawn, padded to at least six digits, for example `frame 000123`. The
-  counter is kept by the rendering
-  layer and increases by one on every frame drawn. It MUST NOT be taken from Simulation State: 001
-  FR-012b (the tick count does not affect visible output) stays in force.
+  (iPad Slide Over, about 320 points; 001 FR-006b). A fourth line MUST show the frame rate, for
+  example `fps 120`:
+  - the value is the whole number of frames drawn in the past second, updated once a second;
+  - until the first full second has been measured, the line reads `fps --`;
+  - after a pause of more than a quarter of a second (the app hidden, say), measuring starts again,
+    so the gap does not drag the value down;
+  - frames are counted by the rendering layer and timed with the timestamp the frame loop already
+    reads once per frame (001 FR-033), with no second clock read;
+  - it MUST NOT be taken from Simulation State: 001 FR-012b (the tick count does not affect visible
+    output) stays in force.
+  The whole test string is rewritten every frame, even when the FPS value has not changed.
 - **FR-015**: The test string MUST be drawn only in Debug and Profiling builds, and only when the
   developer opts in at launch. Without the opt-in, those builds MUST show the uniformly black
   surface of 001 FR-002, so that 001's visible-output checks still pass unchanged. In Release builds
   the opt-in MUST have no effect.
 - **FR-015a**: A second launch opt-in, also limited to Debug and Profiling builds, MUST fill exactly
   the 1,024-character capacity on every frame. It does so with copies of the test string placed one
-  under another from the same safe-area anchor, with the last copy cut short to fit and every
-  copy's counter changing each frame. Characters clipped at the surface edge still count toward the
+  under another from the same safe-area anchor, with the last copy cut short to fit and every copy
+  rewritten each frame. Characters clipped at the surface edge still count toward the
   capacity. Filling exactly the capacity MUST NOT trigger the overflow report (FR-011). If both
   opt-ins are given, this one wins. In Release builds it MUST have no effect.
 - **FR-016**: In Release builds, the surface MUST stay uniformly black exactly as 001 FR-002 defines.
@@ -307,10 +318,10 @@ and pass.
   - a reviewer comparing it side by side with the same string in the system's own 13-point
     monospaced text finds no blurring, doubling or uneven stroke weight.
 - **SC-002**: The same checks as SC-001 pass on iOS on a 2× device and a 3× device.
-- **SC-003**: With the counter updating every frame, zero heap allocations occur in the per-frame
+- **SC-003**: With the test string rewritten every frame, zero heap allocations occur in the per-frame
   draw path over a sustained 60-second run on each platform. This is measured with the same check
   as SKY-3 and SKY-4.
-- **SC-004**: With the full-capacity opt-in (FR-015a), meaning 1,024 characters changing every
+- **SC-004**: With the full-capacity opt-in (FR-015a), meaning 1,024 characters rewritten every
   frame, mean and worst frame time stay within 001's frame budget, and per-frame allocations stay at
   zero over a sustained 60-second run. Measurements with no text, with the test string and with full
   capacity are taken on the same device with 001's method, and recorded as the before/after evidence
@@ -344,7 +355,7 @@ and pass.
   this.
 - **Capacity**: 1,024 characters covers the planned overlay (about 12 lines of up to 60 characters)
   with room to spare.
-- **Number formatting**: only whole numbers are needed here, for the frame counter. Allocation-free
+- **Number formatting**: only whole numbers are needed here, for the FPS value. Allocation-free
   decimal formatting for frame times belongs to SKY-29.
 - **Test devices**: a 1× check on macOS needs a standard-resolution display, or a display mode that
   runs at 1× backing scale. iOS has no 1× devices, so iOS is checked at 2× and 3×. Frame-time
