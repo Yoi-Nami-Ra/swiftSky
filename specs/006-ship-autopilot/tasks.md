@@ -97,12 +97,12 @@ orbiting or ringing.
 
 ### Tests for User Story 2
 
-- [ ] T012 [US2] In `Tests/SwiftSkySimulationTests/AutopilotTests.swift`, add a parameterised `@Test` over ≥ 64 starting conditions: speeds {100, 400, 1,000} u/s × 8 velocity directions (`k·π/4` relative to the ship → destination bearing) × destination distances {0, 50, 1,000, 5,000} (≥ 96 cases), ship heading 0: arrives within tolerance within 3,600 ticks (60 s); `abs(bearing sweep) < 2π`; destination passes ≤ 2 (SC-004)
-- [ ] T013 [US2] In the same file, the named scenarios: moving fast straight at a destination 20 units away passes it and returns (US2-2); moving directly away (US2-3); ordered to its own position while moving (US2-4); moving across the line (US2-1) — each arrives within tolerance
+- [X] T012 [US2] In `Tests/SwiftSkySimulationTests/AutopilotTests.swift`, add a parameterised `@Test` over ≥ 64 starting conditions: speeds {100, 400, 1,000} u/s × 8 velocity directions (`k·π/4` relative to the ship → destination bearing) × destination distances {0, 50, 1,000, 5,000} (≥ 96 cases), ship heading 0: arrives within tolerance within 3,600 ticks (60 s); `abs(bearing sweep) < 2π`; destination passes ≤ 2 (SC-004)
+- [X] T013 [US2] In the same file, the named scenarios: moving fast straight at a destination 20 units away passes it and returns (US2-2); moving directly away (US2-3); ordered to its own position while moving (US2-4); moving across the line (US2-1) — each arrives within tolerance
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Make T012–T013 pass in `Sources/SwiftSkySimulation/AutopilotLaw.swift`, again only within the contract (hold rule, cone and margins); record any constant change in research.md. US1 tests must stay green
+- [X] T014 [US2] Make T012–T013 pass in `Sources/SwiftSkySimulation/AutopilotLaw.swift`, again only within the contract (hold rule, cone and margins); record any constant change in research.md. US1 tests must stay green
 
 **Checkpoint**: moving starts arrive without orbiting.
 
