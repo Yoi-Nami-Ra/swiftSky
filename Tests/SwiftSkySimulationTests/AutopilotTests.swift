@@ -290,6 +290,65 @@ struct AutopilotTests {
         #expect(speed(looseFlight.final.ship) < 5)
         #expect((looseFlight.ticksToArrival ?? .max) <= (tight.ticksToArrival ?? 0))
     }
+
+    // MARK: - US5: determinism
+
+    /// SC-005's scenario: a moving start, re-ordered on the first burning, flipping and braking
+    /// observations, advanced in a repeating pattern of 1, 2, 3 and 4 ticks for 1,200 ticks in all.
+    static func scenario() -> SimulationState {
+        var state = moving(Vector2(x: 120, y: -80), to: Vector2(x: 1_500, y: 700))
+        var reorders: [(AutopilotPhase, Vector2)] = [
+            (.burning, Vector2(x: -800, y: 300)),
+            (.flipping, Vector2(x: 400, y: -1_200)),
+            (.braking, .zero),
+        ]
+        let pattern = [1, 2, 3, 4]
+        var step = 0
+        while state.tickCount < 1_200 {
+            state = Simulation.advance(state, ticks: pattern[step % pattern.count])
+            step += 1
+            if let (phase, destination) = reorders.first, state.autopilot.phase == phase {
+                state.setOrder(to: destination)
+                reorders.removeFirst()
+            }
+        }
+        #expect(reorders.isEmpty, "not every re-order happened: \(reorders.map(\.0))")
+        return state
+    }
+
+    @Test("Ten runs of the re-order scenario give byte-identical states (SC-005)")
+    func tenRunsAreIdentical() {
+        let reference = bits(Self.scenario())
+        for _ in 1..<10 {
+            #expect(bits(Self.scenario()) == reference)
+        }
+    }
+
+    @Test("Batching, explicit input and copies do not change the flight (FR-011, FR-014)")
+    func batchingExplicitInputAndCopies() {
+        let start = Self.moving(Vector2(x: -150, y: 90), to: Vector2(x: 900, y: -400))
+
+        // n ticks at once == n single ticks.
+        var batched = start
+        var single = start
+        for _ in 0..<300 {
+            batched = Simulation.advance(batched, ticks: 4)
+            for _ in 0..<4 { single = Simulation.advance(single, ticks: 1) }
+            #expect(bits(batched) == bits(single))
+        }
+
+        // An explicit input drives the ship and leaves the autopilot untouched; it then carries on.
+        let midFlight = Simulation.advance(start, ticks: 100)
+        let nudged = Simulation.advance(midFlight, ticks: 30, input: ControlInput(thrust: 1, turn: 0.5))
+        #expect(bits(nudged.autopilot) == bits(midFlight.autopilot))
+        let resumed = fly(nudged, maxTicks: 3_600)
+        #expect(resumed.ticksToArrival != nil)
+        #expect(Self.distance(resumed.final) <= 1)
+
+        // A copy flown on its own ends bit-identical to the original.
+        let copy = midFlight
+        #expect(bits(Simulation.advance(copy, ticks: 777)) == bits(Simulation.advance(midFlight, ticks: 777)))
+    }
 }
 
 // MARK: - Flight recording
