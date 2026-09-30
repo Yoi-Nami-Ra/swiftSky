@@ -17,7 +17,9 @@ in the logic layer, driven by a per-tick control input; not drawn yet) and
 `specs/005-game-space-camera` (one world unit = one point, an unbounded world, and a fixed camera
 with the origin at the centre of the whole surface; nothing wired in yet) and
 `specs/006-ship-autopilot` (a move order and the autopilot that flies it — turn, burn, flip, brake,
-then keep station — in the logic layer; nothing issues orders yet). Layer libraries and
+then keep station — in the logic layer; nothing issues orders yet) and
+`specs/007-ship-sprite-rendering` (the ship drawn from `ship.png` at its position and heading, over the
+black background and under the debug overlay; it sits still at the centre until orders exist). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
@@ -108,11 +110,18 @@ artifacts, keep them consistent with these templates.
   unusable backing scale) and
   `GameSpace.shipLength` (40 units), with the sprite-orientation note for SKY-27. The rendering tests
   also depend on the logic layer, to name `Vector2`.
+- `Sources/SwiftSkyRendering/ShipSpritePlacement.swift` (the pure corner maths: camera, whole-pixel
+  centre, rotation by heading − π/2, 40 pt square), `ShipImageBitmap.swift` (CPU decode to premultiplied
+  sRGB) and `ShipSprite.swift` (pipeline and mipmapped texture, built once). The image is
+  `Sources/SwiftSkyRendering/Resources/ship.png`, a byte-identical copy of `design/sprites/ship.png`,
+  which is the source of truth: `verify.sh` fails if they differ, so copy the design file over it.
+  A missing or unusable image is `RendererError.shipImageUnavailable` (`ship_image_unavailable`).
 - `Tests/SwiftSkySimulationTests/`, `Tests/SwiftSkyRenderingTests/`, `Tests/SwiftSkyPlatformTests/`
   — headless Swift Testing suites. The platform tests cover pure measurement structs only.
   They must never create a Metal device; `verify.sh` enforces this.
 - Debug launch arguments (Debug/Profiling builds only): the live debug overlay is shown by default,
-  and `--no-debug-overlay` hides it, leaving the uniformly black surface that 001's and 002's
-  visible-output checks expect. `--debug-text` draws the test string with live FPS, and
+  and `--no-debug-overlay` hides it. `--no-ship` stops the ship being drawn; together with
+  `--no-debug-overlay` it leaves the uniformly black surface that 001's and 002's visible-output checks
+  expect. `--debug-ship-spin` turns the ship counter-clockwise in place at its top rate. `--debug-text` draws the test string with live FPS, and
   `--debug-text-fill` fills the 1,024-character text capacity. Either one replaces the overlay.
 - `.claude/skills/speckit-*/` — the skill definitions backing each `/speckit.*` command.

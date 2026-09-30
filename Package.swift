@@ -68,6 +68,11 @@ let package = Package(
         .target(
             name: "SwiftSkyRendering",
             dependencies: ["SwiftSkySimulation"],
+            // The ship image (007 FR-002, research R1): a byte-identical copy of design/sprites/ship.png,
+            // which stays the source of truth — Scripts/verify.sh fails if the two ever differ.
+            // `.copy`, not `.process`: processing may re-encode a PNG, and the shipped bytes would then
+            // stop matching the design file.
+            resources: [.copy("Resources/ship.png")],
             swiftSettings: layerSettings
         ),
 
@@ -87,7 +92,8 @@ let package = Package(
         ),
 
         // Headless tests for the rendering layer's pure logic: text layout, metrics, the CPU glyph
-        // atlas, the debug text pattern (002 FR-019) and the camera (005 FR-014). Depends on the
+        // atlas, the debug text pattern (002 FR-019), the camera (005 FR-014), and the ship sprite's placement
+        // and image decoding (007 FR-017). Depends on the
         // rendering layer and the logic layer, never the platform layer. The logic layer is GPU-free;
         // it is declared so the camera tests can name `Vector2` under
         // `--explicit-target-dependency-import-check=error` (005 research R8). Linking Metal is fine;

@@ -1,13 +1,13 @@
 // swiftSky shaders.
 //
-// A full-screen quad rendered as a triangle strip, filled black. Trivial by design — the point of
-// FR-002a is that this path exists and is exercised, not that it draws anything interesting. A pass
-// that merely cleared the surface would leave shader compilation, pipeline-state creation, geometry
-// binding, and draw submission untested, which is exactly what this feature exists to prove works
-// before any content depends on it.
+// Three draws per frame, in one pass and in this order (007 FR-009): the black background, the ship,
+// then any text.
 //
-// Vertex positions arrive in clip space, so a surface resize changes the viewport and nothing else.
-// There is no resize-time geometry update to get wrong (research.md R11).
+// The background is a full-screen quad rendered as a triangle strip, filled black. It is trivial by
+// design: the point of 001 FR-002a is that a real draw path exists and is exercised. A pass that merely
+// cleared the surface would leave shader compilation, pipeline-state creation, geometry binding and
+// draw submission untested. Its vertex positions arrive in clip space, so a surface resize changes the
+// viewport and nothing else. There is no resize-time geometry update to get wrong (research.md R11).
 
 #include <metal_stdlib>
 using namespace metal;
@@ -113,4 +113,50 @@ fragment float4 swiftsky_text_fragment(
     const float coverage = atlas.sample(nearest, in.texel).r;
     const float a = coverage <= 0.04045 ? coverage / 12.92 : pow((coverage + 0.055) / 1.055, 2.4);
     return float4(a, a, a, a);
+}
+
+// MARK: - Ship sprite (007-ship-sprite-rendering)
+//
+// One textured quad: the ship image, blended over the black background. The four corners arrive
+// already placed, in clip space, from `ShipSpritePlacement`. This shader does no placement maths of its
+// own, so the tested corners are the drawn corners (007 research R5).
+//
+// Colour (research R3): the texture is premultiplied, sRGB-encoded RGBA8 in an `rgba8Unorm_srgb`
+// texture, so sampling decodes the colour to linear and leaves alpha alone. Blended `one` /
+// `oneMinusSourceAlpha` into the sRGB surface, a pixel over black stores exactly the encoded α·c that
+// Core Graphics gives when it draws the image over black.
+//
+// Filtering (research R4): trilinear over a mip chain built once at start-up. At 2× and quarter turns,
+// surface pixel centres fall on texel centres, so each texel lands on exactly one pixel. At 1× the
+// 40 × 40 level is read, so a turning ship does not shimmer. Outside the image the sample is
+// transparent, so the quad's edge never shows.
+
+namespace swiftsky {
+
+struct SpriteRasterizerData {
+    float4 position [[position]];
+    float2 uv;
+};
+
+}  // namespace swiftsky
+
+/// Corners in triangle-strip order: bottom-left, bottom-right, top-left, top-right. That matches
+/// `ShipSpritePlacement.clipCorners`. The image's top row is v = 0.
+vertex swiftsky::SpriteRasterizerData swiftsky_sprite_vertex(
+    uint vertexID [[vertex_id]],
+    constant float2 *corners [[buffer(0)]])
+{
+    swiftsky::SpriteRasterizerData out;
+    out.position = float4(corners[vertexID], 0.0, 1.0);
+    out.uv = float2(vertexID & 1, 1 - (vertexID >> 1));
+    return out;
+}
+
+/// The premultiplied sample, as is. The blend state does the rest.
+fragment float4 swiftsky_sprite_fragment(
+    swiftsky::SpriteRasterizerData in [[stage_in]],
+    texture2d<float> image [[texture(0)]])
+{
+    constexpr sampler trilinear(filter::linear, mip_filter::linear, address::clamp_to_zero);
+    return image.sample(trilinear, in.uv);
 }

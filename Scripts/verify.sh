@@ -108,6 +108,20 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# The ship image (007 FR-002, SC-008a). design/sprites/ship.png is the source of truth; the rendering
+# layer ships a copy because SwiftPM resources must live inside the target's directory. A copy that
+# drifts from the design is a failure. To fix it, copy the design file over the bundled one:
+#
+#     cp design/sprites/ship.png Sources/SwiftSkyRendering/Resources/ship.png
+# ---------------------------------------------------------------------------
+section "Ship image matches the design file"
+ship_image_matches() {
+    cmp -s design/sprites/ship.png Sources/SwiftSkyRendering/Resources/ship.png
+}
+run_stage "Sources/SwiftSkyRendering/Resources/ship.png is byte-identical to design/sprites/ship.png" \
+    ship_image_matches
+
+# ---------------------------------------------------------------------------
 # Layer libraries — build for the host, which covers all three layer targets.
 # ---------------------------------------------------------------------------
 # --explicit-target-dependency-import-check=error is REQUIRED, not optional. Without it SwiftPM
