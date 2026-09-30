@@ -17,10 +17,23 @@ public struct RenderSurface: Sendable, Equatable {
     /// displays of differing density, which must update the drawable dimensions to match.
     public var backingScale: Double
 
-    public init(widthPixels: UInt32, heightPixels: UInt32, backingScale: Double) {
+    /// The window's safe-area insets, in points (002 FR-006a). Zero almost everywhere on macOS; on iOS
+    /// they keep content clear of the camera cutout and rounded corners, which matter in landscape.
+    ///
+    /// Carried here rather than in a separate event so an insets-only change is simply a `.resized`
+    /// surface: the loop replaces the whole value, and nothing can observe half an update.
+    public var safeAreaInsets: SurfaceInsets
+
+    public init(
+        widthPixels: UInt32,
+        heightPixels: UInt32,
+        backingScale: Double,
+        safeAreaInsets: SurfaceInsets = .zero
+    ) {
         self.widthPixels = widthPixels
         self.heightPixels = heightPixels
         self.backingScale = backingScale
+        self.safeAreaInsets = safeAreaInsets
     }
 
     /// Whether this surface can be drawn into at all.
@@ -36,5 +49,26 @@ public struct RenderSurface: Sendable, Equatable {
     public var aspectRatio: Double? {
         guard isRenderable else { return nil }
         return Double(widthPixels) / Double(heightPixels)
+    }
+}
+
+/// Distances from each edge of the surface, in points, that content must stay inside to be clear of
+/// cutouts and rounded corners (002 FR-006a).
+///
+/// Points rather than pixels because that is what the platform reports and what callers place text
+/// in; the text layout converts to pixels once, with the backing scale (002 research.md R3).
+public struct SurfaceInsets: Sendable, Equatable {
+    public var top: Double
+    public var left: Double
+    public var bottom: Double
+    public var right: Double
+
+    public static let zero = SurfaceInsets(top: 0, left: 0, bottom: 0, right: 0)
+
+    public init(top: Double, left: Double, bottom: Double, right: Double) {
+        self.top = top
+        self.left = left
+        self.bottom = bottom
+        self.right = right
     }
 }

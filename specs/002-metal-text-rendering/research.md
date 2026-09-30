@@ -109,8 +109,12 @@ bold on this surface, so it was rejected.
   skipped-frame instrumentation. With the layer's default of three drawables, a free drawable already
   implies that a slot is free, so this never happens in practice. Any occurrence shows up in SC-003's
   skipped-frame count rather than hiding.
-- **No text**: when the buffer holds no characters, `encode` returns `true` before taking a slot.
-  Frames without text, which includes every Release frame, never touch the semaphore.
+- **No text**: when the buffer holds no characters, no slot is taken. Frames without text, which
+  includes every Release frame, never touch the semaphore.
+- **As built**: the slot is taken by `TextRenderer.acquireSlot()` in `Renderer.render` **before**
+  the command buffer is created, so running out of slots skips the frame before any GPU work.
+  `releaseUnusedSlot()` returns the slot if command-buffer creation then fails. `encode(_:slot:…)`
+  only copies and draws. This replaces the single `encode(…) -> Bool` sketched earlier.
 - **Per-frame work**: a `memcpy` of `count × 8` bytes from the CPU-side `TextBuffer` (R6) into the
   slot's buffer, then one draw.
 
@@ -298,15 +302,22 @@ path, and it happens at most once per run. Filling exactly the capacity never se
   - Line 1 is U+0020 to U+0040 (33 characters).
   - Line 2 is U+0041 to U+0060 (32 characters).
   - Line 3 is U+0061 to U+007E (30 characters).
-  - Line 4 is `frame ` followed by the frames-drawn counter, zero-padded to 6 digits.
-- **Size**: while the counter has 6 digits the test string is 107 characters, excluding line feeds.
+  - Line 4 is `fps ` followed by the frame rate, or `fps --` before the first full second.
+- **Size**: at 2- or 3-digit rates the test string is 101 or 102 characters, excluding line feeds.
 - **Width**: the widest line, 33 characters at about 7.8 pt, is about 258 pt wide. It fits the
   narrowest surface iOS can hand this landscape-only app, which is iPad Slide Over at about 320 pt
   (001 FR-006b).
-- **Counter**: `DebugTextPattern` keeps the counter and increments it each time it writes a frame
-  that is drawn. It is never read from `SimulationState`.
+- **FPS** *(changed during implementation, replacing a frames-drawn counter)*:
+  - `DebugTextPattern` counts the frames it is written for across a window of at least 1 s, then
+    sets the value to `round(frames ÷ elapsed)` and starts a new window.
+  - A gap of more than 0.25 s between frames means the loop was paused, so the window restarts.
+  - Time comes from the `targetTimestamp` the frame loop already reads once per frame, passed in
+    through `Renderer.render(…, timestamp:)`, so there is no second clock read (001 FR-033).
+  - It is never read from `SimulationState`.
+  - The whole text is still rewritten every frame, so SC-003's per-frame write path is still
+    exercised even when the displayed value has not changed.
 - **Fill (`--debug-text-fill`)**: repeats the pattern downward from the same anchor, advancing one
-  blank line between copies. Every copy shows the current counter. It writes while
+  blank line between copies. Every copy shows the current FPS. It writes while
   `remainingCapacity > 0` and cuts the last copy short with a character-limited write, so it reaches
   exactly 1,024 characters without setting `didOverflow`.
 

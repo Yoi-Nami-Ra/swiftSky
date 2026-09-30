@@ -87,7 +87,31 @@ final class MetalSurfaceView: PlatformView {
         return RenderSurface(
             widthPixels: UInt32(max(0, (size.width * scale).rounded())),
             heightPixels: UInt32(max(0, (size.height * scale).rounded())),
-            backingScale: scale
+            backingScale: scale,
+            safeAreaInsets: currentSafeAreaInsets
+        )
+    }
+
+    /// The safe-area insets the renderer places text inside, in points (002 FR-006a).
+    ///
+    /// On iOS these are the **window's** insets, not this view's: the SwiftUI host ignores the safe
+    /// area so the surface can fill the screen edge to edge (FR-003), which can leave the view's own
+    /// insets at zero while the window's stay correct (002 research.md R8). The view fills the window,
+    /// so the two describe the same edges.
+    ///
+    /// On macOS they are normally zero, and non-zero only in full screen on a display with a camera
+    /// housing.
+    private var currentSafeAreaInsets: SurfaceInsets {
+        #if os(macOS)
+        let insets = safeAreaInsets
+        #else
+        let insets = window?.safeAreaInsets ?? safeAreaInsets
+        #endif
+        return SurfaceInsets(
+            top: Double(insets.top),
+            left: Double(insets.left),
+            bottom: Double(insets.bottom),
+            right: Double(insets.right)
         )
     }
 
@@ -204,6 +228,13 @@ final class MetalSurfaceView: PlatformView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        surfaceGeometryChanged(scaleChanged: false)
+    }
+
+    /// Rotation, iPad multitasking and the status bar all move the safe area. The new insets travel in
+    /// the surface, as a `.resized` event (002 FR-006a).
+    override func safeAreaInsetsDidChange() {
+        super.safeAreaInsetsDidChange()
         surfaceGeometryChanged(scaleChanged: false)
     }
 

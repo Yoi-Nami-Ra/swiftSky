@@ -115,7 +115,8 @@ Compiled under `SWIFTSKY_INSTRUMENTATION` (research R9).
 | State | Type | Rule |
 |-------|------|------|
 | `mode` | `.testString` or `.fill` | fixed at construction |
-| `framesDrawn` | `UInt64` | incremented once per drawn frame. Never read from `SimulationState` (FR-014). |
+| `framesPerSecond` | `UInt64?` | frames drawn in the past second, rounded, and updated once a second. `nil` until the first full second. Timed with the loop's per-frame timestamp, and never read from `SimulationState` (FR-014). |
+| FPS window | start timestamp, frame count, last timestamp | the window restarts after a gap of more than 0.25 s (a pause) |
 
 - `.testString` writes the four lines of research R13, 8 pt in from the top-left of the safe area
   (FR-006b).
@@ -137,4 +138,5 @@ Renderer ─owns─▶ TextRenderer ─owns─▶ GlyphAtlas, TextBuffer, instan
 Renderer ─owns (debug)─▶ DebugTextPattern ─writes─▶ TextBuffer
 ```
 
-`SimulationState` is not touched. The frames-drawn counter lives in `DebugTextPattern` (FR-014).
+`SimulationState` is not touched. The FPS measurement lives in `DebugTextPattern`, fed by the
+timestamp the frame loop passes to `Renderer.render` (FR-014).
