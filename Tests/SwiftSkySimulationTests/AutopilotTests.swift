@@ -195,6 +195,101 @@ struct AutopilotTests {
         }
         #expect(MoveOrder(destination: Vector2(x: .nan, y: 1)) == nil)
     }
+
+    // MARK: - US4: read-out and edges
+
+    @Test("With no order the state reports nothing and the ship gets the neutral input (US4-1, FR-011)")
+    func noOrder() {
+        let state = SimulationState()
+        #expect(state.autopilot.order == nil)
+        #expect(state.autopilot.phase == nil)
+        #expect(state.distanceRemaining == nil)
+        let moving = SimulationState(
+            tickCount: 0,
+            ship: Ship(position: Vector2(x: 3, y: 4), velocity: Vector2(x: -20, y: 7), heading: 1, angularVelocity: 0.5)
+        )
+        for start in [state, moving] {
+            #expect(bits(Simulation.advance(start, ticks: 600)) == bits(Simulation.advance(start, ticks: 600, input: .neutral)))
+        }
+    }
+
+    @Test("An order is readable at once, and order and phase appear and vanish together (US4-3, FR-003)")
+    func readOut() {
+        var state = SimulationState()
+        state.setOrder(to: Vector2(x: 300, y: 400))
+        #expect(state.autopilot.phase != nil)
+        #expect(state.distanceRemaining == 500)
+        for _ in 0..<600 {
+            state = Simulation.advance(state, ticks: 1)
+            #expect((state.autopilot.order == nil) == (state.autopilot.phase == nil))
+        }
+    }
+
+    @Test("Already there: an order within both tolerances is arrived at once, and the ship does not move")
+    func alreadyThere() {
+        var state = Self.ordered(to: Vector2(x: 0.5, y: -0.25))
+        #expect(state.autopilot.phase == .arrived)
+        let before = bits(state.ship)
+        state = Simulation.advance(state, ticks: 60)
+        #expect(bits(state.ship) == before)
+        #expect(state.autopilot.phase == .arrived)
+    }
+
+    @Test(
+        "Zero limits keep every value finite and the order in progress (FR-013)",
+        arguments: [
+            ShipLimits(maxThrustAcceleration: 0, maxAngularSpeed: .pi, maxAngularAcceleration: 2 * .pi),
+            ShipLimits(maxThrustAcceleration: 200, maxAngularSpeed: 0, maxAngularAcceleration: 0),
+            ShipLimits(maxThrustAcceleration: 0, maxAngularSpeed: 0, maxAngularAcceleration: 0),
+        ]
+    )
+    func zeroLimits(limits: ShipLimits) {
+        let ship = Ship(position: .zero, velocity: Vector2(x: 0, y: 50), heading: 2, angularVelocity: 0, limits: limits)
+        var state = Self.ordered(to: Vector2(x: 1_000, y: 0), ship: ship)
+        for _ in 0..<3_600 {
+            state = Simulation.advance(state, ticks: 1)
+        }
+        let values = [
+            state.ship.position.x, state.ship.position.y, state.ship.velocity.x, state.ship.velocity.y,
+            state.ship.heading, state.ship.angularVelocity,
+        ]
+        let allFinite = values.allSatisfy(\.isFinite)
+        #expect(allFinite)
+        #expect(state.autopilot.phase != .arrived)
+    }
+
+    @Test("A destination a million units away is reached within tolerance")
+    func farDestination() {
+        let flight = fly(Self.ordered(to: Vector2(x: 1_000_000, y: -1_000_000)), maxTicks: 30_000)
+        #expect(flight.ticksToArrival != nil)
+        #expect(Self.distance(flight.final) <= 1)
+        #expect(speed(flight.final.ship) < 1)
+    }
+
+    @Test("Exactly behind, the ship turns counter-clockwise (FR-012)")
+    func exactlyBehindTurnsCounterClockwise() {
+        let state = Simulation.advance(Self.ordered(to: Vector2(x: -1_000, y: 0)), ticks: 1)
+        #expect(state.ship.angularVelocity > 0)
+    }
+
+    @Test("Tolerances are sanitised, default to 1 and 1, and looser ones arrive looser and no later (FR-010)")
+    func tolerances() {
+        #expect(ArrivalTolerances(position: -1, speed: .nan) == ArrivalTolerances(position: 0, speed: 0))
+        #expect(ArrivalTolerances.default == ArrivalTolerances(position: 1, speed: 1))
+        #expect(Autopilot().tolerances == .default)
+
+        let destination = Vector2(x: 600, y: 250)
+        let tight = fly(Self.ordered(to: destination), maxTicks: 3_600)
+        var loose = SimulationState()
+        loose.autopilot = Autopilot(tolerances: ArrivalTolerances(position: 5, speed: 5))
+        loose.setOrder(to: destination)
+        let looseFlight = fly(loose, maxTicks: 3_600)
+
+        #expect(looseFlight.ticksToArrival != nil)
+        #expect(Self.distance(looseFlight.final) <= 5)
+        #expect(speed(looseFlight.final.ship) < 5)
+        #expect((looseFlight.ticksToArrival ?? .max) <= (tight.ticksToArrival ?? 0))
+    }
 }
 
 // MARK: - Flight recording
