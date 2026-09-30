@@ -4,7 +4,8 @@ import QuartzCore
 import SwiftSkySimulation
 import os
 
-/// Draws the visible surface. Owns Metal, the shaders, and the black colour.
+/// Draws the visible surface: the black background, the ship at its pose (007), and any text. Owns
+/// Metal, the shaders, the black colour and the ship image.
 ///
 /// Knows nothing about windows, views, scenes, or app lifecycle — only a `CAMetalLayer` to present
 /// into and a `RenderSurface` describing its size (FR-010, FR-014). That is what lets the same code
@@ -17,6 +18,10 @@ public final class Renderer {
     private let device: any MTLDevice
     private let commandQueue: any MTLCommandQueue
     private let quad: FullscreenQuad
+
+    /// The ship's pipeline and texture, built once (007 FR-011). The ship is part of the game, not an
+    /// optional extra, so a failure here is a `RendererError` (007 FR-005), unlike text.
+    private let ship: ShipSprite
 
     /// The GPU side of text, or `nil` if it could not be set up. Text is not essential: a failure is
     /// logged and the renderer carries on without it — it never becomes a `RendererError` (FR-018).
@@ -52,6 +57,11 @@ public final class Renderer {
     public func updateDebugOverlay(_ statistics: DebugOverlayStatistics) {
         debugOverlay?.statistics = statistics
     }
+
+    /// Whether to draw the ship. Set once, before the loop starts, by the platform layer: `false` for
+    /// `--no-ship`, so that with `--no-debug-overlay` the surface is uniformly black again and the
+    /// 001–003 checks that expect it still apply (007 FR-014). The simulation is unaffected.
+    public var drawsShip = true
     #endif
 
     /// Reused every frame so the draw path does not build one (FR-020).
@@ -88,6 +98,13 @@ public final class Renderer {
         }
 
         self.quad = try FullscreenQuad(device: device, library: library, pixelFormat: pixelFormat)
+        self.ship = try ShipSprite(
+            device: device,
+            library: library,
+            pixelFormat: pixelFormat,
+            commandQueue: queue,
+            image: Self.loadShipImage()
+        )
 
         do {
             self.text = try TextRenderer(device: device, library: library, pixelFormat: pixelFormat, font: textFont)
@@ -162,6 +179,10 @@ public final class Renderer {
         encoder.setVertexBuffer(quad.vertexBuffer, offset: 0, index: 0)
         encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: FullscreenQuad.vertexCount)
 
+        // The ship over the background, from this frame's state (007 FR-001, FR-009). Nothing here
+        // writes back to the logic layer.
+        encodeShip(state.ship, surface: surface, encoder: encoder)
+
         // Text on top of the quad, in the same pass (002 FR-001).
         if let textSlot, let textToDraw, let text {
             text.encode(textToDraw, slot: textSlot, surface: surface, encoder: encoder, commandBuffer: commandBuffer)
@@ -173,6 +194,53 @@ public final class Renderer {
 
         passDescriptor.colorAttachments[0].texture = nil
         return true
+    }
+
+    /// Draws the ship at its pose, or nothing when the surface has no camera (007 FR-012) or, in Debug,
+    /// when `--no-ship` hid it.
+    ///
+    /// Allocation-free (007 FR-011): the placement is a value, and its four corners go to the GPU as 32
+    /// bytes through `setVertexBytes`, which copies them into the command stream.
+    private func encodeShip(_ ship: Ship, surface: RenderSurface, encoder: any MTLRenderCommandEncoder) {
+        #if SWIFTSKY_INSTRUMENTATION
+        guard drawsShip else { return }
+        #endif
+        guard let placement = ShipSpritePlacement(position: ship.position, heading: ship.heading, surface: surface)
+        else { return }
+
+        let (a, b, c, d) = placement.clipCorners
+        var corners = (
+            SIMD2<Float>(Float(a.x), Float(a.y)),
+            SIMD2<Float>(Float(b.x), Float(b.y)),
+            SIMD2<Float>(Float(c.x), Float(c.y)),
+            SIMD2<Float>(Float(d.x), Float(d.y))
+        )
+        encoder.setRenderPipelineState(self.ship.pipelineState)
+        withUnsafeBytes(of: &corners) { bytes in
+            encoder.setVertexBytes(bytes.baseAddress!, length: bytes.count, index: 0)
+        }
+        encoder.setFragmentTexture(self.ship.texture, index: 0)
+        encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: ShipSprite.vertexCount)
+    }
+
+    /// Decodes the bundled ship image, turning each way it can fail into the one renderer error
+    /// (007 FR-005, research R7).
+    private static func loadShipImage() throws(RendererError) -> ShipImageBitmap {
+        guard let url = ShipImageBitmap.bundledURL else {
+            throw .shipImageUnavailable(reason: "ship.png is missing from the app")
+        }
+        do {
+            return try ShipImageBitmap(contentsOf: url)
+        } catch {
+            switch error {
+            case .missing:
+                throw .shipImageUnavailable(reason: "ship.png is missing from the app")
+            case .undecodable:
+                throw .shipImageUnavailable(reason: "ship.png is not a readable image")
+            case .wrongSize(let width, let height):
+                throw .shipImageUnavailable(reason: "ship.png is \(width)×\(height) pixels, and 80×80 is expected")
+            }
+        }
     }
 
     /// Makes sure the atlas matches this frame's backing scale, writes this frame's text, and returns the

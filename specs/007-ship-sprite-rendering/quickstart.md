@@ -71,4 +71,11 @@ the placement, image and error tests.
 
 ## Evidence
 
-*(Filled in by `/speckit-implement`.)*
+Recorded 2026-10-01 on macOS 26 (Apple silicon), Xcode 27, the iPhone 17 Pro simulator (iOS 27, 3×).
+
+| # | Result | Notes |
+|---|--------|-------|
+| 8 | **Not captured (macOS)** | `screencapture -l` failed with "could not create image from window": this session has no Screen Recording permission. The app launches, presents frames and draws the overlay. Re-run by eye, or grant the permission and capture. |
+| 9 | **PASS (iOS, 3×)** | Debug, overlay on. Screenshot 1206 × 2622 px (portrait capture of the landscape app). The ship's opaque pixels span 120 px across its width (543…662), which is 40 pt at 3×. Its centre across the width is 603.0, the surface centre is 603. Rotated to landscape, the nose points right and the overlay is at the top-left. Log: `frames=354 skipped=0 dropped=0 mean=0.18 ms`. |
+| 10 | **PASS (iOS, 3×)** | Background corner pixel (0, 0, 0). Edges look smooth at 100 %, with no rectangle or halo around the sprite. |
+
