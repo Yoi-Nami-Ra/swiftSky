@@ -19,7 +19,7 @@ description: |
   byte-identical (as SC-013). Default limits, to be tuned once SKY-23 fixes
   the scale: 200 units/s² thrust, 180°/s turn, 360°/s² angular acceleration.
 platform: macos
-status: ready
+status: in-review
 phase: MVP
 priority: high
 parent: 22
