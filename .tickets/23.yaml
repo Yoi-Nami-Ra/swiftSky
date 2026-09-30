@@ -6,20 +6,62 @@ description: |
   screen or turns a click into a world position (SKY-27, SKY-10, SKY-11,
   SKY-30) needs this pinned down first.
 
-  Open questions:
-  - World units: what one unit means, and how many units a ship is long
-    (the sprite in design/sprites/ship.png is 80×80 px).
-  - Extent: unbounded, bounded with edges, or wrapping.
-  - Camera: fixed to the window, following the ship, or pannable/zoomable —
-    and what resizing the window (or iPad Split View) does to the view.
-  - Coordinate conventions: origin, y-axis direction, heading zero and
-    rotation direction.
-  - Background: plain black, or a starfield/grid so motion is readable.
+  Already in place:
+  - SKY-24 fixed the world's coordinate conventions: positions in world
+    units, heading zero along +x, positive heading counter-clockwise with +y
+    up, angles in radians (Sources/SwiftSkySimulation/Ship.swift).
+  - RenderSurface already carries the drawable's pixel size, backing scale
+    and safe-area insets, which is everything the transform needs.
 
-  Done when the answers are written into this ticket (and spec 002), and the
-  world ↔ screen transform is defined precisely enough to unit-test.
+  Decisions (refined 2026-09-30):
+  - Units: 1 world unit = 1 point at the fixed zoom. The ship is 40 units
+    long, so the 80×80 px sprite is drawn at 40×40 pt, pixel-exact on 2×
+    displays. SKY-24's default limits (200 units/s², 180°/s, 360°/s²) stay
+    as they are.
+  - Extent: unbounded. No edges, no wrapping, no collisions.
+  - Camera: fixed. The world origin sits at the centre of the whole surface
+    (not the safe area), at 1 pt per unit. Resizing, full screen or iPad
+    Split View show more or less world around the centre; nothing scales and
+    the origin never moves.
+  - Background: plain black, as today.
+
+  Scope:
+  1. A Camera value type in SwiftSkyRendering, built from a RenderSurface
+     (the platform layer already depends on rendering, so both the renderer
+     and the input code can use it). World +y is up; view points are
+     top-left origin, +y down. With w×h the surface size in points
+     (pixels ÷ backing scale):
+     - world → view points: (w/2 + x, h/2 − y)
+     - view points → world: (vx − w/2, h/2 − vy)
+     - world → clip space: (x ÷ (w/2), y ÷ (h/2))
+     SKY-10 and SKY-11 use view → world; SKY-27 and SKY-30 use world → clip.
+  2. A ship-size constant of 40 units, beside the camera, for SKY-27 and
+     SKY-30's ship highlight.
+  3. A note for SKY-27: the sprite's top is the ship's front, so at heading
+     zero (+x) the image is drawn rotated −90°.
+
+  Out of scope:
+  - Drawing anything: the ship is SKY-27, the order overlay SKY-30.
+  - Turning a tap or click into an order: SKY-10, SKY-11.
+  - Pan, zoom, following the ship, a grid or starfield: not planned; each
+    needs its own ticket.
+  - Interpolation between ticks: SKY-12.
+
+  Done when:
+  - Camera is headlessly unit-tested: the origin maps to the surface centre;
+    the four corners map to (±w/2, ±h/2) with +y up; view → world → view
+    round-trips within 1e-9 points; world → clip puts the origin at (0, 0)
+    and the surface edges at ±1.
+  - The same world point maps to the same view point at 1×, 2× and 3×
+    backing scale for the same size in points.
+  - A resize keeps the origin at the new centre, including odd point sizes
+    (e.g. 1,001 × 667).
+  - A zero-area surface (001 FR-027a) yields no transform rather than a
+    division by zero.
+  - No per-frame allocation: Camera is a plain value rebuilt only when the
+    surface changes.
 platform: macos
-status: refine
+status: ready
 phase: MVP
 priority: high
 parent: 22
