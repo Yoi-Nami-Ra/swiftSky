@@ -1,0 +1,29 @@
+id: 34
+title: "Show the ship and the order on the debug overlay"
+type: feature
+description: |
+  SKY-29 shipped the live debug overlay with its frame-stat lines only; its
+  ship and order lines were left to follow once SKY-24 and SKY-25 landed.
+  Both have (specs/004-ship-newtonian-motion, specs/006-ship-autopilot), so
+  this ticket adds them to the overlay in Debug and Profiling builds:
+
+  - the ship: position, velocity, speed, heading, angular velocity
+  - the active order: autopilot phase, destination, distance remaining
+    (`SimulationState.autopilot.phase`, `.order`, `.distanceRemaining`);
+    a "no order" line when there is none
+
+  Same refresh rate as the existing lines (4 Hz), same Metal text renderer,
+  still absent from Release.
+
+  Done when the new lines show live values on both platforms in Debug, stay
+  absent from a Release build (as SKY-29's symbol check), and add no
+  per-frame allocation. Until SKY-10/SKY-11 issue orders, the order line can
+  be checked with a Debug launch argument that gives a fixed order, if one is
+  added for this.
+platform: macos
+status: ready
+phase: MVP
+priority: low
+parent: 22
+blocked_by: []
+designs: []
