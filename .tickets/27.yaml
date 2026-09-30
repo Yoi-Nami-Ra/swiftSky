@@ -19,7 +19,7 @@ description: |
   platforms, rotates correctly, and holds its size and aspect across window
   resizes.
 platform: macos
-status: ready
+status: done
 phase: MVP
 priority: high
 parent: 22

@@ -145,12 +145,12 @@ quickstart check 18.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T023 [P] Update doc comments (R11): `Sources/SwiftSkySimulation/SimulationState.swift` (the renderer now draws the ship from its position and heading, and still nothing from the order until SKY-30); and `Sources/SwiftSkyRendering/GameSpace.swift` (the SKY-27 note now points at `ShipSpritePlacement`, which implements it)
-- [ ] T024 [P] Update `CLAUDE.md`: add `specs/007-ship-sprite-rendering` to "Built so far" (the ship drawn from `ship.png` at its pose), the new files in "Key locations" (`ShipImageBitmap.swift`, `ShipSpritePlacement.swift`, `ShipSprite.swift`, `Resources/ship.png` with the `verify.sh` identity check), and the new launch arguments `--debug-ship-spin` and `--no-ship`, noting that the uniformly black checks now take `--no-ship --no-debug-overlay`
-- [ ] T025 Run quickstart checks 15–17 (`--no-ship --no-debug-overlay` is uniformly black; Release shows the still ship with any arguments; `strings` and `nm` on the stripped Release binary show no trace of the switches) check 9 on the iOS simulator, and check 18a (the surface's accessible description is unchanged, FR-016a). Record them in the Evidence section
-- [ ] T026 Run quickstart check 19 (60 s of frame time and allocations, overlay on, ship drawn, macOS) and compare it with 003's baseline in the Evidence section (Principle III)
-- [ ] T027 Run `./Scripts/verify.sh` and check 7 (10 consecutive `swift test` runs); fill in the rest of the Evidence section, marking any check not run with its reason
-- [ ] T028 [P] Update `.tickets/27.yaml` `status` to `done`
+- [X] T023 [P] Update doc comments (R11): `Sources/SwiftSkySimulation/SimulationState.swift` (the renderer now draws the ship from its position and heading, and still nothing from the order until SKY-30); and `Sources/SwiftSkyRendering/GameSpace.swift` (the SKY-27 note now points at `ShipSpritePlacement`, which implements it)
+- [X] T024 [P] Update `CLAUDE.md`: add `specs/007-ship-sprite-rendering` to "Built so far" (the ship drawn from `ship.png` at its pose), the new files in "Key locations" (`ShipImageBitmap.swift`, `ShipSpritePlacement.swift`, `ShipSprite.swift`, `Resources/ship.png` with the `verify.sh` identity check), and the new launch arguments `--debug-ship-spin` and `--no-ship`, noting that the uniformly black checks now take `--no-ship --no-debug-overlay`
+- [X] T025 Run quickstart checks 15–17 (`--no-ship --no-debug-overlay` is uniformly black; Release shows the still ship with any arguments; `strings` and `nm` on the stripped Release binary show no trace of the switches) check 9 on the iOS simulator, and check 18a (the surface's accessible description is unchanged, FR-016a). Record them in the Evidence section
+- [X] T026 Run quickstart check 19 (60 s of frame time and allocations, overlay on, ship drawn, macOS) and compare it with 003's baseline in the Evidence section (Principle III)
+- [X] T027 Run `./Scripts/verify.sh` and check 7 (10 consecutive `swift test` runs); fill in the rest of the Evidence section, marking any check not run with its reason
+- [X] T028 [P] Update `.tickets/27.yaml` `status` to `done`
 
 ---
 

@@ -8,10 +8,10 @@ public enum GameSpace {
     /// pixel-exact on 2× displays (005 FR-009). Shared by the ship sprite (SKY-27) and the order
     /// overlay's ship highlight (SKY-30).
     ///
-    /// Note for SKY-27: the sprite's top edge is the ship's front, but heading zero points along +x.
-    /// Draw the sprite rotated by `heading − π/2` — a quarter turn clockwise at heading zero
-    /// (005 FR-010). That angle is counter-clockwise positive in world or clip space (+y up); build
-    /// the rotation there, not in view points, where +y points down and the same angle turns the
-    /// other way.
+    /// The sprite's top edge is the ship's front, but heading zero points along +x, so the sprite is
+    /// drawn rotated by `heading − π/2` — a quarter turn clockwise at heading zero (005 FR-010). That
+    /// angle is counter-clockwise positive in world or clip space (+y up); the rotation is built there,
+    /// not in view points, where +y points down and the same angle turns the other way.
+    /// `ShipSpritePlacement` implements it (007 FR-007).
     public static let shipLength: Double = 40
 }
