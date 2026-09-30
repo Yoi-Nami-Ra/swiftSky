@@ -208,6 +208,10 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
                 forgetDisplayInterval()
             case .visibilityChanged(let isVisible):
                 displayLink?.isPaused = !isVisible
+                #if SWIFTSKY_INSTRUMENTATION
+                // Frames from before the pause are not the last second's (003 FR-008).
+                if isVisible { instrumentation.restartOverlayWindow() }
+                #endif
             case .willTerminate:
                 // Handled on the main thread by `post`, which routes it to `stopAndDrain`.
                 break
@@ -220,7 +224,8 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
 
 extension FrameLoop: CAMetalDisplayLinkDelegate {
     /// One frame. The normative ordering is in contracts/frame-loop.md and is deliberately literal
-    /// here: events, renderability, one clock read, simulation, draw, instrumentation.
+    /// here: events, renderability, one clock read, the debug overlay's snapshot (003), simulation,
+    /// draw, instrumentation.
     public func metalDisplayLink(_ link: CAMetalDisplayLink, needsUpdate update: CAMetalDisplayLink.Update) {
         // 1. Events, at the frame boundary and nowhere else.
         applyPendingEvents()
@@ -242,6 +247,15 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
         }
         lastTimestamp = now
         learnDisplayInterval(from: elapsed)
+
+        // 3a. The debug overlay's statistics, four times a second, from this frame's one timestamp
+        //     (003 FR-006, FR-008). A plain value handed across — the renderer never reads the
+        //     instrumentation (FR-015). Debug/profiling only.
+        #if SWIFTSKY_INSTRUMENTATION
+        if let statistics = instrumentation.overlayStatistics(at: now) {
+            renderer.updateDebugOverlay(statistics)
+        }
+        #endif
 
         // 4. Advance on the fixed timestep. `ticks` may be 0 — the frame still draws (FR-021).
         let ticks = accumulator.consume(elapsed: elapsed)

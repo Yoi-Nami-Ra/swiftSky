@@ -60,6 +60,10 @@ component was found missing on a machine where everything had previously built.
 
 ### Visible output
 
+> **Since 003-debug-overlay**: a Debug or Profiling build shows the live debug overlay by default.
+> Launch with `--no-debug-overlay` for every check below that expects a uniformly black surface.
+> Release builds are unaffected.
+
 | # | Check | Expected | Criterion |
 |---|-------|----------|-----------|
 | 1 | Launch macOS app | 1280×720 window, uniformly black content area, no toolbar/labels/graphics | SC-001, FR-006a |

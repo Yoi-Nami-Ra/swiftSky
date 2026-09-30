@@ -123,7 +123,9 @@ public struct GameSurfaceView: View {
         do {
             let renderer = try Renderer(device: device, pixelFormat: .bgra8Unorm_srgb, textFont: textFont())
             #if SWIFTSKY_INSTRUMENTATION
-            renderer.debugTextPattern = DebugTextMode(arguments: ProcessInfo.processInfo.arguments).pattern
+            let debugMode = DebugTextMode(arguments: ProcessInfo.processInfo.arguments)
+            renderer.debugTextPattern = debugMode.pattern
+            renderer.debugOverlay = debugMode.overlay
             #endif
             return .success(Setup(device: device, renderer: renderer))
         } catch let error as RendererError {
@@ -163,36 +165,49 @@ public struct GameSurfaceView: View {
 
 #if SWIFTSKY_INSTRUMENTATION
 
-/// Which debug text to draw, from the launch arguments (002 FR-015, FR-015a, research.md R9).
+/// Which debug text to draw, from the launch arguments (002 FR-015, FR-015a, research.md R9; 003
+/// FR-001, FR-011, FR-012, research.md R7).
 ///
 /// Debug and Profiling builds only. In Release this type and the parsing do not exist, so no launch
-/// argument can put text on screen (002 SC-006). Double-dash arguments, so AppKit's `-Key value`
-/// argument domain never reads them and nothing persists between launches.
+/// argument can put text on screen (002 SC-006, 003 SC-005). Double-dash arguments, so AppKit's
+/// `-Key value` argument domain never reads them and nothing persists between launches.
+///
+/// The live overlay is the default. `--no-debug-overlay` turns it off, leaving the uniformly black
+/// surface 001's and 002's visible-output checks expect. Either test-string argument replaces the
+/// overlay, because both draw in the same corner and the fill needs the whole text capacity.
 enum DebugTextMode: Equatable {
+    case overlay
     case none
     case testString
     case fill
 
     static let testStringArgument = "--debug-text"
     static let fillArgument = "--debug-text-fill"
+    static let noOverlayArgument = "--no-debug-overlay"
 
-    /// `--debug-text-fill` wins when both are given (002 FR-015a).
+    /// Precedence: `--debug-text-fill` > `--debug-text` > `--no-debug-overlay` > the overlay.
     init(arguments: [String]) {
         if arguments.contains(Self.fillArgument) {
             self = .fill
         } else if arguments.contains(Self.testStringArgument) {
             self = .testString
-        } else {
+        } else if arguments.contains(Self.noOverlayArgument) {
             self = .none
+        } else {
+            self = .overlay
         }
     }
 
     var pattern: DebugTextPattern? {
         switch self {
-        case .none: nil
+        case .overlay, .none: nil
         case .testString: DebugTextPattern(mode: .testString)
         case .fill: DebugTextPattern(mode: .fill)
         }
+    }
+
+    var overlay: DebugOverlay? {
+        self == .overlay ? DebugOverlay() : nil
     }
 }
 
