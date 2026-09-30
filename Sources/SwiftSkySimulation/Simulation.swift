@@ -1,22 +1,35 @@
 /// Advances the simulation.
 ///
-/// `advance` is a pure function: no clock, no randomness, no I/O, no global state (FR-015, FR-033).
-/// The same inputs always produce the same output, which is what SC-013's byte-identical guarantee
-/// across ten headless runs rests on.
+/// `advance` is a pure function of the state, a whole number of ticks and one control input: no clock,
+/// no randomness, no I/O, no global state (FR-012c as extended by 004, FR-015, FR-033). The same inputs
+/// always produce the same output, which is what SC-013's byte-identical guarantee across ten headless
+/// runs rests on.
 ///
 /// Note there is no actor, no lock, and no isolation annotation anywhere in this layer. Isolation is
 /// the frame loop's responsibility (FR-028); these types simply don't need it, and adding it here
 /// would force every simulation test to become asynchronous for no benefit (FR-012c, FR-012d).
 public enum Simulation {
-    /// Advances `state` by `ticks` fixed timesteps.
+    /// Advances `state` by `ticks` fixed timesteps, every one of them driven by `input`.
+    ///
+    /// Every tick of one call gets the same input, so advancing n ticks at once is bit-identical to
+    /// advancing one tick n times (004 FR-011). The default is the neutral input, which is why the
+    /// frame loop's existing call is unchanged until an input source exists (004 FR-010, research R1).
     ///
     /// - Parameters:
     ///   - state: The current state.
     ///   - ticks: Whole ticks to advance. `0` is legal and returns `state` unchanged.
+    ///   - input: What the ship is asked to do on each of those ticks.
     /// - Returns: The state after `ticks` advances.
-    public static func advance(_ state: SimulationState, ticks: Int) -> SimulationState {
+    public static func advance(
+        _ state: SimulationState,
+        ticks: Int,
+        input: ControlInput = .neutral
+    ) -> SimulationState {
         guard ticks > 0 else { return state }
         var next = state
+        for _ in 0..<ticks {
+            next.ship.step(input)
+        }
         next.tickCount += UInt64(ticks)
         return next
     }
