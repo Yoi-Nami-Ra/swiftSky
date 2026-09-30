@@ -1,5 +1,8 @@
+import CoreGraphics
 import Foundation
+import ImageIO
 import Testing
+import UniformTypeIdentifiers
 
 @testable import SwiftSkyRendering
 
@@ -39,5 +42,51 @@ struct ShipImageBitmapTests {
         #expect(notPremultiplied == 0)
         #expect(transparent > 0)
         #expect(opaque > 0)
+    }
+
+    // MARK: - Failures (US4, C13)
+
+    private func temporaryURL(_ name: String) -> URL {
+        FileManager.default.temporaryDirectory.appendingPathComponent("swiftSky-\(UUID().uuidString)-\(name)")
+    }
+
+    @Test("No file at the URL is `missing`")
+    func missingFile() {
+        #expect(throws: ShipImageError.missing) {
+            try ShipImageBitmap(contentsOf: temporaryURL("absent.png"))
+        }
+    }
+
+    @Test("A file that is not an image is `undecodable`")
+    func notAnImage() throws {
+        let url = temporaryURL("text.png")
+        try Data("not a png".utf8).write(to: url)
+        defer { try? FileManager.default.removeItem(at: url) }
+        #expect(throws: ShipImageError.undecodable) {
+            try ShipImageBitmap(contentsOf: url)
+        }
+    }
+
+    @Test("An image that is not 80 × 80 is `wrongSize`")
+    func wrongSize() throws {
+        let url = temporaryURL("small.png")
+        let context = try #require(
+            CGContext(
+                data: nil, width: 16, height: 16, bitsPerComponent: 8, bytesPerRow: 0,
+                space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            )
+        )
+        let image = try #require(context.makeImage())
+        let destination = try #require(
+            CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil)
+        )
+        CGImageDestinationAddImage(destination, image, nil)
+        try #require(CGImageDestinationFinalize(destination))
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        #expect(throws: ShipImageError.wrongSize(width: 16, height: 16)) {
+            try ShipImageBitmap(contentsOf: url)
+        }
     }
 }
