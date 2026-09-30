@@ -12,7 +12,8 @@ repository (`main`), with no remote configured yet.
 Built so far: `specs/001-metal-app-shell` (a black Metal surface on both platforms, three layers,
 an off-main frame loop, instrumentation), `specs/002-metal-text-rendering` (Metal-drawn text from
 a glyph atlas) and `specs/003-debug-overlay` (live frame statistics drawn on screen in Debug and
-Profiling builds). Layer libraries and tests live in the root `Package.swift`, and the two app targets
+Profiling builds) and `specs/004-ship-newtonian-motion` (one ship with frictionless Newtonian motion in
+the logic layer, driven by a per-tick control input; not drawn yet). Layer libraries and tests live in the root `Package.swift`, and the two app targets
 live in `swiftSky.xcodeproj`. `./Scripts/verify.sh` is the single checked-in verification command.
 
 The project constitution (`.specify/memory/constitution.md`, v1.1.0) is ratified and enforces
@@ -88,6 +89,10 @@ artifacts, keep them consistent with these templates.
   `Sources/SwiftSkyRendering/Text/`, and the Debug/Profiling-only test pattern and debug overlay
   are in `Sources/SwiftSkyRendering/Debug/`. The overlay's measurement (one-second frame-time
   window, 4 Hz refresh) sits beside `Instrumentation.swift` in the platform layer.
+- `Sources/SwiftSkySimulation/Ship.swift` and `ShipMotion.swift` — the ship, its limits, the control
+  input and the per-tick rule. `ShipMotion.swift` is the logic layer's only file with an import
+  (`Darwin`, for `cos`/`sin`). Angles are radians in code; tests compare states bit for bit with
+  `Tests/SwiftSkySimulationTests/StateBits.swift`.
 - `Tests/SwiftSkySimulationTests/`, `Tests/SwiftSkyRenderingTests/`, `Tests/SwiftSkyPlatformTests/`
   — headless Swift Testing suites. The platform tests cover pure measurement structs only.
   They must never create a Metal device; `verify.sh` enforces this.
