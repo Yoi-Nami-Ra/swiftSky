@@ -24,7 +24,7 @@ description: |
   tolerance; a new order mid-flight is followed; results are deterministic.
   Default tolerances: 1 unit and 1 unit/s.
 platform: macos
-status: ready
+status: done
 phase: MVP
 priority: high
 parent: 22
