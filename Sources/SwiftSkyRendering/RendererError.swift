@@ -24,6 +24,11 @@ public enum RendererError: Error, Equatable, Sendable {
     /// The full-screen quad's vertex buffer could not be allocated.
     case geometryBufferCreationFailed
 
+    /// The ship image could not be used: it is missing from the app, is not a readable image, is not
+    /// 80 × 80 pixels, or could not be put into graphics memory with its mip chain (007 FR-005, research
+    /// R7). One case and one diagnostic code for all of them; `reason` says which step failed.
+    case shipImageUnavailable(reason: String)
+
     /// Human-readable explanation for the FR-024 notice.
     ///
     /// Written for a person who is not looking at a debugger: it says what failed and, where useful,
@@ -41,6 +46,8 @@ public enum RendererError: Error, Equatable, Sendable {
             return "swiftSky could not set up its graphics pipeline: \(underlying)"
         case .geometryBufferCreationFailed:
             return "swiftSky could not allocate the graphics memory it needs to draw."
+        case .shipImageUnavailable(let reason):
+            return "swiftSky could not load the ship image (\(reason)). The installation may be incomplete."
         }
     }
 
@@ -53,6 +60,7 @@ public enum RendererError: Error, Equatable, Sendable {
         case .shaderFunctionMissing: return "shader_function_missing"
         case .pipelineStateCreationFailed: return "pipeline_state_creation_failed"
         case .geometryBufferCreationFailed: return "geometry_buffer_creation_failed"
+        case .shipImageUnavailable: return "ship_image_unavailable"
         }
     }
 }
