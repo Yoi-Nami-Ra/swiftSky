@@ -10,6 +10,91 @@ import Testing
 @Suite("Autopilot")
 struct AutopilotTests {
     static let dt = FixedTimestep.tickDuration
+
+    /// A launch ship ordered to `destination`.
+    static func ordered(to destination: Vector2, ship: Ship = Ship()) -> SimulationState {
+        var state = SimulationState(tickCount: 0, ship: ship)
+        state.setOrder(to: destination)
+        return state
+    }
+
+    static func distance(_ state: SimulationState) -> Double {
+        state.distanceRemaining ?? .nan
+    }
+
+    static let rank: [AutopilotPhase: Int] = [.aligning: 0, .burning: 1, .flipping: 2, .braking: 3, .arrived: 4]
+
+    // MARK: - US1: from rest
+
+    static let restDistances: [Double] = [0.5, 10, 100, 1_000, 10_000]
+
+    @Test(
+        "From rest, every order in the grid arrives within tolerance, on time, without overshoot (SC-001–SC-003)",
+        arguments: restDistances, 0..<16
+    )
+    func arrivesFromRest(distance: Double, direction: Int) throws {
+        let angle = Double(direction) * .pi / 8
+        let destination = Vector2(x: distance * cos(angle), y: distance * sin(angle))
+        let flight = fly(Self.ordered(to: destination), maxTicks: 3_600)
+
+        // SC-001
+        let ticks = try #require(flight.ticksToArrival)
+        #expect(Self.distance(flight.final) <= 1)
+        #expect(speed(flight.final.ship) < 1)
+
+        // SC-002
+        let reference = referenceTime(distance: distance, angle: abs(Ship.wrapped(angle)), limits: .default)
+        #expect(Double(ticks) * Self.dt <= 1.1 * reference + 0.5, "took \(Double(ticks) * Self.dt) s, reference \(reference) s")
+
+        // SC-003
+        #expect(flight.maxOvershoot <= 1)
+
+        // FR-007: the flip starts before halfway.
+        if let flipStart = flight.flipStartDistance {
+            #expect(flipStart < distance / 2)
+        }
+
+        // FR-005: from rest the phases only move forward, each at most once.
+        let ranks = flight.phases.map { Self.rank[$0]! }
+        #expect(ranks == ranks.sorted() && Set(ranks).count == ranks.count, "\(flight.phases)")
+    }
+
+    @Test("From rest facing the destination: burn, flip, brake, arrive; facing away it aligns first (FR-005)")
+    func phaseSequenceFromRest() {
+        let ahead = fly(Self.ordered(to: Vector2(x: 1_000, y: 0)), maxTicks: 3_600)
+        #expect(ahead.phases == [.burning, .flipping, .braking, .arrived])
+
+        let behind = fly(Self.ordered(to: Vector2(x: -1_000, y: 0)), maxTicks: 3_600)
+        #expect(behind.phases == [.aligning, .burning, .flipping, .braking, .arrived])
+    }
+
+    @Test(
+        "After arrival the ship keeps station for 10,000 ticks, stops spinning, and returns if pushed out (SC-008, FR-009)",
+        arguments: [Vector2(x: 1_000, y: 0), Vector2(x: 10 * cos(Double.pi / 4), y: 10 * sin(Double.pi / 4))]
+    )
+    func keepsStation(destination: Vector2) throws {
+        let flight = fly(Self.ordered(to: destination), maxTicks: 3_600)
+        _ = try #require(flight.ticksToArrival)
+
+        var state = flight.final
+        for _ in 0..<10_000 {
+            state = Simulation.advance(state, ticks: 1)
+            #expect(state.autopilot.phase == .arrived)
+            #expect(Self.distance(state) <= 1)
+            if state.autopilot.phase != .arrived || Self.distance(state) > 1 { return }
+        }
+        #expect(speed(state.ship) < 0.01)
+        #expect(state.ship.angularVelocity == 0)
+
+        // Nudged out of the position tolerance, the manoeuvre resumes and completes again.
+        state = Simulation.advance(state, ticks: 30, input: ControlInput(thrust: 1, turn: 0))
+        #expect(Self.distance(state) > 1)
+        state = Simulation.advance(state, ticks: 1)
+        #expect(state.autopilot.phase != .arrived)
+        let back = fly(state, maxTicks: 3_600)
+        #expect(back.ticksToArrival != nil)
+        #expect(Self.distance(back.final) <= 1)
+    }
 }
 
 // MARK: - Flight recording

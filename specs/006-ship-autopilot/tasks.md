@@ -75,14 +75,14 @@ tests pass (checks 3, 4, 5, 9).
 
 ### Tests for User Story 1
 
-- [ ] T007 [US1] In `Tests/SwiftSkySimulationTests/AutopilotTests.swift`, add a parameterised `@Test` over 5 distances {0.5, 10, 100, 1,000, 10,000} × 16 directions (`k·π/8` relative to heading 0), each from a resting launch ship: arrives (phase `.arrived`) within 1 unit and below 1 unit/s (SC-001, US1-1, US1-2)
-- [ ] T008 [US1] In the same file, for the same grid: ticks to arrival × dt ≤ 1.1 × `referenceTime` + 0.5 s (SC-002); overshoot ≤ 1 unit (SC-003, US1-3); for cases with a flip, the straight-line distance from the start when it begins is < half the trip (US1-4, FR-007); the collapsed phase sequence is in canonical order (aligning < burning < flipping < braking < arrived, each at most once) (FR-005)
-- [ ] T009 [US1] In the same file: the 1,000-unit order along heading 0 has the collapsed phase sequence `[burning, flipping, braking, arrived]`, and one along heading π has `[aligning, burning, flipping, braking, arrived]` (US1-1, US1-2, FR-005)
-- [ ] T010 [US1] In the same file, station-keeping: after arriving from a 1,000-unit order and from a 10-unit order at 45°, advance 10,000 more ticks one at a time: phase `.arrived` and distance ≤ 1 on every tick; at the end speed < 0.01 u/s and `angularVelocity == 0` (SC-008, US1-5, FR-009). Then nudge it with `advance(_:ticks:input:)` (full thrust, 30 ticks) so it leaves the position tolerance: the next autopilot-driven tick's phase is not `.arrived`, and it arrives again within tolerance (FR-009 resume clause)
+- [X] T007 [US1] In `Tests/SwiftSkySimulationTests/AutopilotTests.swift`, add a parameterised `@Test` over 5 distances {0.5, 10, 100, 1,000, 10,000} × 16 directions (`k·π/8` relative to heading 0), each from a resting launch ship: arrives (phase `.arrived`) within 1 unit and below 1 unit/s (SC-001, US1-1, US1-2)
+- [X] T008 [US1] In the same file, for the same grid: ticks to arrival × dt ≤ 1.1 × `referenceTime` + 0.5 s (SC-002); overshoot ≤ 1 unit (SC-003, US1-3); for cases with a flip, the straight-line distance from the start when it begins is < half the trip (US1-4, FR-007); the collapsed phase sequence is in canonical order (aligning < burning < flipping < braking < arrived, each at most once) (FR-005)
+- [X] T009 [US1] In the same file: the 1,000-unit order along heading 0 has the collapsed phase sequence `[burning, flipping, braking, arrived]`, and one along heading π has `[aligning, burning, flipping, braking, arrived]` (US1-1, US1-2, FR-005)
+- [X] T010 [US1] In the same file, station-keeping: after arriving from a 1,000-unit order and from a 10-unit order at 45°, advance 10,000 more ticks one at a time: phase `.arrived` and distance ≤ 1 on every tick; at the end speed < 0.01 u/s and `angularVelocity == 0` (SC-008, US1-5, FR-009). Then nudge it with `advance(_:ticks:input:)` (full thrust, 30 ticks) so it leaves the position tolerance: the next autopilot-driven tick's phase is not `.arrived`, and it arrives again within tolerance (FR-009 resume clause)
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Run the US1 tests against T004's law and tune only within the contract (the constants of R3–R5 may be adjusted, each change recorded in research.md with its reason) until T007–T010 pass. Update `Sources/SwiftSkySimulation/AutopilotLaw.swift` doc comments to match what shipped
+- [X] T011 [US1] Run the US1 tests against T004's law and tune only within the contract (the constants of R3–R5 may be adjusted, each change recorded in research.md with its reason) until T007–T010 pass. Update `Sources/SwiftSkySimulation/AutopilotLaw.swift` doc comments to match what shipped
 
 **Checkpoint**: MVP — a resting ship flies any order and holds station.
 
