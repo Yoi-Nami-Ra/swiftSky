@@ -82,7 +82,7 @@ braking stops the ship in 0.9 d (R3).
 **Decision**:
 - **Target heading** `ψ = atan2(e)`. Heading error `δ = wrap(ψ − heading)` into (−π, π]; an exact π
   stays +π, so "exactly behind" always turns counter-clockwise (FR-012, Edge Cases).
-- **Desired rate of turn** `ω* = sign(δ) · min(ωmax, √(2α|δ|), |δ|/dt)`, sent as
+- **Desired rate of turn** (see R11 for the shipped target and thrust rule) `ω* = sign(δ) · min(ωmax, √(2α|δ|), |δ|/dt)`, sent as
   `turn = ω*/ωmax`. The ship's own step (004 FR-008) then moves its rate towards `ω*` at `α`. The
   `√(2α|δ|)` term brakes the rotation in time; `|δ|/dt` lands the last tick without overshooting.
 - **Thrust cone**: thrust only when `|δ| ≤ 0.1 rad` (≈ 5.7°), at
@@ -169,3 +169,28 @@ flight instead of a fixed input, plus the structural argument: the law touches s
 
 **Rationale**: Principle III requires before/after numbers for a hot-path change; the autopilot runs
 on every tick once SKY-10/11 issue orders.
+
+## R11 — What tuning changed during implementation (T011)
+
+Flying the grid showed three defects in the law as first written; each was fixed inside the
+contract's shape, and the contract now describes what shipped.
+
+- **Aim at an acceleration, not at the velocity error.** Once the ship tracks the profile, the
+  velocity error is tiny and its direction is dominated by fractions of a unit per second of lateral
+  drift, so the target heading swung and the ship lost most of its braking thrust to wobble — and
+  overshot by up to 8 units. The target is now `A = e/τ + feedforward`, with `τ = 1/15 s` and the
+  feedforward the profile's own deceleration as the ship closes (`−(v·r̂)·ds/dd` along `r̂`). Thrust is
+  `A·ĥ/a`. Lateral drift now tilts the heading by a degree or so instead of swinging it.
+- **Turn time from the current rate.** The rest-to-rest estimate of R2 overestimates the remaining
+  flip time badly for a ship already swinging round (0.25 s estimated vs 0.04 s real near the end), so
+  the desired speed jumped as the flip finished. `turnTime(angle, rate:)` accounts for the current rate
+  of turn (stop first if turning away; credit the stopping time if too fast to stop in time).
+  `restToRestTurnTime` remains for SC-002's reference pilot.
+- **Commitment and latches.** Mid-flip, a slightly optimistic desired speed made the ship turn back
+  towards the destination for a tick. The hold rule now applies whenever the ship is committed to
+  braking (facing against the motion, or already flipping or braking), and it also holds when `A`
+  gives no decisive call to brake (`−A·v̂ < 0.05 a`), where its direction is meaningless. For the phase
+  read-out, a correction turn mid-burn stays **burning**, as one mid-brake stays **braking**.
+
+Measured at the default limits: 1,000 units ahead arrives in 5.4 s (bound 5.69 s), 1,000 units
+behind in 6.9 s (bound 7.34 s), no overshoot.
