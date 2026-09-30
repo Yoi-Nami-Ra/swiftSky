@@ -15,7 +15,9 @@ a glyph atlas), `specs/003-debug-overlay` (live frame statistics drawn on screen
 Profiling builds), `specs/004-ship-newtonian-motion` (one ship with frictionless Newtonian motion
 in the logic layer, driven by a per-tick control input; not drawn yet) and
 `specs/005-game-space-camera` (one world unit = one point, an unbounded world, and a fixed camera
-with the origin at the centre of the whole surface; nothing wired in yet). Layer libraries and
+with the origin at the centre of the whole surface; nothing wired in yet) and
+`specs/006-ship-autopilot` (a move order and the autopilot that flies it — turn, burn, flip, brake,
+then keep station — in the logic layer; nothing issues orders yet). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
@@ -93,9 +95,14 @@ artifacts, keep them consistent with these templates.
   are in `Sources/SwiftSkyRendering/Debug/`. The overlay's measurement (one-second frame-time
   window, 4 Hz refresh) sits beside `Instrumentation.swift` in the platform layer.
 - `Sources/SwiftSkySimulation/Ship.swift` and `ShipMotion.swift` — the ship, its limits, the control
-  input and the per-tick rule. `ShipMotion.swift` is the logic layer's only file with an import
-  (`Darwin`, for `cos`/`sin`). Angles are radians in code; tests compare states bit for bit with
+  input and the per-tick rule. `ShipMotion.swift` imports
+  `Darwin` for `cos`/`sin`. Angles are radians in code; tests compare states bit for bit with
   `Tests/SwiftSkySimulationTests/StateBits.swift`.
+- `Sources/SwiftSkySimulation/Autopilot.swift` and `AutopilotLaw.swift` — the move order, phases,
+  arrival tolerances and the autopilot value held in `SimulationState`, and the per-tick law.
+  `Simulation.advance(_:ticks:)` is flown by the autopilot when there is an order;
+  `advance(_:ticks:input:)` takes an explicit input and leaves the order alone. `AutopilotLaw.swift` is
+  the logic layer's second file with a `Darwin` import. Its tuning history is research R11.
 - `Sources/SwiftSkyRendering/Camera.swift` and `GameSpace.swift` — the camera (world → view points,
   view points → world, world → clip; `init?(surface:)` is `nil` for a zero-area surface or an
   unusable backing scale) and

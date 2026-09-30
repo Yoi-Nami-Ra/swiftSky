@@ -66,3 +66,16 @@ Record results below as checks are run.
 
 | # | Result | Notes |
 |---|--------|-------|
+| 1 | **PASS** 2026-10-01 | `./Scripts/verify.sh`: all stages PASS (metal compiler, swift build, no Metal device in tests, swift test, xcodebuild macOS, xcodebuild iOS), no `warning:` lines beyond the exempt swiftbuild line. `SwiftSkyRendering` and `SwiftSkyPlatform` unchanged against `main` |
+| 2 | **PASS** 2026-10-01 | 10/10 consecutive `swift test --build-system swiftbuild` runs pass: 60 simulation (16 of them `Autopilot`), 62 rendering, 16 platform tests |
+| 3–5 | **PASS** 2026-10-01 | `arrivesFromRest`: 80 cases (5 distances × 16 directions) arrive within 1 unit and < 1 u/s, inside SC-002's bound, overshoot ≤ 1, flip before halfway, phases in order. Examples: 1,000 units ahead 5.40 s (bound 5.69 s); 1,000 units behind 6.90 s (bound 7.34 s). `phaseSequenceFromRest` passes |
+| 6 | **PASS** 2026-10-01 | `arrivesFromMovingStarts`: 96 cases (3 speeds × 4 distances × 8 directions) arrive within 60 s, bearing sweep < 360°, ≤ 2 passes; `namedMovingStarts` passes |
+| 7 | **PASS** 2026-10-01 | `reorderInAnyPhase` (5 phases) and `sameDestinationAndRefusal` |
+| 8 | **PASS** 2026-10-01 | `noOrder`, `readOut`, `alreadyThere`, `zeroLimits` (3 cases), `farDestination`, `exactlyBehindTurnsCounterClockwise`, `tolerances`, and batching / explicit input in `batchingExplicitInputAndCopies` |
+| 9 | **PASS** 2026-10-01 | `keepsStation` (2 cases): arrived and within 1 unit for 10,000 ticks, final speed < 0.01 u/s, rate of turn 0; a 30-tick full-thrust nudge leaves arrived and it arrives again |
+| 10 | **PASS** 2026-10-01 | `tenRunsAreIdentical`: 1,200-tick scenario with re-orders in burning, flipping and braking and 1/2/3/4-tick advances, byte-identical 10 times |
+| 11 | **Not run** | Needs an Instruments session on each device (the method is still open as SKY-3 / SKY-4). Structural evidence: the law touches stored `Double`s only, and check 14 measured 0 allocations over 10 M ticks. The running app gives no order, so the law never runs there yet |
+| 12 | **Not run** | Needs an interactive device session. Check 14 bounds the cost: ≤ 4 ticks × ~150 ns ≈ 0.6 µs per frame once orders exist (0.004 % of 16.67 ms); with no order, as in the app today, the extra cost is one `nil` check per tick |
+| 13 | **Not run** (structural PASS) | No interactive launch in this session. No change to `SwiftSkyRendering` or `SwiftSkyPlatform`; the frame loop's `Simulation.advance(state, ticks:)` with no order is bit-identical to the neutral input (`noOrder` test), so nothing visible can differ |
+| 14 | **PASS** 2026-10-01 | Apple Silicon Mac, `swiftc -O -wmo`, 10 M single-tick advances, 3 runs each. **Before** (`main`, no input): 5.12 / 4.02 / 4.18 ns per tick. **After** (every tick flown by the autopilot, re-ordered on arrival): 147.9 / 189.0 / 148.2 ns per tick — above the plan's < 100 ns estimate but well under the 1 µs expectation. **Allocations: 0** in every run; a control that allocates 1,000 arrays in the same window reports 1,003 blocks |
+

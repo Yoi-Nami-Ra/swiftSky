@@ -167,11 +167,11 @@ orbiting or ringing.
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T024 Run `./Scripts/verify.sh` (check 1) and `swift test --build-system swiftbuild` 10 times in a row (check 2); record both in `specs/006-ship-autopilot/quickstart.md` Evidence
-- [ ] T025 Run the headless before/after benchmark (check 14) in the session scratchpad on `main` and on this branch, 3 runs each; record ns per tick and allocation counts in `specs/006-ship-autopilot/quickstart.md` Evidence
-- [ ] T026 Record checks 3–10 and the manual checks 11–13 (run, or "Not run" with the structural argument, as 004 did) in `specs/006-ship-autopilot/quickstart.md` Evidence
-- [ ] T027 [P] Update `CLAUDE.md`: add `specs/006-ship-autopilot` to "Built so far" (a move order, the autopilot and its phases in the logic layer; nothing issues orders yet) and the Key locations entry for `Autopilot.swift` / `AutopilotLaw.swift` (and that `AutopilotLaw.swift` is the second file with a `Darwin` import)
-- [ ] T028 [P] Update `.tickets/25.yaml` status to `done`; record any follow-up (e.g. SKY-29's order lines) only if not already ticketed
+- [X] T024 Run `./Scripts/verify.sh` (check 1) and `swift test --build-system swiftbuild` 10 times in a row (check 2); record both in `specs/006-ship-autopilot/quickstart.md` Evidence
+- [X] T025 Run the headless before/after benchmark (check 14) in the session scratchpad on `main` and on this branch, 3 runs each; record ns per tick and allocation counts in `specs/006-ship-autopilot/quickstart.md` Evidence
+- [X] T026 Record checks 3–10 and the manual checks 11–13 (run, or "Not run" with the structural argument, as 004 did) in `specs/006-ship-autopilot/quickstart.md` Evidence
+- [X] T027 [P] Update `CLAUDE.md`: add `specs/006-ship-autopilot` to "Built so far" (a move order, the autopilot and its phases in the logic layer; nothing issues orders yet) and the Key locations entry for `Autopilot.swift` / `AutopilotLaw.swift` (and that `AutopilotLaw.swift` is the second file with a `Darwin` import)
+- [X] T028 [P] Update `.tickets/25.yaml` status to `done`; record any follow-up (e.g. SKY-29's order lines) only if not already ticketed
 
 ---
 
