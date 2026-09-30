@@ -24,7 +24,8 @@ public struct ShipLimits: Sendable, Equatable {
     /// The default limits, and the only place they are written (004 FR-003): 200 units/s² of thrust,
     /// 180 °/s of turn and 360 °/s² of angular acceleration.
     ///
-    /// Provisional. Retune once SKY-23 fixes what a world unit is on screen.
+    /// One world unit is one point on screen (005 FR-001), so these read as 200 pt/s², and were kept
+    /// as they are when that scale was fixed (005 FR-012).
     public static let `default` = ShipLimits(
         maxThrustAcceleration: 200,
         maxAngularSpeed: .pi,
