@@ -17,7 +17,7 @@ description: |
   backing scale, and the allocation check (as in SKY-3/SKY-4) stays at zero
   with text updating every frame.
 platform: macos
-status: ready
+status: done
 phase: MVP
 priority: medium
 parent: 22
