@@ -116,12 +116,12 @@ orbiting or ringing.
 
 ### Tests for User Story 3
 
-- [ ] T015 [US3] In `Tests/SwiftSkySimulationTests/AutopilotTests.swift`, add a parameterised `@Test` over the phases aligning, burning, flipping, braking and arrived: fly a first order from rest (start facing away so aligning occurs) until the phase first equals the case, call `setOrder(to:)` with a second destination 2,000 units off to one side, fly on: arrives at the second destination within tolerance. Assert "no dependence on the old destination": a state built with the same ship and only the second order produces a bit-identical next state (SC-006, US3-1, US3-2)
-- [ ] T016 [US3] In the same file: re-ordering to the same destination mid-flight still arrives within tolerance (US3-3); `setOrder(to:)` with a NaN or infinite component returns `false` and leaves `bits(state)` unchanged (FR-002)
+- [X] T015 [US3] In `Tests/SwiftSkySimulationTests/AutopilotTests.swift`, add a parameterised `@Test` over the phases aligning, burning, flipping, braking and arrived: fly a first order from rest (start facing away so aligning occurs) until the phase first equals the case, call `setOrder(to:)` with a second destination 2,000 units off to one side, fly on: arrives at the second destination within tolerance. Assert "no dependence on the old destination": a state built with the same ship and only the second order produces a bit-identical next state (SC-006, US3-1, US3-2)
+- [X] T016 [US3] In the same file: re-ordering to the same destination mid-flight still arrives within tolerance (US3-3); `setOrder(to:)` with a NaN or infinite component returns `false` and leaves `bits(state)` unchanged (FR-002)
 
 ### Implementation for User Story 3
 
-- [ ] T017 [US3] Confirm `setOrder` in `Sources/SwiftSkySimulation/Autopilot.swift` and `Sources/SwiftSkySimulation/SimulationState.swift` makes T015–T016 pass; fix any dependence on stale state (the only memory is `phase`, re-evaluated at `setOrder`)
+- [X] T017 [US3] Confirm `setOrder` in `Sources/SwiftSkySimulation/Autopilot.swift` and `Sources/SwiftSkySimulation/SimulationState.swift` makes T015–T016 pass; fix any dependence on stale state (the only memory is `phase`, re-evaluated at `setOrder`)
 
 **Checkpoint**: orders can be changed at any time.
 

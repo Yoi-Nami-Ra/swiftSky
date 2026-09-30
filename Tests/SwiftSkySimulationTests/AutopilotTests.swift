@@ -140,6 +140,61 @@ struct AutopilotTests {
         let tooClose = fly(Self.moving(Vector2(x: 400, y: 0), to: Vector2(x: 20, y: 0)), maxTicks: 3_600)
         #expect(tooClose.passes >= 1 && tooClose.passes <= 2)
     }
+
+    // MARK: - US3: re-orders
+
+    /// Flies `state` one tick at a time until its phase is `phase`, or `nil` within `maxTicks`.
+    static func advance(_ state: SimulationState, until phase: AutopilotPhase, maxTicks: Int = 3_600) -> SimulationState? {
+        var state = state
+        for _ in 0..<maxTicks {
+            if state.autopilot.phase == phase { return state }
+            state = Simulation.advance(state, ticks: 1)
+        }
+        return state.autopilot.phase == phase ? state : nil
+    }
+
+    @Test(
+        "A new order in any phase replaces the old at once, and the ship arrives at the new one (SC-006)",
+        arguments: [AutopilotPhase.aligning, .burning, .flipping, .braking, .arrived]
+    )
+    func reorderInAnyPhase(phase: AutopilotPhase) throws {
+        // Facing away from the first destination, so the flight starts by aligning.
+        let first = Self.ordered(to: Vector2(x: -1_000, y: 0))
+        var state = try #require(Self.advance(first, until: phase))
+        let second = Vector2(x: state.ship.position.x, y: state.ship.position.y + 2_000)
+        let accepted = state.setOrder(to: second)
+        #expect(accepted)
+        #expect(state.autopilot.order?.destination == second)
+
+        // No dependence on the old destination: the same ship given only the new order ticks identically.
+        var fresh = SimulationState(tickCount: state.tickCount, ship: state.ship)
+        fresh.setOrder(to: second)
+        #expect(bits(Simulation.advance(state, ticks: 1)) == bits(Simulation.advance(fresh, ticks: 1)))
+
+        let flight = fly(state, maxTicks: 3_600)
+        #expect(flight.ticksToArrival != nil)
+        #expect(Self.distance(flight.final) <= 1)
+        #expect(speed(flight.final.ship) < 1)
+    }
+
+    @Test("Re-ordering to the same destination carries on; a non-finite order is refused (US3-3, FR-002)")
+    func sameDestinationAndRefusal() throws {
+        let destination = Vector2(x: 800, y: 300)
+        var state = try #require(Self.advance(Self.ordered(to: destination), until: .flipping))
+        let accepted = state.setOrder(to: destination)
+        #expect(accepted)
+        let flight = fly(state, maxTicks: 3_600)
+        #expect(flight.ticksToArrival != nil)
+        #expect(Self.distance(flight.final) <= 1)
+
+        for bad in [Vector2(x: .nan, y: 0), Vector2(x: 0, y: .infinity), Vector2(x: -.infinity, y: .nan)] {
+            let before = bits(state)
+            let refused = !state.setOrder(to: bad)
+            #expect(refused)
+            #expect(bits(state) == before)
+        }
+        #expect(MoveOrder(destination: Vector2(x: .nan, y: 1)) == nil)
+    }
 }
 
 // MARK: - Flight recording
