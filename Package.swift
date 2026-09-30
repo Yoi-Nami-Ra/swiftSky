@@ -57,7 +57,8 @@ let package = Package(
         .library(name: "SwiftSkyPlatform", targets: ["SwiftSkyPlatform"]),
     ],
     targets: [
-        // LOGIC LAYER — imports nothing. Pure value types and pure functions (FR-011, FR-012c).
+        // LOGIC LAYER — declares no dependencies. Pure value types and pure functions (FR-011, FR-012c).
+        // Its only import is the C library (Darwin), for cos/sin in ShipMotion.swift (004 research R3).
         .target(
             name: "SwiftSkySimulation",
             swiftSettings: layerSettings
