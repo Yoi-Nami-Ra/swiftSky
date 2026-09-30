@@ -42,6 +42,16 @@ public final class Renderer {
     /// The debug text to draw, chosen by the platform layer from the launch arguments. Set once, before
     /// the loop starts; `nil` — the default — draws no text, so the surface stays black (FR-015).
     public var debugTextPattern: DebugTextPattern?
+
+    /// The live debug overlay, drawn when no test string is (003 FR-001, FR-012). Set once, before the
+    /// loop starts, by the platform layer; `nil` — `--no-debug-overlay` — draws nothing.
+    public var debugOverlay: DebugOverlay?
+
+    /// Hands the overlay the frame loop's latest snapshot. Loop thread only, like `render`; called four
+    /// times a second, and the overlay redraws it every frame until the next one (003 FR-006, FR-015).
+    public func updateDebugOverlay(_ statistics: DebugOverlayStatistics) {
+        debugOverlay?.statistics = statistics
+    }
     #endif
 
     /// Reused every frame so the draw path does not build one (FR-020).
@@ -203,9 +213,14 @@ public final class Renderer {
         guard let textBuffer else { return nil }
 
         #if SWIFTSKY_INSTRUMENTATION
+        // At most one of the two is set (the platform layer's launch-argument parsing), and the test
+        // string wins if both ever were, so its checks are never disturbed (003 FR-012).
         if let debugTextPattern {
             textBuffer.clear()
             debugTextPattern.write(into: textBuffer, surface: surface, timestamp: timestamp)
+        } else if let debugOverlay {
+            textBuffer.clear()
+            debugOverlay.write(into: textBuffer, surface: surface)
         }
         #endif
 
