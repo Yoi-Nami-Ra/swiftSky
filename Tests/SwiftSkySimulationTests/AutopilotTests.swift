@@ -95,6 +95,51 @@ struct AutopilotTests {
         #expect(back.ticksToArrival != nil)
         #expect(Self.distance(back.final) <= 1)
     }
+
+    // MARK: - US2: moving starts
+
+    /// A ship at the origin facing heading 0 and moving at `velocity`, ordered to `destination`.
+    static func moving(_ velocity: Vector2, to destination: Vector2) -> SimulationState {
+        ordered(to: destination, ship: Ship(position: .zero, velocity: velocity, heading: 0, angularVelocity: 0))
+    }
+
+    @Test(
+        "From moving starts, every order arrives within 60 s without orbiting or ringing (SC-004)",
+        arguments: [100.0, 400, 1_000], [0.0, 50, 1_000, 5_000]
+    )
+    func arrivesFromMovingStarts(speed initialSpeed: Double, distance: Double) {
+        for direction in 0..<8 {
+            let angle = Double(direction) * .pi / 4
+            let velocity = Vector2(x: initialSpeed * cos(angle), y: initialSpeed * sin(angle))
+            let flight = fly(Self.moving(velocity, to: Vector2(x: distance, y: 0)), maxTicks: 3_600)
+            let label = "speed \(initialSpeed), direction \(direction), distance \(distance)"
+
+            #expect(flight.ticksToArrival != nil, "\(label): did not arrive")
+            #expect(Self.distance(flight.final) <= 1, "\(label)")
+            #expect(speed(flight.final.ship) < 1, "\(label)")
+            #expect(abs(flight.bearingSweep) < 2 * .pi, "\(label): swept \(flight.bearingSweep)")
+            #expect(flight.passes <= 2, "\(label): \(flight.passes) passes")
+        }
+    }
+
+    @Test("Named moving starts: too close to stop, moving away, ordered to its own position, moving across (US2)")
+    func namedMovingStarts() {
+        let cases: [(String, Vector2, Vector2)] = [
+            ("too close to stop", Vector2(x: 400, y: 0), Vector2(x: 20, y: 0)),
+            ("moving away", Vector2(x: -300, y: 0), Vector2(x: 500, y: 0)),
+            ("ordered to its own position", Vector2(x: 0, y: 200), .zero),
+            ("moving across", Vector2(x: 0, y: 300), Vector2(x: 1_000, y: 0)),
+        ]
+        for (name, velocity, destination) in cases {
+            let flight = fly(Self.moving(velocity, to: destination), maxTicks: 3_600)
+            #expect(flight.ticksToArrival != nil, "\(name)")
+            #expect(Self.distance(flight.final) <= 1, "\(name)")
+            #expect(speed(flight.final.ship) < 1, "\(name)")
+        }
+        // Too close to stop: it passes the destination, then comes back — at most once more.
+        let tooClose = fly(Self.moving(Vector2(x: 400, y: 0), to: Vector2(x: 20, y: 0)), maxTicks: 3_600)
+        #expect(tooClose.passes >= 1 && tooClose.passes <= 2)
+    }
 }
 
 // MARK: - Flight recording

@@ -62,7 +62,7 @@ extension Simulation {
 
 Inputs: the ship (`p`, `v`, heading `h`, rate of turn `ω`, limits `a`, `ωmax`, `α`), the destination
 `D`, the tolerances, the previous phase. `dt = 1/60`. Constants (research R3–R5, R11): `a′ = 0.9 a`,
-`k = 10 s⁻¹`, cone `0.1 rad`, hold fraction `0.5`, hold acceleration `0.05 a`, response time
+`k = 10 s⁻¹`, cone `0.1 rad`, hold fraction `0.5`, hold acceleration `0.05 a`, hold alignment `0.9`, response time
 `τ = 1/15 s`, settle `0.001` u/s.
 
 1. `r = D − p`, `d = |r|`, `r̂ = r/d` (if `d = 0`, `r̂ = 0`), `ĥ = (cos h, sin h)`.
@@ -78,7 +78,7 @@ Inputs: the ship (`p`, `v`, heading `h`, rate of turn `ω`, limits `a`, `ωmax`,
    Otherwise the **desired acceleration** is `A = e/τ + r̂ · (−(v·r̂) · s′)` — the error term plus the
    profile's own rate of change as the ship closes (feedforward).
 6. **Target heading** `ψ = atan2(A.y, A.x)`, unless the **hold rule** applies: committed to braking
-   (`ĥ·v < 0`, or the previous phase is flipping or braking), closing (`v·r̂ > 0`), at most slightly
+   (`ĥ·v < 0`, or the previous phase is flipping or braking), closing roughly straight at the destination (`v·r̂ > 0.9 |v|`), at most slightly
    slow (`e·v̂ < 0.5 s`) and no decisive call to brake (`−A·v̂ < 0.05 a`). Then `ψ = heading(−v)`
    and no thrust. `δ = wrap(ψ − h)` into (−π, π].
 7. **Input**:

@@ -24,6 +24,11 @@ extension Autopilot {
     /// at least this fraction of it (research R5, the hold rule).
     static let holdFraction = 0.5
 
+    /// The hold rule applies only while the ship is closing roughly straight at the destination: its
+    /// velocity's component towards the destination is at least this fraction of its speed (about 25°).
+    /// Drifting sideways, it always aims at the acceleration it needs (research R11).
+    static let holdAlignment = 0.9
+
     /// Under the hold rule, the ship keeps its braking attitude unless the acceleration calls for braking
     /// harder than this fraction of its thrust (research R5).
     static let holdAcceleration = 0.05
@@ -113,12 +118,13 @@ extension Autopilot {
         let ay = ey / Self.responseTime + uy * feedforward
 
         // Step 6: the target heading — the acceleration's direction, unless the hold rule applies: committed
-        // to braking (facing against the motion, or already flipping or braking) and still closing, with no decisive call to brake and at most
+        // to braking (facing against the motion, or already flipping or braking), closing roughly straight
+        // at the destination, with no decisive call to brake and at most
         // slightly slower than desired, the ship keeps its braking attitude and coasts rather than
         // turning round or sideways (research R5). Near zero, the acceleration's direction means nothing.
         var holding = false
         let committedToBraking = facingAgainstMotion || phase == .flipping || phase == .braking
-        if committedToBraking, closingSpeed > 0, speed > 0 {
+        if committedToBraking, closingSpeed > Self.holdAlignment * speed, speed > 0 {
             let forwardShortfall = (ex * vx + ey * vy) / speed
             let braking = -(ax * vx + ay * vy) / speed
             holding = forwardShortfall < Self.holdFraction * desiredSpeed

@@ -192,5 +192,10 @@ contract's shape, and the contract now describes what shipped.
   gives no decisive call to brake (`−A·v̂ < 0.05 a`), where its direction is meaningless. For the phase
   read-out, a correction turn mid-burn stays **burning**, as one mid-brake stays **braking**.
 
+- **Hold only when closing straight in.** The moving-start grid (US2) showed a ship drifting mostly
+  sideways, and latched as braking, flip-flopping between its braking attitude and the direction it
+  needed, never thrusting. The hold rule now also requires the velocity to point within about 25° of
+  the destination (`v·r̂ ≥ 0.9 |v|`); otherwise the ship always aims at `A`.
+
 Measured at the default limits: 1,000 units ahead arrives in 5.4 s (bound 5.69 s), 1,000 units
 behind in 6.9 s (bound 7.34 s), no overshoot.
