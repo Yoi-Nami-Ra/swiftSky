@@ -38,9 +38,9 @@ its own.
 
 **Purpose**: Ship the image with the rendering layer and guard it against drift (R1).
 
-- [ ] T001 Copy `design/sprites/ship.png` byte for byte to `Sources/SwiftSkyRendering/Resources/ship.png` (`cp`, then `cmp` to confirm)
-- [ ] T002 Change `Package.swift`: add `resources: [.copy("Resources/ship.png")]` to the `SwiftSkyRendering` target, with a comment giving the reason for `.copy` rather than `.process` (processing may re-encode the PNG, research R1) and naming the `verify.sh` identity check. Update the rendering test target's comment to mention the ship placement and image tests. Depends on T001
-- [ ] T003 [P] Change `Scripts/verify.sh`: add a stage before the builds, `section "Ship image matches the design file"`, run through `run_stage` with a function that runs `cmp -s design/sprites/ship.png Sources/SwiftSkyRendering/Resources/ship.png`, commented with FR-002, SC-008a and the fix (copy the design file over the bundled one)
+- [X] T001 Copy `design/sprites/ship.png` byte for byte to `Sources/SwiftSkyRendering/Resources/ship.png` (`cp`, then `cmp` to confirm)
+- [X] T002 Change `Package.swift`: add `resources: [.copy("Resources/ship.png")]` to the `SwiftSkyRendering` target, with a comment giving the reason for `.copy` rather than `.process` (processing may re-encode the PNG, research R1) and naming the `verify.sh` identity check. Update the rendering test target's comment to mention the ship placement and image tests. Depends on T001
+- [X] T003 [P] Change `Scripts/verify.sh`: add a stage before the builds, `section "Ship image matches the design file"`, run through `run_stage` with a function that runs `cmp -s design/sprites/ship.png Sources/SwiftSkyRendering/Resources/ship.png`, commented with FR-002, SC-008a and the fix (copy the design file over the bundled one)
 
 **Checkpoint**: `./Scripts/verify.sh` passes, with the new stage green. Nothing is drawn yet.
 
