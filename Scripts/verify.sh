@@ -40,15 +40,32 @@ pass() {
 # Matching is case-sensitive on purpose: compiler diagnostics are lowercase `warning:`, while
 # xcodebuild's own operational chatter ("WARNING: Using the first of multiple matching destinations")
 # is uppercase and is not a code defect.
-# ---------------------------------------------------------------------------
+#
+# ONE build-system diagnostic is exempt, matched as a whole line and for this bundle only:
+#
+#   warning: missing creator for mutated node: ('<repo>/.build/out/Products/<config>/swiftSky_SwiftSkyRendering.bundle/Contents/MacOS')
+#
+# It comes from swiftbuild (Xcode 27.0 RC 27A266a, Swift 6.4), not the compiler, and it is not a code
+# defect. A resource bundle whose Sources phase compiles `.metal` is treated as a binary-bearing product,
+# so its CodeSign task declares $(EXECUTABLE_FOLDER_PATH) — Contents/MacOS — as a node it mutates. A
+# resource bundle has no executable, so no task creates that folder, and swiftbuild warns. It is not
+# caused by how Package.swift declares the resource: a minimal package with one `.metal` resource warns
+# identically whether the file is implicit or `.process`-ed, and one with a `.txt` resource does not.
+# The only source-level ways to avoid it change the shader pipeline itself (ship a precompiled
+# .metallib, or compile shader source at runtime), which is not worth trading for a build-log line.
+# Upstream fix swiftlang/swift-build#1789 was closed unmerged. Delete this exemption once a toolchain
+# builds clean without it. See quickstart.md check 28.
+KNOWN_BUILD_SYSTEM_WARNING="^warning: missing creator for mutated node: \('[^']*/swiftSky_SwiftSkyRendering\.bundle/Contents/MacOS'\)\$"
+
 run_stage() {
     label=$1
     shift
     log=$(mktemp)
     if "$@" >"$log" 2>&1; then
-        if grep -q 'warning:' "$log"; then
+        warnings=$(grep 'warning:' "$log" | grep -Ev "$KNOWN_BUILD_SYSTEM_WARNING" || true)
+        if [ -n "$warnings" ]; then
             fail "$label — exited 0 but emitted warnings (SC-015 requires zero)"
-            grep 'warning:' "$log" | sort -u | sed 's/^/       /'
+            printf '%s\n' "$warnings" | sort -u | sed 's/^/       /'
         else
             pass "$label"
         fi
