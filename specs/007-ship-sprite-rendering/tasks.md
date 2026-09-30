@@ -113,11 +113,11 @@ quickstart check 11.
 
 ### Tests for User Story 3
 
-- [ ] T018 [P] [US3] Add to `Tests/SwiftSkyRenderingTests/ShipSpritePlacementTests.swift`: C7 (for 1280 × 720 pt at scales 1, 2 and 3, the camera's view position of the ship is identical, and the side length divided by the scale is 40 within 1e-9, for several poses); C8 (a ship at the origin on 1280 × 720, 390 × 844 and 1,001 × 667 points at 2× is centred at `(W/2, H/2)` in pixels, which is whole in each case, with sides of 80 px); SC-003's far test (positions ±10⁶ on each axis: the centre is whole and within 0.5 px of `v·s`); and C10 (a ship at the origin on 1280 × 720 at 2×: clip corners are symmetric about (0, 0), and the bottom-left and top-right clip x values are negatives of each other)
+- [X] T018 [P] [US3] Add to `Tests/SwiftSkyRenderingTests/ShipSpritePlacementTests.swift`: C7 (for 1280 × 720 pt at scales 1, 2 and 3, the camera's view position of the ship is identical, and the side length divided by the scale is 40 within 1e-9, for several poses); C8 (a ship at the origin on 1280 × 720, 390 × 844 and 1,001 × 667 points at 2× is centred at `(W/2, H/2)` in pixels, which is whole in each case, with sides of 80 px); SC-003's far test (positions ±10⁶ on each axis: the centre is whole and within 0.5 px of `v·s`); and C10 (a ship at the origin on 1280 × 720 at 2×: clip corners are symmetric about (0, 0), and the bottom-left and top-right clip x values are negatives of each other)
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] No new code is expected: the placement already works in points (T006). If T018 exposes a gap, fix it in `Sources/SwiftSkyRendering/ShipSpritePlacement.swift`. Then run quickstart checks 12–13 (Mac resize and iPad Split View on the simulator) and check 14 if a 1× display is available, and record them in the Evidence section
+- [X] T019 [US3] No new code is expected: the placement already works in points (T006). If T018 exposes a gap, fix it in `Sources/SwiftSkyRendering/ShipSpritePlacement.swift`. Then run quickstart checks 12–13 (Mac resize and iPad Split View on the simulator) and check 14 if a 1× display is available, and record them in the Evidence section
 
 **Checkpoint**: The ship stays centred and 40 × 40 pt through resizes.
 

@@ -198,4 +198,62 @@ struct ShipSpritePlacementTests {
         #expect(ship.centrePixels == Vector2(x: view.x * 2, y: view.y * 2))  // (1480, 820): already whole
         #expect(ship.centrePixels == Vector2(x: 1480, y: 820))
     }
+
+    // MARK: - Any window (US3, C7, C8, C10, SC-003)
+
+    @Test(
+        "The same size in points gives the same ship at 1×, 2× and 3×",
+        arguments: [(Vector2(x: 0, y: 0), 0.0), (Vector2(x: 31.5, y: -12.25), 1.2), (Vector2(x: -400, y: 250), -2.9)]
+            as [(Vector2, Double)]
+    )
+    func sameAtEveryScale(position: Vector2, heading: Double) throws {
+        var views: [Vector2] = []
+        for scale in [1.0, 2.0, 3.0] {
+            let surface = try surface(widthPoints: 1280, heightPoints: 720, scale: scale)
+            let ship = try placement(at: position, heading: heading, on: surface)
+            views.append(try #require(Camera(surface: surface)).view(fromWorld: position))
+            #expect(abs(distance(ship.topLeft, ship.topRight) / scale - 40) <= 1e-9)
+            #expect(abs(distance(ship.topLeft, ship.bottomLeft) / scale - 40) <= 1e-9)
+        }
+        #expect(views[0] == views[1])
+        #expect(views[1] == views[2])
+    }
+
+    @Test(
+        "At the origin the ship is centred on wide, tall and odd-sized surfaces, 80 px across at 2×",
+        arguments: [(1280.0, 720.0), (390, 844), (1001, 667)] as [(Double, Double)]
+    )
+    func centredOnEveryShape(widthPoints: Double, heightPoints: Double) throws {
+        let ship = try placement(on: surface(widthPoints: widthPoints, heightPoints: heightPoints))
+        #expect(ship.centrePixels == Vector2(x: widthPoints, y: heightPoints))  // (W/2, H/2) px at 2×
+        #expect(abs(distance(ship.topLeft, ship.topRight) - 80) <= 1e-9)
+        #expect(abs(distance(ship.topLeft, ship.bottomLeft) - 80) <= 1e-9)
+    }
+
+    @Test(
+        "Far from the origin the centre is still the whole pixel nearest the camera's position",
+        arguments: [
+            Vector2(x: 1e6, y: 0), Vector2(x: -1e6, y: 0), Vector2(x: 0, y: 1e6), Vector2(x: 0, y: -1e6),
+            Vector2(x: 1e6, y: -1e6), Vector2(x: 123_456.789, y: -987_654.321),
+        ]
+    )
+    func farFromOrigin(position: Vector2) throws {
+        let surface = try surface(widthPoints: 1280, heightPoints: 720)
+        let ship = try placement(at: position, heading: 0.3, on: surface)
+        let view = try #require(Camera(surface: surface)).view(fromWorld: position)
+        #expect(ship.centrePixels.x == ship.centrePixels.x.rounded())
+        #expect(ship.centrePixels.y == ship.centrePixels.y.rounded())
+        #expect(abs(ship.centrePixels.x - view.x * 2) <= 0.5)
+        #expect(abs(ship.centrePixels.y - view.y * 2) <= 0.5)
+    }
+
+    @Test("At the origin the clip-space corners are symmetric about the centre of clip space")
+    func clipCornersSymmetric() throws {
+        let ship = try placement(heading: 0.8, on: surface(widthPoints: 1280, heightPoints: 720))
+        let (bottomLeft, bottomRight, topLeft, topRight) = ship.clipCorners
+        #expect(isNear(Vector2(x: bottomLeft.x + topRight.x, y: bottomLeft.y + topRight.y), .zero, within: 1e-12))
+        #expect(isNear(Vector2(x: bottomRight.x + topLeft.x, y: bottomRight.y + topLeft.y), .zero, within: 1e-12))
+        // And they are the pixel corners, converted.
+        #expect(isNear(topLeft, ship.clip(ship.topLeft), within: 0))
+    }
 }
