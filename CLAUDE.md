@@ -10,8 +10,9 @@ iOS and macOS built in Swift with a Metal rendering pipeline** (SwiftUI shell). 
 repository (`main`), with no remote configured yet.
 
 Built so far: `specs/001-metal-app-shell` (a black Metal surface on both platforms, three layers,
-an off-main frame loop, instrumentation) and `specs/002-metal-text-rendering` (Metal-drawn text from
-a glyph atlas). Layer libraries and tests live in the root `Package.swift`, and the two app targets
+an off-main frame loop, instrumentation), `specs/002-metal-text-rendering` (Metal-drawn text from
+a glyph atlas) and `specs/003-debug-overlay` (live frame statistics drawn on screen in Debug and
+Profiling builds). Layer libraries and tests live in the root `Package.swift`, and the two app targets
 live in `swiftSky.xcodeproj`. `./Scripts/verify.sh` is the single checked-in verification command.
 
 The project constitution (`.specify/memory/constitution.md`, v1.1.0) is ratified and enforces
@@ -84,10 +85,14 @@ artifacts, keep them consistent with these templates.
 - `.specify/workflows/` — workflow definitions and registry.
 - `specs/NNN-*/` — per-feature spec/plan/tasks and quickstart validation evidence.
 - `Sources/SwiftSky{Simulation,Rendering,Platform}/` — the three layers. Text rendering is in
-  `Sources/SwiftSkyRendering/Text/`, and the Debug/Profiling-only test pattern is in
-  `Sources/SwiftSkyRendering/Debug/`.
-- `Tests/SwiftSkySimulationTests/`, `Tests/SwiftSkyRenderingTests/` — headless Swift Testing suites.
+  `Sources/SwiftSkyRendering/Text/`, and the Debug/Profiling-only test pattern and debug overlay
+  are in `Sources/SwiftSkyRendering/Debug/`. The overlay's measurement (one-second frame-time
+  window, 4 Hz refresh) sits beside `Instrumentation.swift` in the platform layer.
+- `Tests/SwiftSkySimulationTests/`, `Tests/SwiftSkyRenderingTests/`, `Tests/SwiftSkyPlatformTests/`
+  — headless Swift Testing suites. The platform tests cover pure measurement structs only.
   They must never create a Metal device; `verify.sh` enforces this.
-- Debug launch arguments (Debug/Profiling builds only): `--debug-text` draws the test string with
-  live FPS, and `--debug-text-fill` fills the 1,024-character text capacity.
+- Debug launch arguments (Debug/Profiling builds only): the live debug overlay is shown by default,
+  and `--no-debug-overlay` hides it, leaving the uniformly black surface that 001's and 002's
+  visible-output checks expect. `--debug-text` draws the test string with live FPS, and
+  `--debug-text-fill` fills the 1,024-character text capacity. Either one replaces the overlay.
 - `.claude/skills/speckit-*/` — the skill definitions backing each `/speckit.*` command.

@@ -133,6 +133,64 @@ public final class TextBuffer {
         }
     }
 
+    /// Writes `value` rounded half away from zero to exactly two decimal places — `8.33`, `1234.50` —
+    /// right-aligned in `width` columns with leading spaces. A number wider than `width` is written in
+    /// full, never cut short, and never in exponent notation (003 FR-007). Allocates nothing.
+    ///
+    /// Frame times are never negative or NaN, but a formatter must not trap on them: both write as
+    /// `0.00`. Values too large for a `UInt64` count of hundredths are clamped to the largest one.
+    public func writeHundredths(_ value: Double, width: Int = 0, limit: Int = .max) {
+        let hundredths: UInt64
+        if !(value > 0) {
+            hundredths = 0
+        } else if value * 100 >= Self.largestHundredths {
+            hundredths = .max
+        } else {
+            hundredths = UInt64((value * 100).rounded(.toNearestOrAwayFromZero))
+        }
+        let whole = hundredths / 100
+
+        // Digits of the whole part, plus "." and two decimals.
+        var digits = 1
+        var remaining = whole / 10
+        while remaining > 0 {
+            digits += 1
+            remaining /= 10
+        }
+
+        var written = writeSpaces(width - (digits + 3), limit: limit)
+        guard written < limit else { return }
+        write(whole, limit: limit - written)
+        written += digits
+        guard written < limit else { return }
+        write(".", limit: limit - written)
+        written += 1
+        guard written < limit else { return }
+        write(hundredths % 100, minimumDigits: 2, limit: limit - written)
+    }
+
+    /// Writes an ASCII literal right-aligned in `width` columns with leading spaces — the overlay's
+    /// `--` placeholder, which has to line up with the numbers it stands in for. Allocates nothing.
+    public func writePadded(_ text: StaticString, width: Int, limit: Int = .max) {
+        let written = writeSpaces(width - text.utf8CodeUnitCount, limit: limit)
+        guard written < limit else { return }
+        write(text, limit: limit - written)
+    }
+
+    /// `Double(UInt64.max)`, the first hundredths count that no longer fits. Anything at or above it
+    /// is clamped rather than trapping in the conversion.
+    private static let largestHundredths = Double(UInt64.max)
+
+    /// Writes `count` spaces, at most `limit`, and returns how many were written.
+    private func writeSpaces(_ count: Int, limit: Int) -> Int {
+        var written = 0
+        while written < count, written < limit {
+            guard place(GlyphAtlasBitmap.cell(for: UInt8(ascii: " "))) else { return written }
+            written += 1
+        }
+        return written
+    }
+
     /// Writes any string with grapheme-exact FR-003 handling: `"\n"` and `"\r\n"` are line feeds, a
     /// single printable ASCII scalar is itself, and every other character is one `?`.
     ///

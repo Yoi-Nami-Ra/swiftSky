@@ -1,4 +1,5 @@
 import os
+import SwiftSkyRendering
 
 /// Per-frame measurement for the Principle III gates (FR-021d).
 ///
@@ -37,6 +38,13 @@ struct Instrumentation {
     /// The frame budget a frame must fit inside to avoid counting as dropped.
     private var budgetSeconds: Double
 
+    /// Mean and worst over the last second, for the debug overlay (003 FR-004). Fed by
+    /// `recordPresented` and restarted with the budget, so it never mixes two budgets' frames (FR-008).
+    private var window = FrameTimeWindow()
+
+    /// When the overlay's next snapshot is due: four times a second (003 FR-006).
+    private var schedule = OverlayRefreshSchedule()
+
     init(budgetSeconds: Double) {
         self.budgetSeconds = budgetSeconds
     }
@@ -48,6 +56,7 @@ struct Instrumentation {
         if frameSeconds > worstFrameSeconds { worstFrameSeconds = frameSeconds }
         if frameSeconds > budgetSeconds { droppedFrames += 1 }
         lastTickCount = tickCount
+        window.record(frameSeconds: frameSeconds)
     }
 
     /// Records a frame skipped for want of a drawable. No allocation.
@@ -70,6 +79,37 @@ struct Instrumentation {
         droppedFrames = 0
         totalFrameSeconds = 0
         worstFrameSeconds = 0
+        restartOverlayWindow()
+    }
+
+    /// The debug overlay's snapshot, on a due refresh only; `nil` on every other frame (003 FR-006).
+    ///
+    /// The budget, dropped, skipped and tick values are the same fields `summary()` logs, so the
+    /// overlay and the log cannot disagree about them (003 FR-013). Taken before the frame is drawn, so
+    /// it describes frames up to the previous one — a frame's time is known only once it has been drawn.
+    /// No allocation: a closed bucket and a struct copy.
+    mutating func overlayStatistics(at timestamp: Double) -> DebugOverlayStatistics? {
+        // The refresh that anchors the schedule (at launch, or after a restart) starts the first bucket
+        // rather than closing one, so the first value appears after a full second, not three quarters.
+        let isAnchoring = schedule.nextDue == nil
+        guard schedule.isDue(at: timestamp) else { return nil }
+        if !isAnchoring { window.closeBucket() }
+        return DebugOverlayStatistics(
+            meanFrameSeconds: window.mean,
+            worstFrameSeconds: window.worst,
+            budgetSeconds: budgetSeconds,
+            droppedFrames: droppedFrames,
+            skippedFrames: skippedFrames,
+            tickCount: lastTickCount
+        )
+    }
+
+    /// Called when the surface is shown again after being hidden, and by `updateBudget`: frames from
+    /// before the pause, or judged against the old budget, are not the last second's. The next frame
+    /// refreshes the overlay at once (003 FR-008).
+    mutating func restartOverlayWindow() {
+        window.restart()
+        schedule.restart()
     }
 
     /// Emits a summary. Called on a reporting interval, never per frame — this is the only place that
