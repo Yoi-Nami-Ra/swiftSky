@@ -51,7 +51,7 @@ public struct GameSurfaceView: View {
                 // The loop is created HERE, with the layer that is actually on screen. Creating it
                 // earlier against a placeholder layer would leave the display link driving an
                 // offscreen surface — a bug indistinguishable from success, since both render black.
-                host.start(renderer: ready.renderer, layer: layer)
+                host.start(ready, layer: layer)
                 return { [host] event in host.post(event) }
             }
             // Fill the screen edge to edge, including under the safe-area insets, on iOS (FR-003).
@@ -68,6 +68,11 @@ public struct GameSurfaceView: View {
     struct Setup {
         let device: any MTLDevice
         let renderer: Renderer
+
+        #if SWIFTSKY_INSTRUMENTATION
+        /// `--debug-ship-spin`, handed to the loop when it is created (007 FR-013).
+        var debugShipSpin = false
+        #endif
     }
 
     /// Owns the loop's lifetime across SwiftUI view-struct recreations.
@@ -96,9 +101,12 @@ public struct GameSurfaceView: View {
         /// Only the lazy *access* needs the main actor; allocating an empty host does not.
         nonisolated init() {}
 
-        func start(renderer: Renderer, layer: CAMetalLayer) {
+        func start(_ setup: Setup, layer: CAMetalLayer) {
             guard loop == nil else { return }
-            let created = FrameLoop(renderer: renderer, layer: layer)
+            let created = FrameLoop(renderer: setup.renderer, layer: layer)
+            #if SWIFTSKY_INSTRUMENTATION
+            created.debugShipSpin = setup.debugShipSpin
+            #endif
             loop = created
             created.start()
         }
@@ -123,11 +131,18 @@ public struct GameSurfaceView: View {
         do {
             let renderer = try Renderer(device: device, pixelFormat: .bgra8Unorm_srgb, textFont: textFont())
             #if SWIFTSKY_INSTRUMENTATION
-            let debugMode = DebugTextMode(arguments: ProcessInfo.processInfo.arguments)
+            let arguments = ProcessInfo.processInfo.arguments
+            let debugMode = DebugTextMode(arguments: arguments)
             renderer.debugTextPattern = debugMode.pattern
             renderer.debugOverlay = debugMode.overlay
-            #endif
+            let shipOptions = DebugShipOptions(arguments: arguments)
+            renderer.drawsShip = !shipOptions.hidesShip
+            var setup = Setup(device: device, renderer: renderer)
+            setup.debugShipSpin = shipOptions.spins
+            return .success(setup)
+            #else
             return .success(Setup(device: device, renderer: renderer))
+            #endif
         } catch let error as RendererError {
             RendererFailureReporter.report(error)
             return .failure(error)
@@ -172,8 +187,9 @@ public struct GameSurfaceView: View {
 /// argument can put text on screen (002 SC-006, 003 SC-005). Double-dash arguments, so AppKit's
 /// `-Key value` argument domain never reads them and nothing persists between launches.
 ///
-/// The live overlay is the default. `--no-debug-overlay` turns it off, leaving the uniformly black
-/// surface 001's and 002's visible-output checks expect. Either test-string argument replaces the
+/// The live overlay is the default. `--no-debug-overlay` turns it off, leaving the black surface with
+/// the ship on it. Add `--no-ship` (`DebugShipOptions`) for the uniformly black surface that 001's and
+/// 002's visible-output checks expect. Either test-string argument replaces the
 /// overlay, because both draw in the same corner and the fill needs the whole text capacity.
 enum DebugTextMode: Equatable {
     case overlay
@@ -208,6 +224,29 @@ enum DebugTextMode: Equatable {
 
     var overlay: DebugOverlay? {
         self == .overlay ? DebugOverlay() : nil
+    }
+}
+
+/// The ship switches, from the launch arguments (007 FR-013–FR-015, research R9).
+///
+/// Debug and Profiling builds only, like `DebugTextMode`: in Release this type, its parsing and both
+/// strings do not exist, so a Release build always draws the ship and never spins it. The two switches
+/// are independent of each other and of the text arguments.
+struct DebugShipOptions: Equatable {
+    /// `--debug-ship-spin`: every tick gets a full counter-clockwise turn and no thrust, so the ship turns
+    /// in place at its top rate — the only way to see it rotate before orders exist.
+    var spins: Bool
+
+    /// `--no-ship`: the ship is not drawn. With `--no-debug-overlay` the surface is uniformly black again,
+    /// so the earlier black-surface checks still apply. The simulation is untouched.
+    var hidesShip: Bool
+
+    static let spinArgument = "--debug-ship-spin"
+    static let noShipArgument = "--no-ship"
+
+    init(arguments: [String]) {
+        spins = arguments.contains(Self.spinArgument)
+        hidesShip = arguments.contains(Self.noShipArgument)
     }
 }
 
