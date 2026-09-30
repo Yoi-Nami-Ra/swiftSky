@@ -154,12 +154,12 @@ orbiting or ringing.
 
 ### Tests for User Story 5
 
-- [ ] T021 [US5] In `Tests/SwiftSkySimulationTests/AutopilotTests.swift`: the SC-005 scenario — start moving at (120, −80) u/s, order to (1,500, 700), re-order to (−800, 300) on the first burning tick, to (400, −1,200) on the first flipping tick and to (0, 0) on the first braking tick, ≥ 1,200 ticks in all using a fixed pattern of advances of 1, 2, 3 and 4 ticks — run 10 times: identical `bits` (SC-005, US5-1)
-- [ ] T022 [US5] In the same file: one flight advanced 4 ticks at a time vs 1 tick at a time gives identical `bits` at every multiple of 4 (US5-2, FR-011); advancing an ordered state 30 ticks with an explicit `input:` leaves `autopilot` bit-identical and the next autopilot-driven tick continues and still arrives (FR-011, clarification 3); a copy of a mid-flight state flown separately ends bit-identical to the original (FR-014)
+- [X] T021 [US5] In `Tests/SwiftSkySimulationTests/AutopilotTests.swift`: the SC-005 scenario — start moving at (120, −80) u/s, order to (1,500, 700), re-order to (−800, 300) on the first burning tick, to (400, −1,200) on the first flipping tick and to (0, 0) on the first braking tick, ≥ 1,200 ticks in all using a fixed pattern of advances of 1, 2, 3 and 4 ticks — run 10 times: identical `bits` (SC-005, US5-1)
+- [X] T022 [US5] In the same file: one flight advanced 4 ticks at a time vs 1 tick at a time gives identical `bits` at every multiple of 4 (US5-2, FR-011); advancing an ordered state 30 ticks with an explicit `input:` leaves `autopilot` bit-identical and the next autopilot-driven tick continues and still arrives (FR-011, clarification 3); a copy of a mid-flight state flown separately ends bit-identical to the original (FR-014)
 
 ### Implementation for User Story 5
 
-- [ ] T023 [US5] Make T021–T022 pass; any nondeterminism is a defect in `Sources/SwiftSkySimulation/AutopilotLaw.swift` or `Simulation.swift`, not a test to loosen
+- [X] T023 [US5] Make T021–T022 pass; any nondeterminism is a defect in `Sources/SwiftSkySimulation/AutopilotLaw.swift` or `Simulation.swift`, not a test to loosen
 
 **Checkpoint**: all stories complete.
 
