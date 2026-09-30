@@ -1,0 +1,39 @@
+id: 33
+title: "Finish the text-rendering verification checks"
+type: task
+description: |
+  SKY-28 was closed with its code merged (specs/002-metal-text-rendering) but
+  several of its quickstart checks unrun, because the implementation session
+  had no screen capture, no Instruments attach and no iOS device. This ticket
+  finishes them. The check numbers are the 002 quickstart's; record each
+  result in its "Evidence to record" table.
+
+  Covering SKY-28's own "done when":
+  - Checks 5 and 6 (SC-001): on macOS at 2× and at 1×, capture the window with
+    `--debug-text` and confirm the capital-letter height matches the logged
+    capHeight × scale to within 1 px, with no blur or doubling next to 13-pt
+    system monospaced text.
+  - Checks 7 and 8 (SC-002, FR-006a): the same on iOS at 2× and 3×, plus
+    rotation, Split View and Slide Over keeping the text clear of the cutout.
+  - Checks 15 and 16 (SC-003, SC-004): Instruments Allocations over a 60 s run
+    with `--debug-text` and with `--debug-text-fill`, using the SKY-3/SKY-4
+    method; expect zero allocations on our side in the draw path.
+
+  Also still open:
+  - Check 9: resizing and full screen keep the text's size and anchor.
+  - Check 10: the on-screen `fps` line matches the instrumentation log.
+  - Checks 12 and 13: Debug with no argument, and Release with
+    `--debug-text-fill`, both look uniformly black.
+  - Check 20: a forced atlas failure after a display change hides the text
+    rather than showing it at the wrong density.
+  - Check 21: VoiceOver and Accessibility Inspector expose none of the text.
+
+  Done when every check above is recorded as PASS, or a found defect has its
+  own bug ticket.
+platform: macos
+status: ready
+phase: MVP
+priority: medium
+parent: 22
+blocked_by: []
+designs: []
