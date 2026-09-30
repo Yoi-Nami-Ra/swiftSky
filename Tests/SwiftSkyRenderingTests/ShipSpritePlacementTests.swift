@@ -103,4 +103,99 @@ struct ShipSpritePlacementTests {
         )
         #expect(isNear(mean, ship.centrePixels, within: 1e-9))
     }
+
+    // MARK: - Rotation (US2, C3, C4, C6, C9, SC-002)
+
+    @Test("The image's top edge follows the heading: up at +π/2, left at π, down at −π/2")
+    func topEdgeFollowsHeading() throws {
+        let surface = try surface(widthPoints: 1280, heightPoints: 720)
+        func topEdgeMidpoint(_ heading: Double) throws -> Vector2 {
+            let ship = try placement(heading: heading, on: surface)
+            return Vector2(x: (ship.topLeft.x + ship.topRight.x) / 2, y: (ship.topLeft.y + ship.topRight.y) / 2)
+        }
+        let centre = Vector2(x: 1280, y: 720)
+        #expect(isNear(try topEdgeMidpoint(.pi / 2), Vector2(x: centre.x, y: centre.y - 40), within: 1e-9))
+        #expect(isNear(try topEdgeMidpoint(.pi), Vector2(x: centre.x - 40, y: centre.y), within: 1e-9))
+        #expect(isNear(try topEdgeMidpoint(-.pi / 2), Vector2(x: centre.x, y: centre.y + 40), within: 1e-9))
+        // Upright at +π/2: the image's top-left is the screen's top-left of the square.
+        let upright = try placement(heading: .pi / 2, on: surface)
+        #expect(isNear(upright.topLeft, Vector2(x: centre.x - 40, y: centre.y - 40), within: 1e-9))
+    }
+
+    @Test(
+        "At every heading the ship is a 40 pt square: equal sides and right angles",
+        arguments: (0..<8).map { Double($0) * .pi / 4 } + [0.1, 2.5, -1.9]
+    )
+    func squareAtEveryHeading(heading: Double) throws {
+        let ship = try placement(at: Vector2(x: 13, y: -7), heading: heading, on: surface(widthPoints: 1280, heightPoints: 720))
+        let sides = [
+            distance(ship.topLeft, ship.topRight),
+            distance(ship.topRight, ship.bottomRight),
+            distance(ship.bottomRight, ship.bottomLeft),
+            distance(ship.bottomLeft, ship.topLeft),
+        ]
+        for side in sides { #expect(abs(side - 80) <= 1e-6) }  // 40 pt at 2×
+
+        // Right angles, from the dot products of adjacent sides.
+        func angle(_ corner: Vector2, _ a: Vector2, _ b: Vector2) -> Double {
+            let (ux, uy) = (a.x - corner.x, a.y - corner.y)
+            let (vx, vy) = (b.x - corner.x, b.y - corner.y)
+            return acos((ux * vx + uy * vy) / ((ux * ux + uy * uy).squareRoot() * (vx * vx + vy * vy).squareRoot()))
+        }
+        #expect(abs(angle(ship.topLeft, ship.topRight, ship.bottomLeft) - .pi / 2) <= 1e-6)
+        #expect(abs(angle(ship.topRight, ship.bottomRight, ship.topLeft) - .pi / 2) <= 1e-6)
+        #expect(abs(angle(ship.bottomRight, ship.bottomLeft, ship.topRight) - .pi / 2) <= 1e-6)
+        #expect(abs(angle(ship.bottomLeft, ship.topLeft, ship.bottomRight) - .pi / 2) <= 1e-6)
+    }
+
+    @Test(
+        "Corners match an independent rotation by heading − π/2 (SC-002)",
+        arguments: (0..<8).map { Double($0) * .pi / 4 }
+    )
+    func cornersMatchRotation(heading: Double) throws {
+        let ship = try placement(heading: heading, on: surface(widthPoints: 1280, heightPoints: 720))
+        // Rotate the unrotated image's corner offsets (in world space, +y up) by heading − π/2, then flip
+        // y for pixels. The image's top-left is at (−20, +20) pt before rotation, and so on.
+        let angle = heading - .pi / 2
+        func expected(_ x: Double, _ y: Double) -> Vector2 {
+            let rx = x * cos(angle) - y * sin(angle)
+            let ry = x * sin(angle) + y * cos(angle)
+            return Vector2(x: 1280 + rx * 2, y: 720 - ry * 2)
+        }
+        #expect(isNear(ship.topLeft, expected(-20, 20), within: 1e-6))
+        #expect(isNear(ship.topRight, expected(20, 20), within: 1e-6))
+        #expect(isNear(ship.bottomLeft, expected(-20, -20), within: 1e-6))
+        #expect(isNear(ship.bottomRight, expected(20, -20), within: 1e-6))
+    }
+
+    @Test(
+        "At quarter turns every corner is a whole pixel, even on an odd-width surface",
+        arguments: [0, .pi / 2, .pi, -.pi / 2] as [Double]
+    )
+    func quarterTurnsArePixelExact(heading: Double) throws {
+        let ship = try placement(heading: heading, on: surface(widthPoints: 1000.5, heightPoints: 600))  // 2,001 px
+        for corner in [ship.topLeft, ship.topRight, ship.bottomLeft, ship.bottomRight] {
+            #expect(abs(corner.x - corner.x.rounded()) <= 1e-9)
+            #expect(abs(corner.y - corner.y.rounded()) <= 1e-9)
+        }
+    }
+
+    @Test("No jump at the heading's wrap point: π and just above −π give the same corners")
+    func noJumpAtWrap() throws {
+        let surface = try surface(widthPoints: 1280, heightPoints: 720)
+        let a = try placement(heading: .pi, on: surface)
+        let b = try placement(heading: (-Double.pi).nextUp, on: surface)
+        for (p, q) in [(a.topLeft, b.topLeft), (a.topRight, b.topRight), (a.bottomLeft, b.bottomLeft), (a.bottomRight, b.bottomRight)] {
+            #expect(isNear(p, q, within: 1e-9))
+        }
+    }
+
+    @Test("A ship away from the origin is centred on the camera's view position")
+    func awayFromOrigin() throws {
+        let surface = try surface(widthPoints: 1280, heightPoints: 720)
+        let ship = try placement(at: Vector2(x: 100, y: -50), heading: 1, on: surface)
+        let view = try #require(Camera(surface: surface)).view(fromWorld: Vector2(x: 100, y: -50))
+        #expect(ship.centrePixels == Vector2(x: view.x * 2, y: view.y * 2))  // (1480, 820): already whole
+        #expect(ship.centrePixels == Vector2(x: 1480, y: 820))
+    }
 }

@@ -45,6 +45,16 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     private let renderer: Renderer
     private let layer: CAMetalLayer
 
+    #if SWIFTSKY_INSTRUMENTATION
+    /// `--debug-ship-spin` (007 FR-013): feed every tick a full counter-clockwise turn and no thrust, so
+    /// the ship turns in place at its top rate. Set once on the main thread before `start()`, which
+    /// publishes it to the loop thread; read only on the loop thread afterwards.
+    public var debugShipSpin = false
+
+    /// The spin's input: built once, not per frame.
+    private static let spinInput = ControlInput(thrust: 0, turn: 1)
+    #endif
+
     // MARK: - Cross-thread
 
     /// The only channel from the main thread into the loop. Drained at a frame boundary, never applied
@@ -259,7 +269,16 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
 
         // 4. Advance on the fixed timestep. `ticks` may be 0 — the frame still draws (FR-021).
         let ticks = accumulator.consume(elapsed: elapsed)
+        #if SWIFTSKY_INSTRUMENTATION
+        // `--debug-ship-spin` uses the explicit-input entry point, which leaves any order alone (006).
+        if debugShipSpin {
+            state = Simulation.advance(state, ticks: ticks, input: Self.spinInput)
+        } else {
+            state = Simulation.advance(state, ticks: ticks)
+        }
+        #else
         state = Simulation.advance(state, ticks: ticks)
+        #endif
 
         // 5. Draw. A `false` return is a skipped frame: retain accumulated time, count it, carry on
         //    (FR-027a, FR-027b).
