@@ -1,7 +1,14 @@
+import CoreText
 import Metal
 import QuartzCore
 import SwiftUI
 import SwiftSkyRendering
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// The app's entire visible content: a Metal surface, or the failure notice if the renderer could not
 /// be built (FR-024).
@@ -114,7 +121,10 @@ public struct GameSurfaceView: View {
         }
 
         do {
-            let renderer = try Renderer(device: device, pixelFormat: .bgra8Unorm_srgb)
+            let renderer = try Renderer(device: device, pixelFormat: .bgra8Unorm_srgb, textFont: textFont())
+            #if SWIFTSKY_INSTRUMENTATION
+            renderer.debugTextPattern = DebugTextMode(arguments: ProcessInfo.processInfo.arguments).pattern
+            #endif
             return .success(Setup(device: device, renderer: renderer))
         } catch let error as RendererError {
             RendererFailureReporter.report(error)
@@ -124,6 +134,20 @@ public struct GameSurfaceView: View {
             RendererFailureReporter.report(wrapped)
             return .failure(wrapped)
         }
+    }
+
+    /// The 13-point system monospaced font, for the renderer's text (002 FR-002, FR-007).
+    ///
+    /// Resolved here because the system's monospaced *design* is only reachable through AppKit and
+    /// UIKit — Core Text alone offers the user's fixed-pitch font, which is user-configurable and not
+    /// the same face (002 research.md R1). Both font classes are toll-free bridged to `CTFont`, so the
+    /// rendering layer receives it without importing either framework.
+    private static func textFont() -> CTFont {
+        #if os(macOS)
+        NSFont.monospacedSystemFont(ofSize: 13, weight: .regular) as CTFont
+        #else
+        UIFont.monospacedSystemFont(ofSize: 13, weight: .regular) as CTFont
+        #endif
     }
 
     private static func quit() {
@@ -136,3 +160,40 @@ public struct GameSurfaceView: View {
         #endif
     }
 }
+
+#if SWIFTSKY_INSTRUMENTATION
+
+/// Which debug text to draw, from the launch arguments (002 FR-015, FR-015a, research.md R9).
+///
+/// Debug and Profiling builds only. In Release this type and the parsing do not exist, so no launch
+/// argument can put text on screen (002 SC-006). Double-dash arguments, so AppKit's `-Key value`
+/// argument domain never reads them and nothing persists between launches.
+enum DebugTextMode: Equatable {
+    case none
+    case testString
+    case fill
+
+    static let testStringArgument = "--debug-text"
+    static let fillArgument = "--debug-text-fill"
+
+    /// `--debug-text-fill` wins when both are given (002 FR-015a).
+    init(arguments: [String]) {
+        if arguments.contains(Self.fillArgument) {
+            self = .fill
+        } else if arguments.contains(Self.testStringArgument) {
+            self = .testString
+        } else {
+            self = .none
+        }
+    }
+
+    var pattern: DebugTextPattern? {
+        switch self {
+        case .none: nil
+        case .testString: DebugTextPattern(mode: .testString)
+        case .fill: DebugTextPattern(mode: .fill)
+        }
+    }
+}
+
+#endif

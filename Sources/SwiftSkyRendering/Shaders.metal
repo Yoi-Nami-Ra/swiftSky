@@ -44,3 +44,73 @@ fragment float4 swiftsky_quad_fragment(swiftsky::RasterizerData in [[stage_in]])
 {
     return float4(0.0, 0.0, 0.0, 1.0);
 }
+
+// MARK: - Text (002-metal-text-rendering)
+//
+// One instanced draw per frame: each instance is one character, expanded here into a quad the size of
+// one atlas cell. Positions arrive already snapped to whole surface pixels and the atlas is sampled
+// with nearest filtering, so each atlas texel lands on exactly one surface pixel — nothing is
+// resampled, which is what keeps text as sharp as the system's own (FR-009, research.md R3).
+
+namespace swiftsky {
+
+/// One character. Mirrors `GlyphInstance` on the Swift side byte for byte — 8 bytes.
+struct GlyphInstance {
+    ushort x;
+    ushort y;
+    ushort cell;
+    ushort padding;
+};
+
+/// Per-draw constants, passed with `setVertexBytes`. Mirrors `TextRenderer.Uniforms`.
+struct TextUniforms {
+    float2 viewportPixels;
+    float2 cellPixels;
+    uint atlasColumns;
+    uint padding;
+};
+
+struct TextRasterizerData {
+    float4 position [[position]];
+    float2 texel;
+};
+
+}  // namespace swiftsky
+
+vertex swiftsky::TextRasterizerData swiftsky_text_vertex(
+    uint vertexID [[vertex_id]],
+    uint instanceID [[instance_id]],
+    const device swiftsky::GlyphInstance *instances [[buffer(0)]],
+    constant swiftsky::TextUniforms &uniforms [[buffer(1)]])
+{
+    const swiftsky::GlyphInstance glyph = instances[instanceID];
+
+    // Triangle-strip corners: (0,0) (1,0) (0,1) (1,1), in cell units, y down.
+    const float2 corner = float2(vertexID & 1, vertexID >> 1);
+
+    const float2 pixel = float2(glyph.x, glyph.y) + corner * uniforms.cellPixels;
+    const float2 cellOrigin = float2(glyph.cell % uniforms.atlasColumns, glyph.cell / uniforms.atlasColumns)
+                              * uniforms.cellPixels;
+
+    swiftsky::TextRasterizerData out;
+    // Surface pixels (y down) to clip space (y up).
+    out.position = float4(pixel.x / uniforms.viewportPixels.x * 2.0 - 1.0,
+                          1.0 - pixel.y / uniforms.viewportPixels.y * 2.0,
+                          0.0, 1.0);
+    out.texel = cellOrigin + corner * uniforms.cellPixels;
+    return out;
+}
+
+/// White text, premultiplied. The atlas holds coverage written as Core Graphics blends — in encoded
+/// space — while this sRGB surface blends in linear space. Decoding the coverage first makes text over
+/// black match the system's rendering exactly; used as-is, anti-aliased edges come out brighter and
+/// the text looks bold (research.md R4, SC-001).
+fragment float4 swiftsky_text_fragment(
+    swiftsky::TextRasterizerData in [[stage_in]],
+    texture2d<float> atlas [[texture(0)]])
+{
+    constexpr sampler nearest(coord::pixel, filter::nearest, address::clamp_to_zero);
+    const float coverage = atlas.sample(nearest, in.texel).r;
+    const float a = coverage <= 0.04045 ? coverage / 12.92 : pow((coverage + 0.055) / 1.055, 2.4);
+    return float4(a, a, a, a);
+}

@@ -84,5 +84,15 @@ let package = Package(
             dependencies: ["SwiftSkySimulation"],
             swiftSettings: layerSettings
         ),
+
+        // Headless tests for the rendering layer's pure logic: text layout, metrics, the CPU glyph
+        // atlas and the debug text pattern (002 FR-019). Depends on SwiftSkyRendering ONLY. Linking
+        // Metal is fine; creating a device is not — these tests must pass on a machine with no GPU,
+        // and Scripts/verify.sh fails the run if any test reaches for one (002 research.md R7).
+        .testTarget(
+            name: "SwiftSkyRenderingTests",
+            dependencies: ["SwiftSkyRendering"],
+            swiftSettings: layerSettings
+        ),
     ]
 )
