@@ -23,7 +23,7 @@ description: |
   absent from a Release build (symbol check as in check 27), and adds no
   per-frame allocation. Default refresh rate: 4 Hz.
 platform: macos
-status: ready
+status: done
 phase: MVP
 priority: medium
 parent: 22
