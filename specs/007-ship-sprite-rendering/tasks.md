@@ -132,12 +132,12 @@ quickstart check 18.
 
 ### Tests for User Story 4
 
-- [ ] T020 [P] [US4] Add to `Tests/SwiftSkyRenderingTests/ShipImageBitmapTests.swift`: C13. A URL in `FileManager.default.temporaryDirectory` with no file throws `.missing`; a temporary file of plain text throws `.undecodable`; a temporary 16 × 16 PNG written with `CGImageDestination` throws `.wrongSize(width: 16, height: 16)`. Remove the temporary files with `defer`
-- [ ] T021 [P] [US4] Create `Tests/SwiftSkyRenderingTests/RendererErrorTests.swift` (`@Suite("RendererError")`): C14 (`.shipImageUnavailable(reason:)` with two different reasons gives `diagnosticCode == "ship_image_unavailable"` for both, and each `userFacingDescription` contains "ship image" and its reason); and every existing case still has a distinct code
+- [X] T020 [P] [US4] Add to `Tests/SwiftSkyRenderingTests/ShipImageBitmapTests.swift`: C13. A URL in `FileManager.default.temporaryDirectory` with no file throws `.missing`; a temporary file of plain text throws `.undecodable`; a temporary 16 × 16 PNG written with `CGImageDestination` throws `.wrongSize(width: 16, height: 16)`. Remove the temporary files with `defer`
+- [X] T021 [P] [US4] Create `Tests/SwiftSkyRenderingTests/RendererErrorTests.swift` (`@Suite("RendererError")`): C14 (`.shipImageUnavailable(reason:)` with two different reasons gives `diagnosticCode == "ship_image_unavailable"` for both, and each `userFacingDescription` contains "ship image" and its reason); and every existing case still has a distinct code
 
 ### Implementation for User Story 4
 
-- [ ] T022 [US4] Run quickstart check 18: build the macOS Debug app, delete `ship.png` from the built `swiftSky_SwiftSkyRendering.bundle` inside it, launch, and confirm the notice and the `ship_image_unavailable` log line (`log show --predicate 'subsystem == "com.swiftsky.app"' --last 1m`). Rebuild afterwards. Record the result in the Evidence section
+- [X] T022 [US4] Run quickstart check 18: build the macOS Debug app, delete `ship.png` from the built `swiftSky_SwiftSkyRendering.bundle` inside it, launch, and confirm the notice and the `ship_image_unavailable` log line (`log show --predicate 'subsystem == "com.swiftsky.app"' --last 1m`). Rebuild afterwards. Record the result in the Evidence section
 
 **Checkpoint**: A missing image fails loudly and names itself.
 
