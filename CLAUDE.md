@@ -23,7 +23,8 @@ black background and under the debug overlay) and
 `specs/008-tap-to-order-ios` (a tap on the iOS surface orders the ship to the point under the finger)
 and `specs/009-click-to-order-macos` (a primary click does the same on macOS, through the same order
 request) and `specs/010-ship-path-prediction` (giving an order also predicts its planned path in the
-logic layer; nothing draws it yet). Layer libraries and
+logic layer; nothing draws it yet) and `specs/011-draw-allocation-counter` (001 FR-021d's draw-path
+allocation counts in the frame summary; check 25, zero allocations per frame, PASS on iOS). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
@@ -139,9 +140,28 @@ artifacts, keep them consistent with these templates.
   (x, h − y) against the view's `bounds.height`; pure and tested. The macOS click recogniser is in
   `MetalSurfaceView.swift`: primary button only, Control-click ignored (a secondary click by convention),
   and `acceptsFirstMouse` returns `false`, so the first click on an inactive window only activates it.
+- `Sources/SwiftSkyAllocationCounter/` — a C target, Debug-only (its body is under
+  `SWIFTSKY_INSTRUMENTATION`): a libmalloc `malloc_logger` hook that counts the frame-loop thread's heap
+  allocations inside each frame, and calls one the graphics framework's when a return address between the
+  hook and the frame callback lies in Metal, QuartzCore, IOGPU, IOSurface, MTLSimDriver or an AGX image
+  (otherwise the app's — it fails safe). `FrameLoop` installs it, self-tests it (`allocation counter
+  ready`) and brackets steps 1–5 of every frame; `FrameAllocationCounts.swift` holds the four summary
+  fields `allocs= allocframes= eventallocs= gfxallocs=`. To find an allocation, attach lldb to a running
+  app with a breakpoint on `sky_alloc_app_allocation`. Measure with an **optimised** build carrying the
+  counter: Release plus `SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) SWIFTSKY_INSTRUMENTATION'` and
+  `GCC_PREPROCESSOR_DEFINITIONS='$(inherited) SWIFTSKY_INSTRUMENTATION=1'` on the `xcodebuild` command
+  line — Debug allocates on every unspecialised `for`-loop iterator, and **the Profiling configuration
+  builds the package with Release settings, so it carries no instrumentation at all** (011 R1, R12). In
+  the simulator `log show` returns nothing; use `xcrun simctl spawn <udid> log stream`. Inside a counted
+  stretch in tests, loop with `while`, not `for _ in 0..<n`. The procedure is "The method" in
+  `specs/011-draw-allocation-counter/quickstart.md`.
+- The text renderer's instance ring has no completion handler: a handler passed from Swift is re-bridged
+  into a heap block on every call. Each slot remembers its last command buffer and is reused once that
+  buffer's `status` is `.completed` or `.error` (011 R13).
 - `Tests/SwiftSkySimulationTests/`, `Tests/SwiftSkyRenderingTests/`, `Tests/SwiftSkyPlatformTests/`
-  — headless Swift Testing suites. The platform tests cover pure structs only (measurement and the move
-  order request), and depend on the rendering and logic layers to name `RenderSurface`, `Vector2` and
+  — headless Swift Testing suites. The platform tests cover pure structs (measurement and the move
+  order request) and the allocation counter through its C API (a `.serialized` suite: the hook is
+  process-wide), and depend on the counter, the rendering and the logic layers to name `RenderSurface`, `Vector2` and
   `SimulationState`. They must never create a Metal device; `verify.sh` enforces this.
 - Debug launch arguments (Debug/Profiling builds only): the live debug overlay is shown by default,
   and `--no-debug-overlay` hides it. `--no-ship` stops the ship being drawn; together with
