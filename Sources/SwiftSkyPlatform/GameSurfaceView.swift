@@ -139,6 +139,9 @@ public struct GameSurfaceView: View {
             renderer.drawsShip = !shipOptions.hidesShip
             var setup = Setup(device: device, renderer: renderer)
             setup.debugShipSpin = shipOptions.spins
+            if DebugMainStall(arguments: arguments).isRequested {
+                DebugMainStall.schedule()
+            }
             return .success(setup)
             #else
             return .success(Setup(device: device, renderer: renderer))
@@ -247,6 +250,30 @@ struct DebugShipOptions: Equatable {
     init(arguments: [String]) {
         spins = arguments.contains(Self.spinArgument)
         hidesShip = arguments.contains(Self.noShipArgument)
+    }
+}
+
+/// `--debug-main-stall` (012 research R8, contract C5): once, 5 seconds after setup, the main thread spins
+/// for 50 ms, so the main-thread stall figures can be seen to catch a known stall (012 SC-002).
+///
+/// A spin on the clock, not a sleep, so the thread is unambiguously busy. Debug and Profiling builds only,
+/// like the other `--debug-*` arguments.
+struct DebugMainStall: Equatable {
+    static let argument = "--debug-main-stall"
+    static let delaySeconds = 5.0
+    static let stallSeconds = 0.050
+
+    var isRequested: Bool
+
+    init(arguments: [String]) {
+        isRequested = arguments.contains(Self.argument)
+    }
+
+    static func schedule() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + delaySeconds) {
+            let end = CACurrentMediaTime() + stallSeconds
+            while CACurrentMediaTime() < end {}
+        }
     }
 }
 

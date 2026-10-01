@@ -35,7 +35,7 @@ stall shows up.
 
 ### Tests for User Story 1
 
-- [ ] T002 [P] [US1] Write `Tests/SwiftSkyPlatformTests/MainThreadStallTests.swift` (Swift Testing): for
+- [X] T002 [P] [US1] Write `Tests/SwiftSkyPlatformTests/MainThreadStallTests.swift` (Swift Testing): for
   `BusyStretchTracker` — after/before-waiting returns the difference; before-waiting with no open stretch
   returns `nil`; a nested sequence (after, before, after, before) yields two stretches; a clock that goes
   backwards yields 0. For `MainThreadStallFigures` — packing round-trips; `recording` keeps the maximum in
@@ -48,11 +48,11 @@ stall shows up.
 
 ### Implementation for User Story 1
 
-- [ ] T003 [US1] Create `Sources/SwiftSkyPlatform/MainThreadStallFigures.swift` with `BusyStretchTracker`
+- [X] T003 [US1] Create `Sources/SwiftSkyPlatform/MainThreadStallFigures.swift` with `BusyStretchTracker`
   and `MainThreadStallFigures` exactly as in data-model.md, compiled in every build like
   `FrameAllocationCounts.swift`, with doc comments citing 012 FR-001–FR-005 and research R3, R4; make T002
   pass
-- [ ] T004 [US1] Create `Sources/SwiftSkyPlatform/MainThreadStallProbe.swift`, entirely under
+- [X] T004 [US1] Create `Sources/SwiftSkyPlatform/MainThreadStallProbe.swift`, entirely under
   `#if SWIFTSKY_INSTRUMENTATION`: `final class MainThreadStallProbe: Sendable` holding
   `figures: Atomic<UInt64>` and `intervalNanoseconds: Atomic<UInt64>` (Synchronization), a main-thread-only
   `BusyStretchTracker` (`nonisolated(unsafe)`, documented as main-only), and two `CFRunLoopObserver`s on
@@ -63,26 +63,26 @@ stall shows up.
   (`exchange(0)`), `restart(intervalSeconds:)` (store interval, then `take()`) and the internal
   `record(stretchNanoseconds:)` the observer calls, per data-model.md; make T002's probe tests pass. No
   allocation after `install()`
-- [ ] T005 [US1] Change `Sources/SwiftSkyPlatform/Instrumentation.swift`: in the instrumented branch, hold a
+- [X] T005 [US1] Change `Sources/SwiftSkyPlatform/Instrumentation.swift`: in the instrumented branch, hold a
   `let stallProbe: MainThreadStallProbe` (passed to `init`), call `stallProbe.restart(intervalSeconds:)`
   in `init` and in `updateBudget(seconds:)` (research R6), and in `summary()` take the figures once and
   append `mainworst=\(ms)ms mainover=\(n)` to the end of both summary forms (contract C1, research R9),
   keeping every existing field unchanged; update the type's doc comment. Release branch: add the new `init`
   parameter shape as a no-op so `FrameLoop` compiles in both
-- [ ] T006 [US1] Change `Sources/SwiftSkyPlatform/FrameLoop.swift`: create the probe in `init` (instrumented
+- [X] T006 [US1] Change `Sources/SwiftSkyPlatform/FrameLoop.swift`: create the probe in `init` (instrumented
   only) and pass it to `Instrumentation`; call `install()` in `start()` (main thread) and `uninstall()` in
   `stopAndDrain()`; document both in the type's isolation notes (the probe is the second cross-thread
   channel, lock-free). No per-frame change (contract C3). Depends on T004, T005
-- [ ] T007 [P] [US1] Change `Sources/SwiftSkyPlatform/MetalSurfaceView.swift` (macOS block): override
+- [X] T007 [P] [US1] Change `Sources/SwiftSkyPlatform/MetalSurfaceView.swift` (macOS block): override
   `viewWillStartLiveResize` and `viewDidEndLiveResize`, calling `super` and, under
   `SWIFTSKY_INSTRUMENTATION`, logging `live resize began` / `live resize ended` at `notice` with
   `Logger(subsystem: "com.swiftsky.app", category: "frame")` (FR-013, research R7, contract C4)
-- [ ] T008 [P] [US1] Change `Sources/SwiftSkyPlatform/GameSurfaceView.swift`: add `--debug-main-stall`
+- [X] T008 [P] [US1] Change `Sources/SwiftSkyPlatform/GameSurfaceView.swift`: add `--debug-main-stall`
   (instrumented builds only) beside the existing `--debug-*` arguments; when present, schedule one
   main-queue block 5 s after setup that spins on the clock for 50 ms (research R8, contract C5). Add a
   parsing test to `Tests/SwiftSkyPlatformTests/DebugShipOptionsTests.swift` if the option lives in a
   parsed struct
-- [ ] T009 [US1] Run `Scripts/verify.sh`; fix any warning or failure; run the new suites 10 times in a row
+- [X] T009 [US1] Run `Scripts/verify.sh`; fix any warning or failure; run the new suites 10 times in a row
   (`swift test --filter MainThreadStall` ×10) and record quickstart check 1 in
   `specs/012-main-thread-stall-probe/quickstart.md` Results (SC-001, SC-007)
 - [ ] T010 [US1] Quickstart check 2: Debug macOS build, idle 10 s; ask the user to drag a corner for 5 s;
@@ -90,7 +90,7 @@ stall shows up.
   (research R2's fail-loud case absent). Record in quickstart Results (SC-002, FR-013)
 - [ ] T011 [US1] Quickstart check 3: Debug build with `--debug-main-stall`; confirm `mainworst` ≥ 50 ms and
   `mainover` ≥ 1 in the summary after 5 s, `mainover=0` elsewhere after the first. Record (SC-002)
-- [ ] T012 [US1] Quickstart check 4: Release build of `swiftSky (macOS)`; `nm` and `strings -a` find none of
+- [X] T012 [US1] Quickstart check 4: Release build of `swiftSky (macOS)`; `nm` and `strings -a` find none of
   `mainworst=`, `mainover=`, `live resize`, `--debug-main-stall`, `MainThreadStallProbe`. Record (FR-008)
 
 **Checkpoint**: the probe is in place and proven; US2 can run.

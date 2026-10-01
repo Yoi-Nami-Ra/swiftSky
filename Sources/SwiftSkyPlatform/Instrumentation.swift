@@ -17,6 +17,11 @@ import SwiftSkySimulation
 /// allocations per summary interval, the app's and the graphics framework's apart, counted by
 /// `SwiftSkyAllocationCounter` and kept here in `FrameAllocationCounts`.
 ///
+/// Since 012 it also reports the main thread's worst busy stretch and how many stretches overran the
+/// frame interval (`mainworst=`, `mainover=`), measured on the main thread by `MainThreadStallProbe` and
+/// taken here once per summary. The frame figures above cannot show a busy main thread: they are measured
+/// on the frame loop's own thread.
+///
 /// It also logs each move order and each arrival (008 FR-015), so a run can be checked against where
 /// the player tapped. Those lines are written only on the frames where an order is applied or the ship
 /// arrives, never per frame.
@@ -63,8 +68,14 @@ struct Instrumentation {
     /// otherwise report the very zero check 25 is looking for.
     private(set) var allocationCounterReady = false
 
-    init(budgetSeconds: Double) {
+    /// The main thread's busy stretches (012). Owned by the frame loop, which installs it on the main
+    /// thread; this side only publishes the frame interval and takes the figures.
+    private let stallProbe: MainThreadStallProbe
+
+    init(budgetSeconds: Double, stallProbe: MainThreadStallProbe = MainThreadStallProbe()) {
         self.budgetSeconds = budgetSeconds
+        self.stallProbe = stallProbe
+        stallProbe.restart(intervalSeconds: budgetSeconds)
     }
 
     /// Records a presented frame. No allocation.
@@ -114,6 +125,7 @@ struct Instrumentation {
         totalFrameSeconds = 0
         worstFrameSeconds = 0
         allocations.reset()
+        stallProbe.restart(intervalSeconds: seconds)
         restartOverlayWindow()
     }
 
@@ -159,16 +171,19 @@ struct Instrumentation {
     ///
     /// The allocation fields follow the existing ones, which keep their names and order (011 FR-006,
     /// research R9): app-side allocations on frames without an event, frames without an event that
-    /// allocated, app-side allocations on frames with an event, and graphics framework allocations.
+    /// allocated, app-side allocations on frames with an event, and graphics framework allocations. The
+    /// main-thread figures come last, in both forms (012 contract C1).
     mutating func summary() {
-        logSummary()
+        logSummary(stalls: stallProbe.take())
         allocations.reset()
     }
 
     /// Writes the summary line. Non-mutating, because `Logger`'s interpolations are escaping autoclosures
     /// and cannot capture a mutating `self`.
-    private func logSummary() {
+    private func logSummary(stalls: MainThreadStallFigures) {
         let mean = presentedFrames > 0 ? totalFrameSeconds / Double(presentedFrames) : 0
+        let mainWorst = Double(stalls.worstMicroseconds) / 1000
+        let mainOver = stalls.overCount
         if allocationCounterReady {
             Self.log.notice(
                 """
@@ -182,7 +197,9 @@ struct Instrumentation {
                 allocs=\(self.allocations.appAllocations, privacy: .public) \
                 allocframes=\(self.allocations.allocatingFrames, privacy: .public) \
                 eventallocs=\(self.allocations.eventAppAllocations, privacy: .public) \
-                gfxallocs=\(self.allocations.graphicsAllocations, privacy: .public)
+                gfxallocs=\(self.allocations.graphicsAllocations, privacy: .public) \
+                mainworst=\(mainWorst, privacy: .public)ms \
+                mainover=\(mainOver, privacy: .public)
                 """
             )
         } else {
@@ -195,7 +212,9 @@ struct Instrumentation {
                 worst=\(self.worstFrameSeconds * 1000, privacy: .public)ms \
                 budget=\(self.budgetSeconds * 1000, privacy: .public)ms \
                 ticks=\(self.lastTickCount, privacy: .public) \
-                allocs=unavailable
+                allocs=unavailable \
+                mainworst=\(mainWorst, privacy: .public)ms \
+                mainover=\(mainOver, privacy: .public)
                 """
             )
         }

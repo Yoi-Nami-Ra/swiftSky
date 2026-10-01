@@ -56,3 +56,5 @@ Formats and PASS rules are in [contracts/main-thread-stall-probe.md](./contracts
 
 | # | Date | Result | Evidence |
 |---|------|--------|----------|
+| 1 | 2026-10-01 | **PASS** | `Scripts/verify.sh`: VERIFICATION PASSED (layer boundary, headless tests with no Metal device, both app builds, no warnings). The new suites — busy stretch tracker (4), stall figures (6), stall probe (3), `DebugMainStall` (1) — 14 tests, passed on 10 of 10 consecutive runs |
+| 4 | 2026-10-01 | **PASS** | Release build of `swiftSky (macOS)`: `strings -a` and `nm` find 0 of `mainworst=`, `mainover=`, `live resize`, `--debug-main-stall`, `MainThreadStallProbe`, `DebugMainStall` (and 0 of `frames=`) |

@@ -1,4 +1,5 @@
 import QuartzCore
+import os
 import SwiftSkyRendering
 import SwiftSkySimulation
 
@@ -165,6 +166,29 @@ final class MetalSurfaceView: PlatformView {
         super.viewDidChangeBackingProperties()
         // Moving to a display of different density, or a resolution change (FR-031).
         surfaceGeometryChanged(scaleChanged: true)
+    }
+
+    // MARK: - Live resize markers (012)
+
+    #if SWIFTSKY_INSTRUMENTATION
+    /// Same subsystem and category as the frame summary, so one `log show` reads both.
+    private static let frameLog = Logger(subsystem: "com.swiftsky.app", category: "frame")
+    #endif
+
+    /// Brackets a window drag in the log, so the summaries that cover it can be found from the log alone
+    /// (012 FR-013, contract C4). Main thread, once per drag; instrumented builds only.
+    override func viewWillStartLiveResize() {
+        super.viewWillStartLiveResize()
+        #if SWIFTSKY_INSTRUMENTATION
+        Self.frameLog.notice("live resize began")
+        #endif
+    }
+
+    override func viewDidEndLiveResize() {
+        super.viewDidEndLiveResize()
+        #if SWIFTSKY_INSTRUMENTATION
+        Self.frameLog.notice("live resize ended")
+        #endif
     }
 
     // MARK: - Clicks (009)
