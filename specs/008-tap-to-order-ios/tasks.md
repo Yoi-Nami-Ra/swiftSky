@@ -43,7 +43,7 @@ its own.
 
 **Purpose**: Let the platform tests name the rendering and logic types (R8).
 
-- [ ] T001 Change `Package.swift`: give the `SwiftSkyPlatformTests` target `dependencies: ["SwiftSkyPlatform", "SwiftSkyRendering", "SwiftSkySimulation"]`, and extend its comment: it now also tests `MoveOrderRequest` (008 FR-013), which needs `RenderSurface`, `Vector2` and `SimulationState` named under `--explicit-target-dependency-import-check=error`; both extra modules are GPU-free to link (008 research R8)
+- [X] T001 Change `Package.swift`: give the `SwiftSkyPlatformTests` target `dependencies: ["SwiftSkyPlatform", "SwiftSkyRendering", "SwiftSkySimulation"]`, and extend its comment: it now also tests `MoveOrderRequest` (008 FR-013), which needs `RenderSurface`, `Vector2` and `SimulationState` named under `--explicit-target-dependency-import-check=error`; both extra modules are GPU-free to link (008 research R8)
 
 **Checkpoint**: `swift build` and `swift test` pass unchanged.
 

@@ -105,14 +105,16 @@ let package = Package(
             swiftSettings: layerSettings
         ),
 
-        // Headless tests for the platform layer's pure measurement structs: the debug overlay's
-        // one-second frame-time window and its refresh schedule (003 FR-016). Depends on
-        // SwiftSkyPlatform ONLY. These tests never create a view, a layer or a FrameLoop — only plain
-        // structs — so linking AppKit/UIKit is harmless and no GPU or app host is needed
-        // (003 research.md R9).
+        // Headless tests for the platform layer's pure structs: the debug overlay's one-second
+        // frame-time window and its refresh schedule (003 FR-016), and the move order request that turns
+        // a tap into an order (008 FR-013). These tests never create a view, a layer or a FrameLoop —
+        // only plain structs — so linking AppKit/UIKit is harmless and no GPU or app host is needed
+        // (003 research.md R9). The rendering and logic layers are declared because the order request's
+        // tests must name `RenderSurface`, `Vector2` and `SimulationState` under
+        // `--explicit-target-dependency-import-check=error`; both are GPU-free to link (008 research R8).
         .testTarget(
             name: "SwiftSkyPlatformTests",
-            dependencies: ["SwiftSkyPlatform"],
+            dependencies: ["SwiftSkyPlatform", "SwiftSkyRendering", "SwiftSkySimulation"],
             swiftSettings: layerSettings
         ),
     ]
