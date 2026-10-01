@@ -136,4 +136,64 @@ struct MoveOrderRequestTests {
         #expect(near(later.ship.position, .zero, within: ArrivalTolerances.default.position))
     }
 
+    // MARK: - User Story 3
+
+    @Test("Centre and corners map to (0, 0) and (±w/2, ±h/2) on every surface shape (C3)", arguments: shapes)
+    func cornersOnEveryShape(width: Double, height: Double) {
+        let surface = surface(widthPoints: width, heightPoints: height, scale: 2)
+        let w = width / 2, h = height / 2
+        let cases: [(Vector2, Vector2)] = [
+            (Vector2(x: width / 2, y: height / 2), .zero),
+            (Vector2(x: 0, y: 0), Vector2(x: -w, y: h)),
+            (Vector2(x: width, y: 0), Vector2(x: w, y: h)),
+            (Vector2(x: 0, y: height), Vector2(x: -w, y: -h)),
+            (Vector2(x: width, y: height), Vector2(x: w, y: -h)),
+        ]
+        for (view, world) in cases {
+            var state = SimulationState()
+            let outcome = MoveOrderRequest(viewPoint: view).apply(to: &state, on: surface)
+            #expect(near(destination(outcome), world), "view \(view) on \(width) × \(height)")
+        }
+    }
+
+    @Test("The same view point on the same size in points gives the same destination at 1×, 2× and 3× (C4)",
+          arguments: shapes)
+    func scaleIndependent(width: Double, height: Double) {
+        let destinations = [1.0, 2.0, 3.0].map { scale -> Vector2? in
+            var state = SimulationState()
+            return destination(request(123.25, 45.5).apply(to: &state, on: surface(widthPoints: width, heightPoints: height, scale: scale)))
+        }
+        #expect(destinations[0] != nil)
+        #expect(destinations[0] == destinations[1])
+        #expect(destinations[1] == destinations[2])
+    }
+
+    @Test(
+        "A surface with no camera drops the request and leaves the state as it was (C6)",
+        arguments: [
+            RenderSurface(widthPixels: 0, heightPixels: 1_704, backingScale: 2),
+            RenderSurface(widthPixels: 786, heightPixels: 0, backingScale: 2),
+            RenderSurface(widthPixels: 0, heightPixels: 0, backingScale: 2),
+            RenderSurface(widthPixels: 786, heightPixels: 1_704, backingScale: 0),
+            RenderSurface(widthPixels: 786, heightPixels: 1_704, backingScale: .nan),
+        ]
+    )
+    func noCamera(surface: RenderSurface) {
+        var state = flyingState()
+        let before = state
+        #expect(request(100, 100).apply(to: &state, on: surface) == .noCamera)
+        #expect(state == before)
+    }
+
+    @Test(
+        "A non-finite view point drops the request and leaves the state as it was (C7)",
+        arguments: [(Double.infinity, 10.0), (10.0, -Double.infinity), (Double.nan, 10.0), (10.0, Double.nan)]
+    )
+    func invalidDestination(vx: Double, vy: Double) {
+        var state = flyingState()
+        let before = state
+        let outcome = request(vx, vy).apply(to: &state, on: surface(widthPoints: 393, heightPoints: 852, scale: 3))
+        #expect(outcome == .invalidDestination)
+        #expect(state == before)
+    }
 }
