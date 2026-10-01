@@ -314,10 +314,18 @@ phys_footprint: 101 MB   phys_footprint_peak: 129 MB
   the display's true interval, not the 16.6 ms default. See the SC-003 note below.
 - **Check 26**: 101 MB resident against the 250 MB macOS tripwire. A Debug build with instrumentation
   compiled in, so a Release figure would be lower.
-- **Check 25** (zero heap allocations in the draw path) is **not verified**: it needs an allocation
-  instrument attached, and the counter FR-021f describes measures frame timing rather than
-  allocations. Structural evidence only — the draw path calls no allocating API, and the per-frame
-  code formats no strings (`summary()` is the sole formatting site and runs once per 120 frames).
+- **Check 25** (zero heap allocations in the draw path) — **iOS: PASS (2026-10-01, 011)**; macOS is
+  SKY-4. FR-021d's allocation counter was built by `specs/011-draw-allocation-counter` and reports in
+  this summary line (`allocs= allocframes= eventallocs= gfxallocs=`). iPhone 17 Pro simulator (iOS 27.0),
+  an optimised build with the counter compiled in (Release plus the instrumentation condition on the
+  command line — a Profiling build carries no instrumentation, 011 research R1, R12), default launch
+  arguments, 60 s idle: `allocation counter ready`, then all 21 summaries `allocs=0 allocframes=0
+  eventallocs=0`, e.g. `frames=1196 skipped=0 dropped=0 mean=0.201342ms worst=2.388417ms
+  budget=16.666667ms ticks=1691 allocs=0 allocframes=0 eventallocs=0 gfxallocs=3360`. Metal allocates
+  28 times per frame internally (`gfxallocs ÷ frames`, 28.0 in every summary), recorded as a reference,
+  not a gate. Getting there fixed one real per-frame allocation: the text renderer's completion handler
+  was re-bridged and heap-copied on every frame with text (011 research R13). How to repeat it:
+  `specs/011-draw-allocation-counter/quickstart.md`, "The method".
 
 > **The frame budget was wrong until 2026-07-28, and the gate was passing because of it.** It was
 > hardcoded to 1/60 and `Instrumentation.updateBudget` was never called, so on this 120 Hz display a
@@ -595,7 +603,7 @@ corrected.
 | 7, 8 | Resize range, minimum size | Needs interactive window dragging |
 | 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |
-| 25 | Zero draw-path allocations | Needs an allocation instrument attached |
+| 25 | Zero draw-path allocations | iOS PASS (011); the macOS run is SKY-4 |
 | 29 | Continuous resize under TSan | Race half PASSES; the resize half needs UI automation |
 | 33 | Notice under VoiceOver, dismiss exits | Needs VoiceOver and a click |
 | 36, 37 | VoiceOver on the surface, Reduce Motion | Needs VoiceOver and a system settings change |

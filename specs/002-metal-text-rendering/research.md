@@ -104,6 +104,10 @@ bold on this surface, so it was rejected.
 - **Frames in flight**: a `DispatchSemaphore(value: 3)` limits them. It is taken with a **zero
   timeout** and signalled from a completion handler stored once on the renderer as a
   `@convention(block)` value, so no closure is created per frame.
+  **Superseded by 011 (research R13)**: as built, the handler was a Swift closure, re-bridged and
+  heap-copied on every frame with text (one allocation per frame; a `@convention(block)` value made it
+  two). The ring now has no handler and no semaphore: each slot remembers the command buffer that last
+  read it, and is taken only once that buffer's `status` is `.completed` or `.error`.
 - **Buffer unavailable**: if no ring slot is free, the frame is **skipped** (`render` returns `false`).
   This matches 001 FR-027a's handling of a missing drawable, and it is counted by the existing
   skipped-frame instrumentation. With the layer's default of three drawables, a free drawable already
