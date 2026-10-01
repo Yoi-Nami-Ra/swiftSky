@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-01
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "SKY-3 — Verify zero draw-path allocations on iOS" (`.tickets/3.yaml`).
 Quickstart check 25 (SC-004) of `specs/001-metal-app-shell` is not verified; today there is only

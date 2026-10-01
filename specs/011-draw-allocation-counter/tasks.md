@@ -115,9 +115,9 @@ in `Sources/SwiftSkyRendering/Text/TextRenderer.swift` — a rendering-layer cha
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T017 [P] Change `CLAUDE.md`: add spec 011 to the "Built so far" list (the draw-path allocation counter in Debug builds, and check 25 PASS on iOS); add a Key-locations entry for `Sources/SwiftSkyAllocationCounter/` (the `malloc_logger` hook, stack-walk attribution, self-test line, the four summary fields, breakpoint `sky_alloc_app_allocation`) and for `FrameAllocationCounts.swift`; note that the Profiling configuration builds the package with Release settings, so it carries no instrumentation (011 R1)
-- [ ] T018 Run check 1 (`./Scripts/verify.sh`) and check 2 (`swift test --filter AllocationCounter` 10 times in a row); record both in quickstart.md's Results. Depends on all earlier tasks
-- [ ] T019 Fill quickstart.md's Results table for checks 1–9 (PASS / result per check, date 2026-10-01 or the run date) and set spec.md's **Status** to `Implemented`. Depends on T018
+- [X] T017 [P] Change `CLAUDE.md`: add spec 011 to the "Built so far" list (the draw-path allocation counter in Debug builds, and check 25 PASS on iOS); add a Key-locations entry for `Sources/SwiftSkyAllocationCounter/` (the `malloc_logger` hook, stack-walk attribution, self-test line, the four summary fields, breakpoint `sky_alloc_app_allocation`) and for `FrameAllocationCounts.swift`; note that the Profiling configuration builds the package with Release settings, so it carries no instrumentation (011 R1)
+- [X] T018 Run check 1 (`./Scripts/verify.sh`) and check 2 (`swift test --filter AllocationCounter` 10 times in a row); record both in quickstart.md's Results. Depends on all earlier tasks
+- [X] T019 Fill quickstart.md's Results table for checks 1–9 (PASS / result per check, date 2026-10-01 or the run date) and set spec.md's **Status** to `Implemented`. Depends on T018
 
 ---
 
