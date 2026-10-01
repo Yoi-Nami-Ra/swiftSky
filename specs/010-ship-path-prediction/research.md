@@ -156,8 +156,7 @@ The grids reuse `AutopilotTests`' static data and the module-level `fly` helper.
 **Decision**: the 006 check 14 method — a throwaway `-O` executable built from
 `Sources/SwiftSkySimulation/*.swift`, timed with `ContinuousClock`, allocations counted with
 `malloc_zone_statistics` — measures (a) a capped prediction and a 1,000-unit prediction, and (b) a
-single-tick `advance` call on `main` and on this branch, since the state grows from about 140 bytes to
-about 4.3 KB and is copied once per call.
+single-tick `advance` call on `main` and on this branch, since the state grows from 114 to 4,249 bytes and is copied once per call.
 
 **Rationale**: Principle III wants a before/after number for anything on the hot path, and SC-007 a
 timing for the prediction that the automated tests deliberately do not take (spec clarification Q3).

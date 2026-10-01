@@ -138,6 +138,82 @@ struct PlannedPathTests {
         let last = try #require(path.last)
         #expect(bits(last) == bits(real.ship.position))
     }
+
+    // MARK: - US3: planned once per order
+
+    /// A ship part-way through an order from rest, so a re-order starts from a moving ship at a tick
+    /// other than zero.
+    static func midFlight() -> SimulationState {
+        Simulation.advance(AutopilotTests.ordered(to: Vector2(x: 1_000, y: 0)), ticks: 120)
+    }
+
+    @Test("Advancing, with or without an explicit input, never changes the path (SC-005, FR-008)", arguments: [1, 7, 60, 333, 1_000])
+    func advancingLeavesThePath(ticks: Int) {
+        let state = Self.midFlight()
+        let path = bits(state.plannedPath)
+        #expect(bits(Simulation.advance(state, ticks: ticks).plannedPath) == path)
+        #expect(bits(Simulation.advance(state, ticks: ticks, input: ControlInput(thrust: 1, turn: -0.5)).plannedPath) == path)
+    }
+
+    @Test("A new order replaces the path with its own prediction, from where the ship is now (SC-005, US3-2)")
+    func reorderReplacesThePath() {
+        var state = Self.midFlight()
+        let old = bits(state.plannedPath)
+        let destination = Vector2(x: -500, y: 300)
+        state.setOrder(to: destination)
+        let predicted = PlannedPath(predictingFrom: state.ship, autopilot: state.autopilot, tickCount: state.tickCount)
+        #expect(bits(state.plannedPath) == bits(predicted))
+        #expect(bits(state.plannedPath) != old)
+        #expect(state.plannedPath.startTick == 120)
+        #expect(bits(state.plannedPath[0]) == bits(state.ship.position))
+        expectPathIsTheRealFlight(state, "re-ordered mid-flight")
+
+        // The same destination again, later: predicted afresh from the ship as it is then.
+        state = Simulation.advance(state, ticks: 60)
+        state.setOrder(to: destination)
+        #expect(state.plannedPath.startTick == 180)
+        #expect(bits(state.plannedPath[0]) == bits(state.ship.position))
+        expectPathIsTheRealFlight(state, "re-ordered to the same destination")
+    }
+
+    @Test("A refused order leaves the whole state, path included, unchanged (SC-005, US3-3)")
+    func refusedOrderLeavesTheState() {
+        var state = Self.midFlight()
+        let before = bits(state)
+        for destination in [Vector2(x: .nan, y: 0), Vector2(x: 0, y: .infinity), Vector2(x: -.infinity, y: .nan)] {
+            let accepted = state.setOrder(to: destination)
+            #expect(!accepted)
+            #expect(bits(state) == before)
+        }
+    }
+
+    @Test("Without an order there is no path (FR-001)")
+    func noOrderNoPath() {
+        let fresh = SimulationState()
+        #expect(fresh.plannedPath.isEmpty)
+        #expect(fresh.plannedPath.last == nil)
+        #expect(bits(fresh.plannedPath) == bits(PlannedPath.empty))
+        #expect(Simulation.advance(fresh, ticks: 600).plannedPath.isEmpty)
+    }
+
+    @Test("Predicting changes nothing else: ship, autopilot and tick count are as without it (FR-009)")
+    func predictingChangesNothingElse() throws {
+        let before = Self.midFlight()
+        let destination = Vector2(x: -500, y: 300)
+        var viaState = before
+        viaState.setOrder(to: destination)
+        var direct = before
+        direct.autopilot.setOrder(try #require(MoveOrder(destination: destination)), for: direct.ship)
+
+        #expect(bits(viaState.ship) == bits(direct.ship))
+        #expect(bits(viaState.autopilot) == bits(direct.autopilot))
+        #expect(viaState.tickCount == direct.tickCount)
+    }
+
+    @Test("006's ten-run determinism scenario ends with a path, so its byte-identical check covers paths (SC-006)")
+    func determinismScenarioHasAPath() {
+        #expect(!AutopilotTests.scenario().plannedPath.isEmpty)
+    }
 }
 
 // MARK: - The real flight

@@ -49,8 +49,8 @@ apply an order. A prediction costs one autopilot tick (148–189 ns, 006 check 1
 by quickstart check 9.
 
 **Constraints**:
-- **Memory**: `SimulationState` grows by `PlannedPath`, 4,129 bytes — from about 140 bytes to about
-  4.3 KB — copied once per `advance` call and when handed to the renderer; no heap. The cost of the
+- **Memory**: `SimulationState` grows by `PlannedPath`, 4,129 bytes — from 114 to 4,249 bytes
+  (measured) — copied once per `advance` call and when handed to the renderer; no heap. The cost of the
   larger copy is measured before/after (check 9b).
 - **Determinism**: bit-identical across runs on one platform and binary (FR-010), as 004 and 006.
 - **Visible output**: unchanged in every build (SC-007).
@@ -83,7 +83,7 @@ Evaluated against `.specify/memory/constitution.md` v1.1.0.
 |-----------|--------------------|---------------------|
 | I | **PASS** | Unchanged. The only platform change is three fields on an existing Debug log line (R8). |
 | II | **PASS** | Strengthened: the thinning rule is tested for every flight length, not sampled (R9); path bits join `StateBits`, so 006's determinism test covers them (R7). |
-| III | **PASS** | The state copy grows to ~4.3 KB; inline storage keeps it allocation-free (R2) and check 9b measures the copy. Rejected: a heap array (copy-on-write allocation on order frames). |
+| III | **PASS** | The state copy grows to ~4.2 KB; inline storage keeps it allocation-free (R2) and check 9b measures the copy. Rejected: a heap array (copy-on-write allocation on order frames). |
 | IV | **PASS (N/A)** | Unchanged. |
 | V | **PASS** | The shared `tick` removes a duplication instead of adding a layer (R3); thinning is one pass (R5). |
 
