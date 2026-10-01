@@ -20,8 +20,9 @@ with the origin at the centre of the whole surface; nothing wired in yet) and
 then keep station — in the logic layer; nothing issues orders yet) and
 `specs/007-ship-sprite-rendering` (the ship drawn from `ship.png` at its position and heading, over the
 black background and under the debug overlay) and
-`specs/008-tap-to-order-ios` (a tap on the iOS surface orders the ship to the point under the finger;
-the macOS click is SKY-11, which reuses the same order request). Layer libraries and
+`specs/008-tap-to-order-ios` (a tap on the iOS surface orders the ship to the point under the finger)
+and `specs/009-click-to-order-macos` (a primary click does the same on macOS, through the same order
+request). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
@@ -123,7 +124,12 @@ artifacts, keep them consistent with these templates.
   loop's one event queue, and converted in the loop against the surface it has applied up to that event.
   The iOS tap recogniser (one tap, one finger) and the VoiceOver `.allowsDirectInteraction` trait are in
   `MetalSurfaceView.swift`. Debug and Profiling builds log `order view=… world=…` and `arrived world=…`
-  lines under subsystem `com.swiftsky.app` (category `frame`).
+  lines under subsystem `com.swiftsky.app` (category `frame`). Read them with `/usr/bin/log`: in zsh a
+  bare `log` is a shell builtin.
+- `Sources/SwiftSkyPlatform/ClickPosition.swift` — the Mac click's bottom-left → top-left flip,
+  (x, h − y) against the view's `bounds.height`; pure and tested. The macOS click recogniser is in
+  `MetalSurfaceView.swift`: primary button only, Control-click ignored (a secondary click by convention),
+  and `acceptsFirstMouse` returns `false`, so the first click on an inactive window only activates it.
 - `Tests/SwiftSkySimulationTests/`, `Tests/SwiftSkyRenderingTests/`, `Tests/SwiftSkyPlatformTests/`
   — headless Swift Testing suites. The platform tests cover pure structs only (measurement and the move
   order request), and depend on the rendering and logic layers to name `RenderSurface`, `Vector2` and
