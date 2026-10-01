@@ -12,8 +12,11 @@ description: |
   against this baseline with a 10% margin, so a wrong device would silently
   mislabel the baseline. Record the values in the quickstart's SC-005 block.
   The macOS half is SKY-2.
+
+  Dropped 2026-10-01: the iPhone 11 baseline won't be used; iOS baselines are
+  measured on the devices available.
 platform: ios
-status: ready
+status: dropped
 phase: MVP
 priority: high
 parent: null
