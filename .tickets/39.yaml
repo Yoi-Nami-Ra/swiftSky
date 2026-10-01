@@ -1,0 +1,27 @@
+id: 39
+title: "Verify VoiceOver checks on a physical iOS device"
+type: task
+description: |
+  Split out of SKY-7, which ran what the iOS simulator allows (001 check 37
+  PASS; check 33 dismissal PASS and Dynamic Type FAIL, fixed by SKY-38). The
+  rest needs VoiceOver, which the simulator does not have, so it needs an
+  iPhone or iPad:
+
+  - 001 check 36 (FR-009): with VoiceOver on, focus the game surface and
+    confirm it is announced as "swiftSky game surface".
+  - 003 check 12 (FR-010): same, with the debug overlay showing (Debug build);
+    confirm only that label is exposed and the overlay text is not.
+  - 008 check 10 (SC-007a): with VoiceOver on, tap the surface; the ship flies
+    to the tapped point (.allowsDirectInteraction), and focus still reads
+    "swiftSky game surface".
+  - 001 check 33 (FR-025): Release build with the fragment shader entry point
+    renamed (revert afterwards); confirm VoiceOver reads the failure notice.
+
+  Record results in each spec's quickstart. The macOS VoiceOver run is SKY-8.
+platform: ios
+status: ready
+phase: MVP
+priority: medium
+parent: null
+blocked_by: []
+designs: []
