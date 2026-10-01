@@ -57,4 +57,40 @@ struct ClickPositionTests {
         let view = ClickPosition.viewPoint(fromBottomLeft: Vector2(x: 100.25, y: 50.5), heightPoints: 800)
         #expect(view == Vector2(x: 100.25, y: 749.5))
     }
+
+    // MARK: - User Story 3
+
+    /// Wide, tall, odd and a full-screen size (C2), each at 1× and 2×.
+    static let sizes: [(Double, Double, Double)] = [
+        (1_280, 800, 1), (1_280, 800, 2),
+        (800, 1_280, 1), (800, 1_280, 2),
+        (1_001, 667, 1), (1_001, 667, 2),
+        (1_512, 982, 1), (1_512, 982, 2),
+    ]
+
+    @Test("Corners and centre land on (±w/2, ±h/2) and (0, 0) at every size and scale (C2)", arguments: sizes)
+    func cornersInWorld(width: Double, height: Double, scale: Double) {
+        let surface = surface(widthPoints: width, heightPoints: height, scale: scale)
+        let w = width / 2, h = height / 2
+        let cases: [(Vector2, Vector2)] = [
+            (Vector2(x: 0, y: 0), Vector2(x: -w, y: -h)),            // bottom-left
+            (Vector2(x: 0, y: height), Vector2(x: -w, y: h)),        // top-left
+            (Vector2(x: width, y: height), Vector2(x: w, y: h)),     // top-right
+            (Vector2(x: width, y: 0), Vector2(x: w, y: -h)),         // bottom-right
+            (Vector2(x: width / 2, y: height / 2), .zero),           // centre
+        ]
+        for (click, world) in cases {
+            let landed = destination(ofClickAt: click, on: surface, heightPoints: height)
+            #expect(near(landed, world), "click \(click) on \(width) × \(height) at \(scale)×")
+        }
+    }
+
+    @Test("The same click on the same size in points lands identically at 1× and 2× (C3)")
+    func scaleIndependent() {
+        let click = Vector2(x: 321.75, y: 123.5)
+        let at1 = destination(ofClickAt: click, on: surface(widthPoints: 1_001, heightPoints: 667, scale: 1), heightPoints: 667)
+        let at2 = destination(ofClickAt: click, on: surface(widthPoints: 1_001, heightPoints: 667, scale: 2), heightPoints: 667)
+        #expect(at1 != nil)
+        #expect(at1 == at2)
+    }
 }
