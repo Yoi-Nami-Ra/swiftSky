@@ -85,9 +85,11 @@ simulator ran in landscape, so the surface was 874 × 402 points.
 | 4 | iPhone 17 Pro simulator | PASS, with one deviation at the sensor housing, below. All nine points, each `order` then `arrived`, within 0.12 units (log excerpt below) |
 | 5 | iPhone 17 Pro simulator | PARTIAL. Three runs of a new order replacing the current one: each time the ship flew only to the last tap, and only that one `arrived` line appeared (log below). The simulator's input tool delivered the taps of each run in one burst (same or 40–50 ms apart), so each burst was drained in one frame, which is US2-2. A tap seconds into a flight could not be produced with this tool; that case is C8 (`replacesMidFlight`) |
 | 6 | iPhone 17 Pro simulator | PASS. Each `order` line is written in the frame boundary that applies it, and the ship was seen turning towards the tap in the next screenshot. The exact latency was not measured; that the same frame's advance flies the order is C10/C13 |
+| 7 | iPhone 17 Pro simulator | PASS. The whole of checks 4, 5, 6, 8 and 9 ran in landscape (874 × 402 pt surface) and every order landed under the tap. Portrait on the iPhone was not re-run: the input tool cannot rotate the device, and portrait is covered by C3 (393 × 852) |
 | 8 | iPhone 17 Pro simulator | PASS. Taps 20 pt from the corners beside the Dynamic Island, and at the bottom edge above the home indicator, ordered the ship there |
 | 9 | iPhone 17 Pro simulator | PASS for drag, 1.5 s long press and two-finger tap: no `order` line after 11:24:25. The home gesture was not reproducible with the simulator's input tool (an edge swipe left the app in front and issued no order); not run on a device |
 
+| 11 | iPad simulator | NOT RUN. Split View and Slide Over need multitasking controls the input tool cannot drive, and taps stopped reaching this iPad simulator (check 4). Every Split View shape is covered by C3 and C4 (320 × 1,194 narrow pane, 1,001 × 667) and by C6 (zero-area during a resize). Needs a manual pass on an iPad or the iPad simulator |
 | 10 | — | NOT RUN. The iOS simulator has no VoiceOver. `.allowsDirectInteraction` is set (C15, code review); needs a device |
 
 **Check 4 log** (view points → world; arrival):

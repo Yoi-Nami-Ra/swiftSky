@@ -113,11 +113,11 @@ with no camera.
 
 ### Tests for User Story 3
 
-- [ ] T013 [US3] Add to `Tests/SwiftSkyPlatformTests/MoveOrderRequestTests.swift`, parameterised with `@Test(arguments:)`: C3 (the four corners and the centre on 393 × 852, 852 × 393, 320 × 1,194 and 1,001 × 667 point surfaces at 2×, within 1e-9 of (±w/2, ±h/2) and (0, 0)); C4 (one view point on the same size in points at scales 1, 2 and 3 gives identical destinations, using sizes whose pixel counts are whole at every scale); C6 (zero width, zero height, and a backing scale of 0 and `.nan`, give `.noCamera`, with a state that already has an order left `==` to before); C7 (`viewPoint` with `.infinity` or `.nan` components gives `.invalidDestination`, state `==` to before)
+- [X] T013 [US3] Add to `Tests/SwiftSkyPlatformTests/MoveOrderRequestTests.swift`, parameterised with `@Test(arguments:)`: C3 (the four corners and the centre on 393 × 852, 852 × 393, 320 × 1,194 and 1,001 × 667 point surfaces at 2×, within 1e-9 of (±w/2, ±h/2) and (0, 0)); C4 (one view point on the same size in points at scales 1, 2 and 3 gives identical destinations, using sizes whose pixel counts are whole at every scale); C6 (zero width, zero height, and a backing scale of 0 and `.nan`, give `.noCamera`, with a state that already has an order left `==` to before); C7 (`viewPoint` with `.infinity` or `.nan` components gives `.invalidDestination`, state `==` to before)
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] No code: the conversion is the camera's, applied against the loop's current surface (R2). Run quickstart check 7 (iPhone landscape) and check 11 (iPad Split View at every width, Slide Over, resize mid-flight) on the simulators and record them in the Evidence section of `specs/008-tap-to-order-ios/quickstart.md`
+- [X] T014 [US3] No code: the conversion is the camera's, applied against the loop's current surface (R2). Run quickstart check 7 (iPhone landscape) and check 11 (iPad Split View at every width, Slide Over, resize mid-flight) on the simulators and record them in the Evidence section of `specs/008-tap-to-order-ios/quickstart.md`
 
 **Checkpoint**: Every layout is covered by tests and checked on the iPad simulator.
 
