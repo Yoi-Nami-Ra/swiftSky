@@ -20,8 +20,8 @@ typealias PlatformView = UIView
 /// owns the drawable lifecycle, which fights FR-028's off-main loop and FR-027a's skip-on-unavailable
 /// behaviour (research.md R5, R6).
 final class MetalSurfaceView: PlatformView {
-    /// Called whenever the drawable's size or scale changes, and on iOS whenever the player taps the
-    /// surface (008). The receiver marshals it to the frame loop's isolation domain; this view never
+    /// Called whenever the drawable's size or scale changes, and whenever the player taps the surface on
+    /// iOS (008) or clicks it on macOS (009). The receiver marshals it to the frame loop's isolation domain; this view never
     /// touches loop state itself (FR-029).
     var onSurfaceChange: ((SurfaceEvent) -> Void)?
 
@@ -62,6 +62,10 @@ final class MetalSurfaceView: PlatformView {
         #if os(iOS)
         registerForScaleChanges()
         registerForTaps()
+        #endif
+
+        #if os(macOS)
+        registerForClicks()
         #endif
     }
 
@@ -161,6 +165,44 @@ final class MetalSurfaceView: PlatformView {
         super.viewDidChangeBackingProperties()
         // Moving to a display of different density, or a resolution change (FR-031).
         surfaceGeometryChanged(scaleChanged: true)
+    }
+
+    // MARK: - Clicks (009)
+
+    /// A primary click anywhere on the surface orders the ship there (009 FR-001, research R1).
+    ///
+    /// The system recogniser is the platform's definition of a click: it fails on a drag and fires for a
+    /// trackpad tap with tap to click on. `buttonMask = 0x1` leaves right, middle and other buttons out.
+    /// Each click is its own recognition, so a double-click is two orders to the same point (FR-002). It
+    /// does not touch size, scale or occlusion reporting (FR-005).
+    private func registerForClicks() {
+        let recognizer = NSClickGestureRecognizer(target: self, action: #selector(clicked(_:)))
+        recognizer.buttonMask = 0x1
+        recognizer.numberOfClicksRequired = 1
+        addGestureRecognizer(recognizer)
+    }
+
+    /// Posts the click and returns; the main thread never waits for a frame (008 FR-004).
+    ///
+    /// A Control-click is a secondary click by Mac convention, but AppKit delivers it as a primary-button
+    /// event, so it is filtered here; Command, Option and Shift do not stop the order (clarification).
+    /// `location(in: self)` is from this unflipped view's bottom-left corner, so it is turned into view
+    /// space against `bounds.height` before it is posted (FR-004, research R3).
+    @objc private func clicked(_ recognizer: NSClickGestureRecognizer) {
+        guard !NSEvent.modifierFlags.contains(.control) else { return }
+        let location = recognizer.location(in: self)
+        let viewPoint = ClickPosition.viewPoint(
+            fromBottomLeft: Vector2(x: Double(location.x), y: Double(location.y)),
+            heightPoints: Double(bounds.height)
+        )
+        onSurfaceChange?(.moveOrderRequested(MoveOrderRequest(viewPoint: viewPoint)))
+    }
+
+    /// `false`, explicitly: the first click on an inactive window only brings it to the front and never
+    /// orders the ship, as Mac apps normally behave (009 FR-003, clarification, research R2). It is also
+    /// `NSView`'s default; it is written out so the decision is visible.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        false
     }
 
     override func viewDidMoveToWindow() {
