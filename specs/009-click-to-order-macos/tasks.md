@@ -46,7 +46,7 @@ No setup: the platform test target already depends on the rendering and logic la
 
 **Purpose**: The pure flip every story uses.
 
-- [ ] T001 Create `Sources/SwiftSkyPlatform/ClickPosition.swift` (imports `SwiftSkySimulation` only, no AppKit): `enum ClickPosition` with `static func viewPoint(fromBottomLeft position: Vector2, heightPoints: Double) -> Vector2` returning `Vector2(x: position.x, y: heightPoints - position.y)`. Doc comments: the two spaces (the Mac reports positions from the surface's bottom-left corner, +y up; 008's order request takes view space, top-left, +y down, 005 FR-004); why the flip is here rather than by flipping the view (R3); why `bounds.height` is the right height (the surface is reported synchronously from `setFrameSize`, so it matches what the loop converts against, R3); that it is pure and passes any value through for `MoveOrderRequest.apply` to judge (FR-004, FR-008)
+- [X] T001 Create `Sources/SwiftSkyPlatform/ClickPosition.swift` (imports `SwiftSkySimulation` only, no AppKit): `enum ClickPosition` with `static func viewPoint(fromBottomLeft position: Vector2, heightPoints: Double) -> Vector2` returning `Vector2(x: position.x, y: heightPoints - position.y)`. Doc comments: the two spaces (the Mac reports positions from the surface's bottom-left corner, +y up; 008's order request takes view space, top-left, +y down, 005 FR-004); why the flip is here rather than by flipping the view (R3); why `bounds.height` is the right height (the surface is reported synchronously from `setFrameSize`, so it matches what the loop converts against, R3); that it is pure and passes any value through for `MoveOrderRequest.apply` to judge (FR-004, FR-008)
 
 **Checkpoint**: `swift build` passes with no warnings.
 
