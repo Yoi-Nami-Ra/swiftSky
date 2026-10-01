@@ -31,6 +31,19 @@ func bits(_ autopilot: Autopilot) -> [UInt64] {
     ]
 }
 
+/// The planned path's exact bits (010): the count, the three tick numbers (start, spacing, end), the
+/// arrival flag as 0 or 1, then the x and y bits of points `0..<count`. Slots past `count` are not part
+/// of the path, so they are left out, as `PlannedPath.==` leaves them out.
+func bits(_ path: PlannedPath) -> [UInt64] {
+    var result: [UInt64] = [
+        UInt64(path.count), path.startTick, UInt64(path.spacing), path.endTick, path.reachesArrival ? 1 : 0,
+    ]
+    for index in 0..<path.count {
+        result += [path[index].x.bitPattern, path[index].y.bitPattern]
+    }
+    return result
+}
+
 /// The ship's exact bits: position, velocity, heading, angular velocity, then the three limits.
 func bits(_ ship: Ship) -> [UInt64] {
     [
