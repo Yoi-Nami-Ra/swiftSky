@@ -1,3 +1,14 @@
 tag: SKY
 name: "swiftSky"
 platforms: [ios, ipad, macos]
+start: |                            # prompt run by `/tickets start <key>`
+  * analyze {key} - show short summary of what should be done
+  * wait for go ahead
+  * /speckit-specify {key}
+  * /goal /speckit-clarify asks no questions
+     * pick recommended answer for each question
+  * /speckit-plan
+  * /speckit-tasks
+  * /goal /speckit-analyze returns no things worth fixing
+     * let it fix all the findings
+  * /speckit-implement commit on every phase done

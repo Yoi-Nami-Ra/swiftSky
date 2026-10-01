@@ -13,7 +13,7 @@ description: |
   simulation arrives; the first point is the ship's current position; the
   buffer never exceeds its capacity.
 platform: macos
-status: ready
+status: in-progress
 phase: MVP
 priority: medium
 parent: 22
