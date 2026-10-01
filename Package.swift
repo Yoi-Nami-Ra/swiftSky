@@ -6,7 +6,8 @@
 // directions (logic→rendering, logic→platform, rendering→platform) cannot compile.
 //
 //   SwiftSkyPlatform  ──▶  SwiftSkyRendering  ──▶  SwiftSkySimulation
-//          └────────────────────────────────────────────▶
+//          ├────────────────────────────────────────────▶
+//          └──▶  SwiftSkyAllocationCounter   (C, Debug-only instrumentation, no dependencies)
 //
 // SwiftSkySimulation declares NO dependencies. Do not add any.
 
@@ -76,10 +77,23 @@ let package = Package(
             swiftSettings: layerSettings
         ),
 
+        // DRAW-PATH ALLOCATION COUNTER — 001 FR-021d's allocation counts (011). A libmalloc
+        // `malloc_logger` hook that counts the frame loop thread's heap allocations, split into the
+        // app's and the graphics framework's. C, not Swift, because the hook runs inside the allocator
+        // and must not allocate, retain or lazily initialise anything (011 research R5). Its body
+        // compiles only under the same condition as `layerSettings`, so a release build contains none
+        // of it. Note that Xcode's Profiling configuration builds package targets with their Release
+        // settings, so Profiling carries none of the instrumentation either (011 research R1).
+        // Depended on by the platform layer only.
+        .target(
+            name: "SwiftSkyAllocationCounter",
+            cSettings: [.define("SWIFTSKY_INSTRUMENTATION", .when(configuration: .debug))]
+        ),
+
         // PLATFORM LAYER — depends on both. Owns the frame loop, surface hosting, and lifecycle.
         .target(
             name: "SwiftSkyPlatform",
-            dependencies: ["SwiftSkyRendering", "SwiftSkySimulation"],
+            dependencies: ["SwiftSkyRendering", "SwiftSkySimulation", "SwiftSkyAllocationCounter"],
             swiftSettings: layerSettings
         ),
 
@@ -112,9 +126,11 @@ let package = Package(
         // (003 research.md R9). The rendering and logic layers are declared because the order request's
         // tests must name `RenderSurface`, `Vector2` and `SimulationState` under
         // `--explicit-target-dependency-import-check=error`; both are GPU-free to link (008 research R8).
+        // The allocation counter is declared because its tests call its C API directly (011 research
+        // R10); they install a process-wide hook, so that suite is serialized.
         .testTarget(
             name: "SwiftSkyPlatformTests",
-            dependencies: ["SwiftSkyPlatform", "SwiftSkyRendering", "SwiftSkySimulation"],
+            dependencies: ["SwiftSkyPlatform", "SwiftSkyRendering", "SwiftSkySimulation", "SwiftSkyAllocationCounter"],
             swiftSettings: layerSettings
         ),
     ]
