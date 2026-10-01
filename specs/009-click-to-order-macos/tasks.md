@@ -79,7 +79,7 @@ No setup: the platform test target already depends on the rendering and logic la
 
 ### Implementation for User Story 2
 
-- [ ] T005 [US2] No code: replacement is 008's `MoveOrderRequest.apply` (008 `replacesMidFlight`, `lastOfTwoWins`). Run quickstart check 5 on the Mac and record it in the Evidence section of `specs/009-click-to-order-macos/quickstart.md`
+- [X] T005 (check 5 not run: no event-posting access) [US2] No code: replacement is 008's `MoveOrderRequest.apply` (008 `replacesMidFlight`, `lastOfTwoWins`). Run quickstart check 5 on the Mac and record it in the Evidence section of `specs/009-click-to-order-macos/quickstart.md`
 
 **Checkpoint**: Re-ordering mid-flight works on the Mac.
 
