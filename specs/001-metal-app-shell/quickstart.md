@@ -481,12 +481,21 @@ Post-change: `./Scripts/verify.sh` from a clean `.build` reports `VERIFICATION P
 **Check 30 — PASS (2026-07-28).** Address Sanitizer build, 35-second sustained run: 2,994 frames,
 zero ASan reports, zero bytes on stderr.
 
-**Check 29 — PARTIAL (2026-07-28).** Thread Sanitizer build, 30-second sustained run: 3,120 frames,
-**zero data races**, zero TSan reports, no log files emitted. The *continuous-resize* half of the check
-is **not verified** — dragging a resize handle for 10 s needs UI automation, blocked for the same
-reason as check 12 (Accessibility permission is not granted). Resize handling is the code path most
-likely to race, since it is the one that crosses the main-thread → loop boundary, so this gap is worth
-closing by hand: run the TSan scheme and drag a corner continuously for 10 seconds.
+**Check 29 — races PASS; stalls PASS mid-drag, FAIL at release from system code (2026-10-01, 012).**
+Apple M1 Pro, macOS 26.7, 120 Hz built-in display; drags made by hand (Accessibility permission is not
+granted, so the drag cannot be automated). Procedure and evidence: `specs/012-main-thread-stall-probe/`
+(quickstart checks 5 and 6), which added the main-thread stall figures (`mainworst=… mainover=…`) and
+the `live resize began` / `live resize ended` markers to the log.
+- **Races** (Thread Sanitizer build, 18.2 s continuous drag): **0 data races**, a summary every second
+  throughout. The first attempt found two defects, fixed before this run: a race on `previousLogger` in
+  011's allocation hook, and a frame loop that never resumed once paused by a hidden window (012 research
+  R12, R13). The earlier 30 s idle run (2026-07-28: 3,120 frames, zero races) stands.
+- **Stalls** (optimised build with the instrumentation, 14.9 s drag): all **15 mid-drag summaries
+  `mainover=0`**, `mainworst` 2.7–6.7 ms against `budget=8.333333ms`, after moving the drawable resize
+  off the main thread (012 research R14; before it, 6 of 17 summaries were over). The first summary after
+  the drag ended had one stretch of 15.4 ms; a sample puts it wholly in system code (AppKit's end of live
+  resize, SwiftUI hosting layout, Core Animation commits). Recorded as a FAIL, not waived; follow-up
+  SKY-37.
 
 **Check 31 — PASS (2026-07-28), both platforms.**
 
@@ -605,6 +614,8 @@ corrected.
 
 Since then, check 25 has passed on both platforms (iOS 2026-10-01 in 011, macOS 2026-10-01 in SKY-4)
 and is no longer open.
+Check 29's race half and its mid-drag stall half passed on 2026-10-01 (012); one system-side stall at
+the end of live resize keeps it open (SKY-37).
 
 | # | Check | Why it is still open |
 |---|-------|----------------------|
@@ -614,7 +625,7 @@ and is no longer open.
 | 7, 8 | Resize range, minimum size | Needs interactive window dragging |
 | 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |
-| 29 | Continuous resize under TSan | Race half PASSES; the resize half needs UI automation |
+| 29 | Continuous resize under TSan | Races PASS; stalls PASS mid-drag; one system-side stall at the end of live resize (SKY-37) |
 | 33 | Notice under VoiceOver, dismiss exits | Needs VoiceOver and a click |
 | 36, 37 | VoiceOver on the surface, Reduce Motion | Needs VoiceOver and a system settings change |
 

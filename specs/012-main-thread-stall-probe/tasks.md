@@ -18,7 +18,7 @@ check 29.
 
 ## Phase 1: Setup
 
-- [ ] T001 Record the "before" baseline for SC-005 from `main` (`2f88a12`): build the optimised instrumented
+- [X] T001 Record the "before" baseline for SC-005 from `main` (`2f88a12`): build the optimised instrumented
   macOS app (quickstart "The drag procedure" step 1, second command) from a `git worktree add` of `main`
   into the session scratchpad, run it idle 30 s, and save its summaries to the scratchpad for T019
 
@@ -85,10 +85,10 @@ stall shows up.
 - [X] T009 [US1] Run `Scripts/verify.sh`; fix any warning or failure; run the new suites 10 times in a row
   (`swift test --filter MainThreadStall` ×10) and record quickstart check 1 in
   `specs/012-main-thread-stall-probe/quickstart.md` Results (SC-001, SC-007)
-- [ ] T010 [US1] Quickstart check 2: Debug macOS build, idle 10 s; ask the user to drag a corner for 5 s;
+- [X] T010 [US1] Quickstart check 2: Debug macOS build, idle 10 s; ask the user to drag a corner for 5 s;
   confirm the new fields, `mainover=0` when idle, the two markers, and a drag that reads as short stretches
   (research R2's fail-loud case absent). Record in quickstart Results (SC-002, FR-013)
-- [ ] T011 [US1] Quickstart check 3: Debug build with `--debug-main-stall`; confirm `mainworst` ≥ 50 ms and
+- [X] T011 [US1] Quickstart check 3: Debug build with `--debug-main-stall`; confirm `mainworst` ≥ 50 ms and
   `mainover` ≥ 1 in the summary after 5 s, `mainover=0` elsewhere after the first. Record (SC-002)
 - [X] T012 [US1] Quickstart check 4: Release build of `swiftSky (macOS)`; `nm` and `strings -a` find none of
   `mainworst=`, `mainover=`, `live resize`, `--debug-main-stall`, `MainThreadStallProbe`. Record (FR-008)
@@ -101,17 +101,17 @@ stall shows up.
 
 **Independent Test**: quickstart checks 5 and 6.
 
-- [ ] T013 [US2] Build the Thread Sanitizer app (quickstart step 1, first command) into the scratchpad
-- [ ] T014 [US2] Quickstart check 5: launch it with standard error saved, wait for the second summary, ask
+- [X] T013 [US2] Build the Thread Sanitizer app (quickstart step 1, first command) into the scratchpad
+- [X] T014 [US2] Quickstart check 5: launch it with standard error saved, wait for the second summary, ask
   the user to drag a corner continuously for at least 10 s, then quit; count `WARNING: ThreadSanitizer`
   in standard error and confirm summaries throughout the drag (contract C6). A race: find it from the
   report, fix it, and repeat. Record with the stall figures for information (SC-003)
-- [ ] T015 [US2] Build the optimised instrumented app from this branch (quickstart step 1, second command)
-- [ ] T016 [US2] Quickstart check 6: same procedure; every covering summary must have `mainover=0` and
+- [X] T015 [US2] Build the optimised instrumented app from this branch (quickstart step 1, second command)
+- [X] T016 [US2] Quickstart check 6: same procedure; every covering summary must have `mainover=0` and
   `mainworst` ≤ `budget=` (contract C6). On a stall, repeat with `sample <pid> 5` running, find the
   source, fix it if it is the app's, and repeat; a cause wholly in system code is recorded as a FAIL with
   the sample and a new ticket (spec Clarifications). Record (SC-004)
-- [ ] T017 [US2] Record check 29 in `specs/001-metal-app-shell/quickstart.md`: replace "**Check 29 —
+- [X] T017 [US2] Record check 29 in `specs/001-metal-app-shell/quickstart.md`: replace "**Check 29 —
   PARTIAL (2026-07-28)**" with the result (date, Mac and display, both builds, drag length and how it was
   made, the sanitizer verdict, each covering summary's `mainworst`/`mainover`/`budget`), pointing to this
   feature's quickstart; update or remove the check-29 row of the open-checks table, and the note under the
@@ -121,14 +121,14 @@ stall shows up.
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T018 [P] Quickstart check 8: the optimised instrumented build, idle 60 s by 011's method: `allocs=0
+- [X] T018 [P] Quickstart check 8: the optimised instrumented build, idle 60 s by 011's method: `allocs=0
   allocframes=0` in every summary after the first. Record (SC-006)
-- [ ] T019 Quickstart check 7: run this branch's optimised instrumented build idle 30 s on the same Mac and
+- [X] T019 Quickstart check 7: run this branch's optimised instrumented build idle 30 s on the same Mac and
   compare its mean frame time and `dropped=` with T001's baseline (within 10% or 0.1 ms). Record (SC-005)
-- [ ] T020 [P] Update `CLAUDE.md`: spec 012 in the "Built so far" list; the probe, its fields, the markers,
+- [X] T020 [P] Update `CLAUDE.md`: spec 012 in the "Built so far" list; the probe, its fields, the markers,
   `--debug-main-stall` and the drag procedure under Key locations
-- [ ] T021 [P] Update `.tickets/5.yaml`: description to the result; status to `in-review`
-- [ ] T022 Run `Scripts/verify.sh` a final time; mark the spec `Status: Implemented`
+- [X] T021 [P] Update `.tickets/5.yaml`: description to the result; status to `in-review`
+- [X] T022 Run `Scripts/verify.sh` a final time; mark the spec `Status: Implemented`
 
 ## Dependencies & Execution Order
 
