@@ -57,5 +57,5 @@ There is no transition back to empty: 006 has no way to cancel an order.
 - `setOrder(to:)` — unchanged signature and result. On acceptance it now also predicts
   `plannedPath` from the ship, the autopilot (after its `setOrder`) and `tickCount`; on refusal it
   changes nothing (FR-007, FR-009).
-- Size grows from about 140 bytes to about 4.3 KB (`PlannedPath` is 4,129 bytes). Still a plain value,
-  no heap; copied once per `advance` call and when handed to the renderer (R2, R10).
+- Size grows from 114 to 4,249 bytes (`PlannedPath` is 4,129 bytes, measured with `MemoryLayout`).
+  Still a plain value, no heap; copied once per `advance` call and when handed to the renderer (R2, R10).

@@ -11,7 +11,7 @@
 ///
 /// A value type, so handing it to the renderer is a copy. That is also what makes it safe to move
 /// between isolation domains without any concurrency annotation (FR-012c, FR-012d, FR-030). With the
-/// path's inline points it is about 4.3 KB, still with nothing on the heap (010 research R2).
+/// path's inline points it is about 4.2 KB, still with nothing on the heap (010 research R2).
 public struct SimulationState: Sendable, Equatable {
     /// Total fixed-timestep ticks advanced since launch. Monotonically non-decreasing (SC-020).
     public var tickCount: UInt64
