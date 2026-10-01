@@ -1,0 +1,31 @@
+id: 38
+title: "Stop the failure notice clipping at large text sizes"
+type: bug
+description: |
+  Found while running SKY-7 (001 quickstart check 33) on the iPhone 17 Pro
+  simulator in landscape, Release build with the fragment shader entry point
+  renamed, text size accessibility-extra-extra-extra-large.
+
+  RendererFailureNotice scales with Dynamic Type, but the content is taller
+  than the screen and nothing scrolls: the heading "swiftSky cannot start" runs
+  off the top edge, and the leading letters of two body lines are cut off at
+  the left. Quit is still reachable and exits. This breaks FR-025 (the notice
+  must be readable at every Dynamic Type size), and the code's own comment says
+  a truncated error message is no message at all.
+
+  Scope: make the notice readable at every Dynamic Type size, in portrait and
+  landscape, on iPhone and iPad (for example, wrap the text in a ScrollView and
+  keep Quit reachable). Check macOS at its largest text size too, since the
+  view is shared.
+
+  Done when: at accessibility-extra-extra-extra-large in landscape on the
+  smallest supported iPhone, all of the heading and body can be read (by
+  scrolling if needed), nothing is clipped at any edge, and Quit still exits.
+  Re-run 001 check 33's Dynamic Type part and record it in the quickstart.
+platform: ios
+status: ready
+phase: MVP
+priority: medium
+parent: null
+blocked_by: []
+designs: []

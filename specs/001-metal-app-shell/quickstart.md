@@ -557,6 +557,18 @@ temporarily renamed to `swiftsky_quad_fragment_RENAMED_T052` so function lookup 
 
 Change reverted; `git status` clean on `Sources/SwiftSkyRendering/`.
 
+**Check 33, iOS — FAIL on Dynamic Type, dismissal PASS, VoiceOver NOT VERIFIED (2026-10-02, SKY-7).**
+Release build for the iPhone 17 Pro simulator (iOS 27.0, landscape) with the fragment shader entry point
+renamed to `swiftsky_quad_fragment_RENAMED_SKY7`; change reverted after the build.
+
+- **Dynamic Type — FAIL.** At `content_size accessibility-extra-extra-extra-large` the notice does scale,
+  but it is taller than the screen and does not scroll: the heading "swiftSky cannot start" runs off the
+  top edge, and the first letters of two body lines are cut off at the left. FR-025 is not met. Fix is
+  SKY-38.
+- **Dismissal — PASS.** Tapping Quit ends the process.
+- **VoiceOver — NOT VERIFIED.** The iOS simulator has no VoiceOver and no physical device was available;
+  moved to SKY-39.
+
 ### Accessibility
 
 | # | Check | Expected | Criterion |
@@ -582,6 +594,19 @@ construction rather than by handling: the app contains no animation, transition,
 any kind — check 42 already confirms zero `interpolat`/`lerp`/`mix(` in the render layer — so there is
 nothing for the setting to change. **To finish these**, enable VoiceOver, focus the surface, and
 confirm it is announced; then enable Reduce Motion and confirm no assertion fires.
+
+**Check 37, iOS — PASS (2026-10-02, SKY-7).** Debug build on the iPhone 17 Pro simulator with
+`com.apple.Accessibility ReduceMotionEnabled` set to `YES`; the app's log shows libAccessibility reading
+`ReduceMotionEnabled … result = 1`. "Nothing moves" no longer holds since 004–008 (the ship flies), so the
+check was read as "gameplay motion is unchanged, no assertion or warning": a tap logged
+`order view=(250, 82) world=(-187, 119) … arrives=yes`, then `arrived world=… ticks=979`, frame
+summaries showed `skipped=0 dropped=0`, and nothing from `com.swiftsky.app` was logged at Error or Fault
+level. The one system error, `[CAMetalLayer nextDrawable] returning nil because allocation failed`, is
+logged once at launch with Reduce Motion off too, so it is unrelated.
+
+**Check 36, iOS — NOT VERIFIED (2026-10-02, SKY-7).** Still needs VoiceOver: the iOS simulator has none,
+and its accessibility tree could not be read from the host (`AXIsProcessTrusted() == false`). Moved to
+SKY-39.
 
 **Check 38 — PASS (2026-07-28).** Zero third-party dependencies. `Package.swift` declares no
 `dependencies:` on the package itself (only inter-target ones: Rendering → Simulation, Platform →
@@ -626,8 +651,8 @@ the end of live resize keeps it open (SKY-37).
 | 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |
 | 29 | Continuous resize under TSan | Races PASS; stalls PASS mid-drag; one system-side stall at the end of live resize (SKY-37) |
-| 33 | Notice under VoiceOver, dismiss exits | Needs VoiceOver and a click |
-| 36, 37 | VoiceOver on the surface, Reduce Motion | Needs VoiceOver and a system settings change |
+| 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type FAIL (SKY-38), VoiceOver needs a device (SKY-39); macOS: SKY-8 |
+| 36, 37 | VoiceOver on the surface, Reduce Motion | iOS: 37 PASS, 36 needs a device (SKY-39); macOS: SKY-8 |
 
 The common blocker for most of these is that Accessibility (UI scripting) and Screen Recording
 permission are not granted to this session, so nothing can drive or capture the UI:
