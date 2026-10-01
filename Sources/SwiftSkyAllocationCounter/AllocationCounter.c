@@ -48,7 +48,10 @@ static const char *const SkyDefaultGraphicsImages[] = {
 // MARK: - State
 
 static atomic_bool installed;
-static sky_malloc_logger_t *previousLogger;
+/// The logger that was installed before ours, chained by the hook. Atomic because the hook runs on every
+/// thread that allocates, while install writes it on the frame loop's thread: as a plain global it was a
+/// data race, reported by the Thread Sanitizer in 012's continuous-resize run (012 T014).
+static _Atomic(sky_malloc_logger_t *) previousLogger;
 
 /// `[start, end)` of each graphics image's __TEXT segment. Written by install before the hook is
 /// published, read-only afterwards.
@@ -107,7 +110,8 @@ static void skyHook(uint32_t type, uintptr_t arg1, uintptr_t arg2, uintptr_t arg
                     uint32_t framesToSkip) {
     // Chained first, so tools that were already logging (Instruments, MallocStackLogging) keep every
     // event (R7).
-    if (previousLogger != NULL) previousLogger(type, arg1, arg2, arg3, result, framesToSkip + 1);
+    sky_malloc_logger_t *previous = atomic_load_explicit(&previousLogger, memory_order_acquire);
+    if (previous != NULL) previous(type, arg1, arg2, arg3, result, framesToSkip + 1);
 
     if ((type & SkyLogTypeAllocate) == 0) return;
     if (!atomic_load_explicit(&counting, memory_order_acquire)) return;
@@ -164,7 +168,7 @@ bool sky_alloc_counter_install(const char *const *imageSubstrings, size_t count)
     if (_dyld_image_count() == 0) return false;
 
     // Everything the hook reads is in place before it is published.
-    previousLogger = malloc_logger;
+    atomic_store_explicit(&previousLogger, malloc_logger, memory_order_release);
     atomic_store(&counting, false);
     __atomic_store_n(&malloc_logger, &skyHook, __ATOMIC_RELEASE);
     atomic_store(&installed, true);
@@ -176,7 +180,7 @@ void sky_alloc_counter_uninstall(void) {
     atomic_store(&counting, false);
     // Only put the previous logger back if nobody replaced ours in the meantime.
     sky_malloc_logger_t *expected = &skyHook;
-    __atomic_compare_exchange_n(&malloc_logger, &expected, previousLogger, false, __ATOMIC_ACQ_REL,
+    __atomic_compare_exchange_n(&malloc_logger, &expected, atomic_load(&previousLogger), false, __ATOMIC_ACQ_REL,
                                 __ATOMIC_ACQUIRE);
     atomic_store(&installed, false);
 }
