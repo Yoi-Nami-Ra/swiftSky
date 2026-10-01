@@ -116,9 +116,9 @@ frame.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T016 [P] Update `CLAUDE.md`: add `specs/010-ship-path-prediction` to "Built so far" (giving an order also predicts its planned path in the logic layer; nothing draws it yet), and to "Key locations" `Sources/SwiftSkySimulation/PlannedPath.swift` (up to 256 positions in an `InlineArray`, thinned by halving, the tick of every point, the 3,600-tick cap; predicted by `SimulationState.setOrder(to:)` through `Simulation.tick`, which `advance(_:ticks:)` shares), and the `predicted=… ticks=… points=… arrives=…` fields on the Debug order log line
-- [ ] T017 [P] Update `.tickets/26.yaml` `status` to `done`
-- [ ] T018 Run `./Scripts/verify.sh` and quickstart checks 1, 2, 7 and 8, and fill in the rest of the Evidence section of `specs/010-ship-path-prediction/quickstart.md`, marking any check not run with its reason
+- [X] T016 [P] Update `CLAUDE.md`: add `specs/010-ship-path-prediction` to "Built so far" (giving an order also predicts its planned path in the logic layer; nothing draws it yet), and to "Key locations" `Sources/SwiftSkySimulation/PlannedPath.swift` (up to 256 positions in an `InlineArray`, thinned by halving, the tick of every point, the 3,600-tick cap; predicted by `SimulationState.setOrder(to:)` through `Simulation.tick`, which `advance(_:ticks:)` shares), and the `predicted=… ticks=… points=… arrives=…` fields on the Debug order log line
+- [X] T017 [P] Update `.tickets/26.yaml` `status` to `done`
+- [X] T018 Run `./Scripts/verify.sh` and quickstart checks 1, 2, 7 and 8, and fill in the rest of the Evidence section of `specs/010-ship-path-prediction/quickstart.md`, marking any check not run with its reason
 
 ---
 

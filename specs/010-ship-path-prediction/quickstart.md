@@ -75,8 +75,8 @@ Record results below as checks are run.
 
 | # | Result | Notes |
 |---|--------|-------|
-| 1 | | |
-| 2 | | |
+| 1 | **PASS** 2026-10-01 | `./Scripts/verify.sh`: all stages PASS (metal compiler, ship.png identity, swift build with the layer boundary, no Metal device in tests, swift test, xcodebuild macOS, xcodebuild iOS), no `warning:` lines beyond the exempt swiftbuild line. `SwiftSkyRendering`, `Package.swift` and `verify.sh` unchanged against `main` |
+| 2 | **PASS** 2026-10-01 | 10/10 consecutive `swift test --build-system swiftbuild` runs pass: 72 simulation (12 of them `Planned path`), 84 rendering, 34 platform tests |
 | 3–4 | **PASS** 2026-10-01 | `matchesTheRealFlightFromRest`: 80 cases (5 distances × 16 directions); `matchesTheRealFlightFromMovingStarts`: 96 cases (12 × 8 directions); `namedMovingStarts` (4) and `alreadyThere`. Every point equals the real flight's position at its assigned tick, bit for bit; every path ends on the first arrived state's position and tick |
 | 5 | **PASS** 2026-10-01 | `thinningAtEveryLength`: all 3,701 lengths (0…3,700 ticks): ≤ 256 points; every tick for ≤ 255 ticks; ≥ 128 points beyond; power-of-two spacing; every point at its assigned tick; last point is the final position, within one spacing of the one before |
 | 6 | **PASS** 2026-10-01 | `cappedFlight` (zero thrust; zero angular acceleration facing away): `reachesArrival == false`, 3,600 ticks, 226 points at spacing 16, last point bit-identical to the real state after 3,600 ticks. The work bound (`endTick − startTick ≤ 3,600`) is asserted on all 182 grid predictions |

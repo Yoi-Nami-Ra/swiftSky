@@ -22,7 +22,8 @@ then keep station — in the logic layer; nothing issues orders yet) and
 black background and under the debug overlay) and
 `specs/008-tap-to-order-ios` (a tap on the iOS surface orders the ship to the point under the finger)
 and `specs/009-click-to-order-macos` (a primary click does the same on macOS, through the same order
-request). Layer libraries and
+request) and `specs/010-ship-path-prediction` (giving an order also predicts its planned path in the
+logic layer; nothing draws it yet). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
@@ -108,6 +109,14 @@ artifacts, keep them consistent with these templates.
   `Simulation.advance(_:ticks:)` is flown by the autopilot when there is an order;
   `advance(_:ticks:input:)` takes an explicit input and leaves the order alone. `AutopilotLaw.swift` is
   the logic layer's second file with a `Darwin` import. Its tuning history is research R11.
+- `Sources/SwiftSkySimulation/PlannedPath.swift` — the current order's planned path, held in
+  `SimulationState.plannedPath` and written only by `setOrder(to:)`: up to 256 positions in an
+  `InlineArray` (no heap, so the state is ~4.2 KB), the tick of every point (`startTick`, `spacing`,
+  `endTick`), thinned by halving when full, capped at 3,600 ticks. The prediction flies copies of the ship
+  and autopilot with `Simulation.tick`, the one tick `advance(_:ticks:)` also uses, and stops on the first
+  state that reports arrived. Debug and Profiling builds add `predicted=… ticks=… points=… arrives=…` to
+  the order log line; the arrival line, written once per frame, can come a tick or two later on
+  multi-tick frames.
 - `Sources/SwiftSkyRendering/Camera.swift` and `GameSpace.swift` — the camera (world → view points,
   view points → world, world → clip; `init?(surface:)` is `nil` for a zero-area surface or an
   unusable backing scale) and
