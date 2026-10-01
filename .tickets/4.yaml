@@ -14,7 +14,7 @@ description: |
   Result 2026-10-01: PASS on an Apple M1 Pro (macOS 26.7, 120 Hz), all 62
   summaries allocs=0 allocframes=0, recorded in 001's check 25.
 platform: macos
-status: in-review
+status: done
 phase: MVP
 priority: medium
 parent: null
