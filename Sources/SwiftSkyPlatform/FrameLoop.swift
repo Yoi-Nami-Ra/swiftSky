@@ -3,6 +3,10 @@ import Synchronization
 import SwiftSkyRendering
 import SwiftSkySimulation
 
+#if SWIFTSKY_INSTRUMENTATION
+import SwiftSkyAllocationCounter
+#endif
+
 /// Drives simulation and rendering off the main thread (FR-028).
 ///
 /// This file is where the feature's only real concurrency lives, and it is deliberately the only place
@@ -134,6 +138,10 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     // MARK: - Loop thread
 
     private func runLoopMain() {
+        #if SWIFTSKY_INSTRUMENTATION
+        installAllocationCounter()
+        #endif
+
         let link = CAMetalDisplayLink(metalLayer: layer)
         link.delegate = self
         // Pace to the display's actual refresh rate (FR-020). Leaving the range at its default lets
@@ -154,8 +162,30 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
         displayLink = nil
 
         instrumentation.summary()
+        #if SWIFTSKY_INSTRUMENTATION
+        sky_alloc_counter_uninstall()
+        #endif
         drained.withLock { $0 = true }
     }
+
+    #if SWIFTSKY_INSTRUMENTATION
+    /// Installs the draw-path allocation counter for the life of the loop and proves it is counting
+    /// (011 research R7, R8). Runs on the loop thread, before the display link delivers a frame.
+    ///
+    /// The self-test is one counted stretch around exactly one allocation. A counter that is not
+    /// counting would report zero allocations on every frame — exactly the result check 25 is looking
+    /// for — so its summaries say `allocs=unavailable` unless this passes.
+    private func installAllocationCounter() {
+        var ready = false
+        if sky_alloc_counter_install(nil, 0) {
+            sky_alloc_frame_begin()
+            sky_alloc_probe()
+            let counts = sky_alloc_frame_end()
+            ready = counts.app == 1 && counts.graphics == 0
+        }
+        instrumentation.markAllocationCounter(ready: ready)
+    }
+    #endif
 
     /// Narrows the frame budget towards the display's true interval. Allocation-free.
     ///
@@ -210,13 +240,16 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     /// order flown (008 FR-005, FR-006, contracts C12).
     ///
     /// Allocates nothing when the queue is empty, which is the common case.
-    private func applyPendingEvents() {
+    ///
+    /// - Returns: whether at least one event was applied, so the frame's allocations can be reported
+    ///   apart from those of frames without one (011 FR-004).
+    private func applyPendingEvents() -> Bool {
         let events = pendingEvents.withLock { queue -> [SurfaceEvent] in
             guard !queue.isEmpty else { return [] }
             defer { queue.removeAll(keepingCapacity: true) }
             return queue
         }
-        guard !events.isEmpty else { return }
+        guard !events.isEmpty else { return false }
 
         for event in events {
             switch event {
@@ -246,6 +279,17 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
                 break
             }
         }
+        return true
+    }
+
+    /// How far a frame got: what step 6 records for it.
+    private enum FrameOutcome {
+        /// Step 2 found no surface to draw into. Counted as skipped; the summary cadence does not advance.
+        case notRenderable
+        /// The renderer declined the frame (FR-027a, FR-027b). Counted as skipped.
+        case skipped
+        /// Drawn and presented, in `seconds`.
+        case presented(seconds: Double)
     }
 }
 
@@ -255,15 +299,51 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
     /// One frame. The normative ordering is in contracts/frame-loop.md and is deliberately literal
     /// here: events, renderability, one clock read, the debug overlay's snapshot (003), simulation,
     /// draw, instrumentation.
+    ///
+    /// Since 011, steps 1–5 are one counted stretch: every heap allocation the loop's thread makes in them
+    /// is counted, the graphics framework's apart (011 FR-001, FR-003). Step 6 runs after the stretch has
+    /// closed, so writing the summary is never counted against the frame (011 FR-006, research R6).
     public func metalDisplayLink(_ link: CAMetalDisplayLink, needsUpdate update: CAMetalDisplayLink.Update) {
-        // 1. Events, at the frame boundary and nowhere else. A move order applied here is flown by this
-        //    frame's step-4 advance (008 FR-005, SC-005).
-        applyPendingEvents()
+        #if SWIFTSKY_INSTRUMENTATION
+        sky_alloc_frame_begin()
+        let (outcome, appliedEvent) = drawFrame(update)
+        let allocations = sky_alloc_frame_end()
+        instrumentation.recordFrameAllocations(
+            app: allocations.app,
+            graphics: allocations.graphics,
+            appliedEvent: appliedEvent
+        )
+        #else
+        let (outcome, _) = drawFrame(update)
+        #endif
 
-        // 2. Nothing to draw into.
-        guard surface.isRenderable else {
+        // 6. Instrumentation. Debug/profiling only, log only, allocation-free (FR-021d–f).
+        switch outcome {
+        case .notRenderable:
             instrumentation.recordSkipped()
             return
+        case .skipped:
+            instrumentation.recordSkipped()
+        case .presented(let seconds):
+            instrumentation.recordPresented(frameSeconds: seconds, tickCount: state.tickCount)
+        }
+
+        framesSinceReport += 1
+        if framesSinceReport >= Self.reportInterval {
+            framesSinceReport = 0
+            instrumentation.summary()
+        }
+    }
+
+    /// Steps 1–5 of one frame: the part the allocation counter counts (011 research R6).
+    private func drawFrame(_ update: CAMetalDisplayLink.Update) -> (outcome: FrameOutcome, appliedEvent: Bool) {
+        // 1. Events, at the frame boundary and nowhere else. A move order applied here is flown by this
+        //    frame's step-4 advance (008 FR-005, SC-005).
+        let appliedEvent = applyPendingEvents()
+
+        // 2. Nothing to draw into. Recorded as skipped in step 6.
+        guard surface.isRenderable else {
+            return (.notRenderable, appliedEvent)
         }
 
         // 3. Read the clock exactly once per frame (FR-033). Every downstream decision uses this one
@@ -318,18 +398,6 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
         let frameStart = CACurrentMediaTime()
         let presented = renderer.render(state: state, surface: surface, drawable: update.drawable, timestamp: now)
         let frameSeconds = CACurrentMediaTime() - frameStart
-
-        // 6. Instrumentation. Debug/profiling only, log only, allocation-free (FR-021d–f).
-        if presented {
-            instrumentation.recordPresented(frameSeconds: frameSeconds, tickCount: state.tickCount)
-        } else {
-            instrumentation.recordSkipped()
-        }
-
-        framesSinceReport += 1
-        if framesSinceReport >= Self.reportInterval {
-            framesSinceReport = 0
-            instrumentation.summary()
-        }
+        return (presented ? .presented(seconds: frameSeconds) : .skipped, appliedEvent)
     }
 }
