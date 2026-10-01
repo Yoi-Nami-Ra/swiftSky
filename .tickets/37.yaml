@@ -1,0 +1,33 @@
+id: 37
+title: "Remove the main-thread stall at the end of live resize"
+type: bug
+description: |
+  001 check 29's stall half fails at one point only: when a continuous macOS
+  window drag ends, the main thread is busy for one stretch of ~15 ms (25 ms
+  with a sampler attached) against the 8.33 ms frame interval. Mid-drag it
+  passes (15 of 15 summaries, `mainworst` 2.7–6.7 ms) since SKY-5 moved the
+  drawable resize to the frame loop (012 research R14).
+
+  A sampled drag (012 quickstart check 6) puts the stretch wholly in system
+  code: AppKit's end of live resize (`_endLiveResize` itself 2 ms), SwiftUI's
+  `NSHostingView.layout()` and Core Animation transaction commits. The app's
+  own code was ~30 ms of 2.0 s of main-thread work over the whole run.
+
+  To investigate: whether hosting the Metal view outside SwiftUI (a plain
+  NSView/NSWindow for the surface, or `NSHostingView` sizing options) removes
+  the final layout pass; whether `layerContentsRedrawPolicy` or
+  `presentsWithTransaction` changes the final commit; or whether the stretch
+  is unavoidable AppKit work, in which case record that and decide whether
+  001 SC-016 should exempt the end of live resize. Measure with 012's
+  procedure (`mainworst=` / `mainover=` between the `live resize` markers).
+
+  Also seen while idle in Debug builds: occasional 14–45 ms system-side
+  stretches in window-server Space-change handling; not seen in the
+  optimised build (0 of 62 idle summaries over).
+platform: macos
+status: refine
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

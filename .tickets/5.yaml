@@ -2,16 +2,21 @@ id: 5
 title: "Verify continuous resize under Thread Sanitizer"
 type: task
 description: |
-  Quickstart check 29 (SC-015, SC-016) of specs/001-metal-app-shell is only
-  partial: a 30 s TSan run showed zero data races, but the continuous-resize
-  half was blocked because it needs UI automation. Resize is the path most
-  likely to race, since it crosses the main-thread → frame-loop boundary.
+  Quickstart check 29 (SC-015, SC-016) of specs/001-metal-app-shell: a
+  continuous macOS window resize causes no data races and no main-thread stall
+  longer than one frame interval. Built as specs/012-main-thread-stall-probe:
+  a main-thread stall probe (`mainworst=…ms mainover=…` in the frame summary,
+  `live resize began`/`ended` markers, `--debug-main-stall`), then hand drags
+  under the Thread Sanitizer and in an optimised instrumented build.
 
-  Run the TSan scheme, drag a window corner continuously for 10 seconds, and
-  confirm zero data races and no main-thread stall longer than one frame
-  interval. Record the result in the quickstart.
+  Result 2026-10-01: races PASS (18.2 s drag, 0 races); stalls PASS mid-drag
+  (15 of 15 summaries under 8.33 ms); one ~15 ms stretch at the end of the
+  drag, wholly in system code, recorded as a FAIL with follow-up SKY-37.
+  The check found and fixed three defects: a data race in 011's allocation
+  hook, a frame loop that never resumed after being paused, and the drawable
+  resize running on the main thread (012 research R12–R14).
 platform: macos
-status: ready
+status: in-review
 phase: MVP
 priority: medium
 parent: null

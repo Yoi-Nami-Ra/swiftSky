@@ -22,6 +22,10 @@ import SwiftSkyAllocationCounter
 /// frame boundary (FR-029, FR-031). It carries surface changes and, since 008, the player's move order
 /// requests, in the order they happened.
 ///
+/// Since 012, instrumented builds have a second, lock-free channel the other way: `stallProbe`, whose
+/// observers run on the main thread and whose figures this loop takes, through atomics, at each summary.
+/// It is installed in `start()` and removed in `stopAndDrain()`, both on the main thread.
+///
 /// `@unchecked Sendable` is a genuine opt-out of compiler checking, and worth being explicit about:
 /// FR-030 asks for compiler-enforced transfer safety, and it holds for the types that actually cross
 /// the boundary — `SurfaceEvent` and `RenderSurface` are value types the compiler verifies. It does not
@@ -49,6 +53,11 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
 
     private let renderer: Renderer
     private let layer: CAMetalLayer
+
+    #if SWIFTSKY_INSTRUMENTATION
+    /// The main thread's busy stretches (012). Sendable; the instrumentation holds the same instance.
+    private let stallProbe = MainThreadStallProbe()
+    #endif
 
     #if SWIFTSKY_INSTRUMENTATION
     /// `--debug-ship-spin` (007 FR-013): feed every tick a full counter-clockwise turn and no thrust, so
@@ -86,7 +95,11 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
         self.renderer = renderer
         self.layer = layer
         // Assume 60 Hz until the display tells us otherwise.
+        #if SWIFTSKY_INSTRUMENTATION
+        self.instrumentation = Instrumentation(budgetSeconds: 1.0 / 60.0, stallProbe: stallProbe)
+        #else
         self.instrumentation = Instrumentation(budgetSeconds: 1.0 / 60.0)
+        #endif
         super.init()
     }
 
@@ -106,6 +119,9 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     public func start() {
         guard thread == nil else { return }
         drained.withLock { $0 = false }
+        #if SWIFTSKY_INSTRUMENTATION
+        stallProbe.install()
+        #endif
 
         // A dedicated Thread rather than a DispatchQueue: `CAMetalDisplayLink` attaches to a RunLoop
         // (`add(to:forMode:)`) and a DispatchQueue has none. research.md R4 originally specified a
@@ -124,6 +140,9 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     /// presented.
     public func stopAndDrain() {
         guard let loopThread = thread else { return }
+        #if SWIFTSKY_INSTRUMENTATION
+        stallProbe.uninstall()
+        #endif
         loopThread.cancel()
 
         // Bounded wait. A loop that will not drain must not hang the app on exit.
@@ -154,6 +173,13 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
         // that source. `Thread.isCancelled` is checked each turn so cancellation is honoured promptly.
         while !Thread.current.isCancelled {
             RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.1))
+            // A paused link delivers no frames, and events are otherwise applied only inside one — so the
+            // `visibilityChanged(true)` that should resume it would wait forever, and the loop would stay
+            // paused after the window was hidden once (found by 012's Thread Sanitizer run, T014). While
+            // paused no frame is in flight, so this turn is itself a frame boundary (FR-031).
+            if link.isPaused {
+                _ = applyPendingEvents()
+            }
         }
 
         link.isPaused = true
@@ -255,8 +281,10 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
             switch event {
             case .resized(let new):
                 surface = new
+                resizeDrawables(to: new)
             case .backingScaleChanged(let new):
                 surface = new
+                resizeDrawables(to: new)
                 // A backing-property change is the signal that the surface may have moved to another
                 // display (FR-031), which may refresh at a different rate. Relearn it rather than
                 // keeping a budget belonging to the display we left.
@@ -280,6 +308,15 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
             }
         }
         return true
+    }
+
+    /// Sizes the layer's drawables to the surface, on the loop thread (012 T016). Releasing the old
+    /// drawables is synchronous GPU-resource teardown; done here it costs the loop an event frame, where on
+    /// the main thread it stalled live resize. The frame that applies the event still draws into the
+    /// drawable the display link handed it at the old size; the next one gets the new size.
+    private func resizeDrawables(to new: RenderSurface) {
+        guard new.isRenderable else { return }
+        layer.drawableSize = CGSize(width: Double(new.widthPixels), height: Double(new.heightPixels))
     }
 
     /// How far a frame got: what step 6 records for it.
