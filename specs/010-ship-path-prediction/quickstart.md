@@ -77,7 +77,7 @@ Record results below as checks are run.
 |---|--------|-------|
 | 1 | | |
 | 2 | | |
-| 3–4 | | |
+| 3–4 | **PASS** 2026-10-01 | `matchesTheRealFlightFromRest`: 80 cases (5 distances × 16 directions); `matchesTheRealFlightFromMovingStarts`: 96 cases (12 × 8 directions); `namedMovingStarts` (4) and `alreadyThere`. Every point equals the real flight's position at its assigned tick, bit for bit; every path ends on the first arrived state's position and tick |
 | 5 | | |
 | 6 | | |
 | 7 | | |
@@ -86,4 +86,4 @@ Record results below as checks are run.
 | 10 | | |
 | 11 | | |
 | 12 | | |
-| 13 | | |
+| 13 | **PASS** (iOS Simulator) 2026-10-01 | Debug build on the iPhone 17 Pro simulator (iOS 27), 10 taps flown to arrival. All 10 order lines say `arrives=yes` (129–256 points). 3 arrival lines match `predicted=`/`ticks=` exactly (ticks 4436, 9241, 9843); 7 come one tick later, at the next tick's station-keeping position. The simulator delivers ~44 frames/s (120 frames ≈ 165 ticks in the summaries), so many frames advance two ticks and the once-per-frame arrival line lands late: SC-009's allowed difference. Confirmed by replaying the session offline from the log with the logic layer: each order's tick is found uniquely, the real flight first reports arrival on exactly the predicted tick in all 10, and each late arrival line's position is the replayed position at its tick. macOS not run: no event-posting access in this session (as 009) |
