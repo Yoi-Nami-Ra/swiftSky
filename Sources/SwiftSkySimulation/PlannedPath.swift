@@ -87,6 +87,44 @@ public struct PlannedPath: Sendable, Equatable {
         return true
     }
 
+    // MARK: - Predicting
+
+    /// The path of the order `autopilot` holds, flown from `ship` at `tickCount`, or `.empty` without an
+    /// order (010 FR-002).
+    ///
+    /// Flies copies of the ship and autopilot with `Simulation.tick`, the same function the real
+    /// `advance(_:ticks:)` uses, so the copy flies exactly the real flight (006 FR-014, research R3). It
+    /// stops on the first state that *reports* arrived and ends on that state's position. The phase is
+    /// evaluated at the start of a tick, so that state's ship is one step past the classified position;
+    /// stopping there is what makes the end point and tick the ones a test reads from the real state,
+    /// and the ones the frame loop logs on its arrival line, which tests the same predicate (FR-003,
+    /// research R4). An order that is already arrived when given is a single point.
+    ///
+    /// Touches only its copies (FR-009). At most `maxFlightTicks` ticks of the autopilot law and no
+    /// allocation, whatever the order (FR-006, FR-011).
+    init(predictingFrom ship: Ship, autopilot: Autopilot, tickCount: UInt64) {
+        guard autopilot.order != nil else {
+            self = .empty
+            return
+        }
+        self.init(start: ship.position, tick: tickCount)
+        guard autopilot.phase != .arrived else {
+            finish(reachesArrival: true)
+            return
+        }
+        var ship = ship
+        var autopilot = autopilot
+        for _ in 0..<Self.maxFlightTicks {
+            Simulation.tick(&ship, &autopilot)
+            append(ship.position)
+            if autopilot.phase == .arrived {
+                finish(reachesArrival: true)
+                return
+            }
+        }
+        finish(reachesArrival: false)
+    }
+
     // MARK: - Recording a flight
 
     /// A path holding `start` at `tick`, ready to record the flight that follows.

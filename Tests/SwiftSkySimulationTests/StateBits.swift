@@ -1,12 +1,13 @@
 @testable import SwiftSkySimulation
 
-/// A state's exact bits, for "bit-for-bit" assertions (004 SC-001, SC-004, research R8).
+/// A state's exact bits, for "bit-for-bit" assertions (004 SC-001, SC-004, research R8), planned path
+/// included since 010, so every whole-state comparison covers the path too.
 ///
 /// `==` on `Double` is not enough: it treats `+0` and `−0` as equal and `NaN` as unequal to itself, so
 /// it would pass two states whose bits differ and fail two whose bits are identical. Test-only code,
 /// so the array is fine.
 func bits(_ state: SimulationState) -> [UInt64] {
-    [state.tickCount] + bits(state.ship) + bits(state.autopilot)
+    [state.tickCount] + bits(state.ship) + bits(state.autopilot) + bits(state.plannedPath)
 }
 
 /// The autopilot's exact bits (006): the two tolerances, an order-present flag and the destination

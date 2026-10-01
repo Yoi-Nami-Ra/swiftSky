@@ -78,18 +78,20 @@ The copies are discarded; the state's ship, autopilot and tick count are untouch
 
 ## Thinning (`append` / `finish`)
 
-State: `count`, `spacing` (starts at 1) and the number of ticks recorded so far, `n`.
+State: `count`, `spacing` (starts at 1) and `endTick`, which tracks the tick of the latest position
+while the flight is recorded; `n = endTick − startTick` is the number of ticks recorded.
 
-- `append`: `n += 1`. If `n` is a multiple of `spacing`, the point is due:
-  - if `count == capacity`, compact: keep points `0, 2, 4, …, capacity − 2` in order (they become
-    `0…capacity/2 − 1`), `count = capacity / 2`, `spacing *= 2`; `n` is a multiple of the new spacing,
-    so the point is still due;
-  - store it at index `count`, `count += 1`.
+- `append`: `endTick += 1`. If `count == capacity`, thin first: keep points `0, 2, 4, …,
+  capacity − 2` in order (they become `0…capacity/2 − 1`), `count = capacity / 2`, `spacing *= 2`.
+  Then stage the position in slot `count`; if `n` is a multiple of `spacing`, it is a point:
+  `count += 1`. Otherwise it stays staged and the next `append` overwrites it.
+- `finish`: if `n` is not a multiple of `spacing`, the staged final position becomes the last point
+  (`count += 1`); there is always room, because a full buffer is thinned before anything is staged.
 
-  Otherwise the position is held as the pending final position.
-- `finish`: if the last `append` stored its point, the path is complete. Otherwise the pending final
-  position is stored as the last point, compacting first if `count == capacity`.
-  `endTick = startTick + n`.
+Thinning as soon as the flight goes on past a full buffer, rather than when the next point is due,
+gives the same path in every case: a point due at the next multiple of the doubled spacing lands in
+the same slot either way, and a flight that ends first keeps its final position as the last point
+either way. It needs no field beyond the path's own.
 
 Results (data-model invariants): a flight of `n ≤ 255` ticks has `n + 1` points at spacing 1; a
 longer one has 128–256 points; at the cap, spacing 16 and 226 points.
