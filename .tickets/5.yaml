@@ -11,7 +11,7 @@ description: |
   confirm zero data races and no main-thread stall longer than one frame
   interval. Record the result in the quickstart.
 platform: macos
-status: ready
+status: in-progress
 phase: MVP
 priority: medium
 parent: null
