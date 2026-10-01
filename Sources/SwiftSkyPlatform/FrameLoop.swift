@@ -173,6 +173,13 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
         // that source. `Thread.isCancelled` is checked each turn so cancellation is honoured promptly.
         while !Thread.current.isCancelled {
             RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.1))
+            // A paused link delivers no frames, and events are otherwise applied only inside one — so the
+            // `visibilityChanged(true)` that should resume it would wait forever, and the loop would stay
+            // paused after the window was hidden once (found by 012's Thread Sanitizer run, T014). While
+            // paused no frame is in flight, so this turn is itself a frame boundary (FR-031).
+            if link.isPaused {
+                _ = applyPendingEvents()
+            }
         }
 
         link.isPaused = true
