@@ -2,15 +2,19 @@ id: 4
 title: "Verify zero draw-path allocations on macOS"
 type: task
 description: |
-  Quickstart check 25 (SC-004) of specs/001-metal-app-shell is not verified.
-  Attach the Instruments Allocations template to the macOS app during a
-  sustained run and confirm zero heap allocations in the per-frame draw path.
-  Only structural evidence exists so far.
+  Quickstart check 25 (SC-004) of specs/001-metal-app-shell is not verified
+  on macOS. Follow "The method" in specs/011-draw-allocation-counter/quickstart.md
+  (the allocation counter built by SKY-3; no Instruments) on the macOS app:
+  an optimised build with the counter compiled in, 60 s idle, and confirm
+  every summary after the first shows allocs=0 allocframes=0.
 
   Done when the check is recorded as PASS (or a found allocation is fixed) in
   the quickstart. The iOS run is SKY-3.
+
+  Result 2026-10-01: PASS on an Apple M1 Pro (macOS 26.7, 120 Hz), all 62
+  summaries allocs=0 allocframes=0, recorded in 001's check 25.
 platform: macos
-status: ready
+status: in-review
 phase: MVP
 priority: medium
 parent: null
