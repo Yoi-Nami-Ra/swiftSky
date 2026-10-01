@@ -16,7 +16,7 @@ description: |
   hook, a frame loop that never resumed after being paused, and the drawable
   resize running on the main thread (012 research R12–R14).
 platform: macos
-status: in-review
+status: done
 phase: MVP
 priority: medium
 parent: null
