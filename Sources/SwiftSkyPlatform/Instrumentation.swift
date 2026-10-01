@@ -143,13 +143,25 @@ struct Instrumentation {
     /// Logs one applied move order request: where it was given and where it sent the ship, or why it was
     /// dropped (008 FR-015, research R6). Called only on a frame that applies one, so nothing is
     /// formatted per frame; `Logger` defers the formatting and builds no `String` here (FR-011).
-    func recordOrder(_ outcome: MoveOrderOutcome, viewPoint: Vector2) {
+    ///
+    /// An applied order also reports its planned path (010 FR-014): the predicted end point and tick,
+    /// interpolated exactly as `recordArrival` writes the arrival, so the two lines can be compared as
+    /// text (010 SC-009); the number of points; and whether the prediction arrives.
+    func recordOrder(_ outcome: MoveOrderOutcome, viewPoint: Vector2, path: PlannedPath) {
         switch outcome {
         case .ordered(let destination):
+            // Scalars first, so the message's closures capture a few words, never the 4 KB path.
+            let end = path.last ?? destination
+            let endTick = path.endTick
+            let points = path.count
+            let arrives = path.reachesArrival ? "yes" : "no"
             Self.log.notice(
                 """
                 order view=(\(viewPoint.x, privacy: .public), \(viewPoint.y, privacy: .public)) \
-                world=(\(destination.x, privacy: .public), \(destination.y, privacy: .public))
+                world=(\(destination.x, privacy: .public), \(destination.y, privacy: .public)) \
+                predicted=(\(end.x, privacy: .public), \(end.y, privacy: .public)) \
+                ticks=\(endTick, privacy: .public) points=\(points, privacy: .public) \
+                arrives=\(arrives, privacy: .public)
                 """
             )
         case .noCamera:
@@ -189,7 +201,7 @@ struct Instrumentation {
     @inline(__always) mutating func recordSkipped() {}
     @inline(__always) mutating func updateBudget(seconds: Double) {}
     @inline(__always) func summary() {}
-    @inline(__always) func recordOrder(_ outcome: MoveOrderOutcome, viewPoint: Vector2) {}
+    @inline(__always) func recordOrder(_ outcome: MoveOrderOutcome, viewPoint: Vector2, path: PlannedPath) {}
     @inline(__always) func recordArrival(position: Vector2, tickCount: UInt64) {}
 
     #endif
