@@ -1,5 +1,6 @@
 import os
 import SwiftSkyRendering
+import SwiftSkySimulation
 
 /// Per-frame measurement for the Principle III gates (FR-021d).
 ///
@@ -10,6 +11,10 @@ import SwiftSkyRendering
 /// Allocates nothing on the per-frame path (FR-021f): counters are inline integers on a struct the
 /// loop owns, and the only string formatting happens in `summary()`, which the loop calls once per
 /// reporting interval rather than once per frame.
+///
+/// It also logs each move order and each arrival (008 FR-015), so a run can be checked against where
+/// the player tapped. Those lines are written only on the frames where an order is applied or the ship
+/// arrives, never per frame.
 ///
 /// Skipped and dropped frames are counted separately, because conflating them would make SC-003
 /// unmeasurable: SC-003 forbids both during an idle session while FR-027a mandates skipping under
@@ -135,6 +140,46 @@ struct Instrumentation {
         )
     }
 
+    /// Logs one applied move order request: where it was given and where it sent the ship, or why it was
+    /// dropped (008 FR-015, research R6). Called only on a frame that applies one, so nothing is
+    /// formatted per frame; `Logger` defers the formatting and builds no `String` here (FR-011).
+    func recordOrder(_ outcome: MoveOrderOutcome, viewPoint: Vector2) {
+        switch outcome {
+        case .ordered(let destination):
+            Self.log.notice(
+                """
+                order view=(\(viewPoint.x, privacy: .public), \(viewPoint.y, privacy: .public)) \
+                world=(\(destination.x, privacy: .public), \(destination.y, privacy: .public))
+                """
+            )
+        case .noCamera:
+            Self.log.notice(
+                """
+                order dropped view=(\(viewPoint.x, privacy: .public), \(viewPoint.y, privacy: .public)) \
+                reason=no-camera
+                """
+            )
+        case .invalidDestination:
+            Self.log.notice(
+                """
+                order dropped view=(\(viewPoint.x, privacy: .public), \(viewPoint.y, privacy: .public)) \
+                reason=invalid-destination
+                """
+            )
+        }
+    }
+
+    /// Logs one arrival: where the ship came to rest, and when (008 FR-015, SC-007b). Called once per
+    /// arrival, by the frame loop.
+    func recordArrival(position: Vector2, tickCount: UInt64) {
+        Self.log.notice(
+            """
+            arrived world=(\(position.x, privacy: .public), \(position.y, privacy: .public)) \
+            ticks=\(tickCount, privacy: .public)
+            """
+        )
+    }
+
     #else
 
     // Release: every member is an empty inlinable no-op, so the optimiser leaves nothing behind for
@@ -144,6 +189,8 @@ struct Instrumentation {
     @inline(__always) mutating func recordSkipped() {}
     @inline(__always) mutating func updateBudget(seconds: Double) {}
     @inline(__always) func summary() {}
+    @inline(__always) func recordOrder(_ outcome: MoveOrderOutcome, viewPoint: Vector2) {}
+    @inline(__always) func recordArrival(position: Vector2, tickCount: UInt64) {}
 
     #endif
 }

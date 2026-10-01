@@ -73,3 +73,38 @@ subsystem.
 
 Filled in by `/speckit-implement`: for each check, the device or simulator, the date and the outcome,
 with log excerpts where they apply. A check that could not be run is listed as not run, with the reason.
+
+All on-device checks: 2026-10-01, Debug build, Xcode 27.0 (27A266a), iOS 27.0 simulator runtime. The
+simulator ran in landscape, so the surface was 874 × 402 points.
+
+| # | Where | Outcome |
+|---|-------|---------|
+| 1 | `./Scripts/verify.sh`, macOS host | PASS. `MoveOrderRequestTests` C1, C2, C5, C10 green |
+| 2 | `./Scripts/verify.sh` | PASS. `VERIFICATION PASSED`, both app targets built, no warnings |
+| 4 | iPad Pro 11-inch (M5) simulator, portrait 834 × 1,210 pt | PARTIAL. The one tap the simulator delivered was handled correctly: `order view=(600, 300) world=(183, 305)`, `arrived world=(182.959, 304.927)`. The input tool then stopped delivering taps on this freshly created iPad, even on the Home Screen (no app launched from the Dock), while the Home button worked. That is a simulator tooling fault, not this feature. The nine-point run on the iPad is left for a manual pass |
+| 4 | iPhone 17 Pro simulator | PASS, with one deviation at the sensor housing, below. All nine points, each `order` then `arrived`, within 0.12 units (log excerpt below) |
+| 6 | iPhone 17 Pro simulator | PASS. Each `order` line is written in the frame boundary that applies it, and the ship was seen turning towards the tap in the next screenshot. The exact latency was not measured; that the same frame's advance flies the order is C10/C13 |
+| 8 | iPhone 17 Pro simulator | PASS. Taps 20 pt from the corners beside the Dynamic Island, and at the bottom edge above the home indicator, ordered the ship there |
+| 9 | iPhone 17 Pro simulator | PASS for drag, 1.5 s long press and two-finger tap: no `order` line after 11:24:25. The home gesture was not reproducible with the simulator's input tool (an edge swipe left the app in front and issued no order); not run on a device |
+
+| 10 | — | NOT RUN. The iOS simulator has no VoiceOver. `.allowsDirectInteraction` is set (C15, code review); needs a device |
+
+**Check 4 log** (view points → world; arrival):
+
+```text
+order view=(437, 201) world=(0, 0)          arrived world=(-0.078, -0.034)
+order view=(20, 382)  world=(-417, -181)    arrived world=(-416.941, -180.975)
+order view=(20, 20)   world=(-417, 181)     arrived world=(-417.000, 180.935)
+order view=(854, 20)  world=(417, 181)      arrived world=(416.908, 181.005)
+order view=(854, 382) world=(417, -181)     arrived world=(416.999, -180.934)
+order view=(437, 20)  world=(0, 181)        arrived world=(-0.119, 180.949)
+order view=(854, 201) world=(417, 0)        arrived world=(416.919, 0.036)
+order view=(437, 382) world=(0, -181)       arrived world=(0.080, -180.967)
+order view=(70, 201)  world=(-367, 0)       arrived world=(-366.916, -0.000)
+```
+
+**Deviation, sensor housing**: in landscape the Dynamic Island sits at the middle of the left edge.
+Taps 20 pt and 45 pt from that edge at its midpoint never reached the app: no `order` line, and no
+other touch is lost. The system owns the touches over and around the sensor housing, which FR-003
+leaves alone. At 70 pt the tap ordered the ship normally. The other eight points are within 20 pt of
+their edge, as SC-001 asks. No code change: an app cannot receive those touches.

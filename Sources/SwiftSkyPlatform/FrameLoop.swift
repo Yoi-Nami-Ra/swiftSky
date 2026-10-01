@@ -54,6 +54,13 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
 
     /// The spin's input: built once, not per frame.
     private static let spinInput = ControlInput(thrust: 0, turn: 1)
+
+    /// Whether the current arrival has been logged (008 FR-015). `true` at launch: there is no order,
+    /// so nothing to log. Cleared by every applied order and whenever the ship is not arrived; set when
+    /// the arrival line is written. A flag rather than a before/after comparison around the advance,
+    /// because `setOrder` evaluates the phase at once (006): an order to the ship's own position is
+    /// already arrived before the advance, and would otherwise never be logged (research R6).
+    private var arrivalLogged = true
     #endif
 
     // MARK: - Cross-thread
@@ -228,7 +235,11 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
                 if isVisible { instrumentation.restartOverlayWindow() }
                 #endif
             case .moveOrderRequested(let request):
-                _ = request.apply(to: &state, on: surface)
+                let outcome = request.apply(to: &state, on: surface)
+                instrumentation.recordOrder(outcome, viewPoint: request.viewPoint)
+                #if SWIFTSKY_INSTRUMENTATION
+                if case .ordered = outcome { arrivalLogged = false }
+                #endif
             case .willTerminate:
                 // Handled on the main thread by `post`, which routes it to `stopAndDrain`.
                 break
@@ -286,6 +297,19 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
         }
         #else
         state = Simulation.advance(state, ticks: ticks)
+        #endif
+
+        // 4a. Each arrival is logged once (008 FR-015, SC-007b): one comparison and one flag test, in
+        //     debug and profiling builds only.
+        #if SWIFTSKY_INSTRUMENTATION
+        if state.autopilot.phase == .arrived {
+            if !arrivalLogged {
+                instrumentation.recordArrival(position: state.ship.position, tickCount: state.tickCount)
+                arrivalLogged = true
+            }
+        } else {
+            arrivalLogged = false
+        }
         #endif
 
         // 5. Draw. A `false` return is a skipped frame: retain accumulated time, count it, carry on
