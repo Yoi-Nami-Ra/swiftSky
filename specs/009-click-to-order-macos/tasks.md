@@ -93,11 +93,11 @@ No setup: the platform test target already depends on the rendering and logic la
 
 ### Tests for User Story 3
 
-- [ ] T006 [US3] Add to `Tests/SwiftSkyPlatformTests/ClickPositionTests.swift`, parameterised with `@Test(arguments:)`: C2 (on 1,280 × 800, 800 × 1,280, 1,001 × 667 and 1,512 × 982 point surfaces at 1× and 2×, the four corners and the centre flipped through `ClickPosition` then applied through `MoveOrderRequest.apply` give (−w/2, −h/2), (−w/2, h/2), (w/2, h/2), (w/2, −h/2) and (0, 0) within 1e-9); C3 (one click on the same size in points gives the identical destination at 1× and 2×)
+- [X] T006 [US3] Add to `Tests/SwiftSkyPlatformTests/ClickPositionTests.swift`, parameterised with `@Test(arguments:)`: C2 (on 1,280 × 800, 800 × 1,280, 1,001 × 667 and 1,512 × 982 point surfaces at 1× and 2×, the four corners and the centre flipped through `ClickPosition` then applied through `MoveOrderRequest.apply` give (−w/2, −h/2), (−w/2, h/2), (w/2, h/2), (w/2, −h/2) and (0, 0) within 1e-9); C3 (one click on the same size in points gives the identical destination at 1× and 2×)
 
 ### Implementation for User Story 3
 
-- [ ] T007 [US3] No code: the height is the view's own, reported synchronously with the surface (R3). Run quickstart check 8 (five window sizes, one taller than wide; full screen; a Retina/non-Retina move if a second display is available) and record it in the Evidence section of `specs/009-click-to-order-macos/quickstart.md`
+- [X] T007 (check 8 not run: no event-posting access) [US3] No code: the height is the view's own, reported synchronously with the surface (R3). Run quickstart check 8 (five window sizes, one taller than wide; full screen; a Retina/non-Retina move if a second display is available) and record it in the Evidence section of `specs/009-click-to-order-macos/quickstart.md`
 
 **Checkpoint**: Every window size is covered by tests and checked on the Mac.
 

@@ -54,3 +54,4 @@ All checks: 2026-10-01, Debug build, Xcode 27.0 (27A266a), macOS host.
 | 1 | `./Scripts/verify.sh` | PASS. `ClickPositionTests` C1, C4, C5 green; 008's suites still pass |
 | 3, 4, 6, 7 | Mac | NOT RUN. Clicks could not be produced: synthetic mouse events posted through CGEvent were dropped, because the session has neither Accessibility nor event-posting access (`AXIsProcessTrusted` and `CGPreflightPostEventAccess` both false), and granting them is the user's decision. The app itself ran normally: a 1,280 × 720 window at 120 Hz, `frames=7074 skipped=0 dropped=1 mean=0.301ms`. Needs a manual pass |
 | 5 | Mac | NOT RUN, for the same reason as check 3. Replacement itself is 008's `MoveOrderRequest.apply`, tested by 008 `replacesMidFlight` and `lastOfTwoWins`, which pass |
+| 8 | Mac | NOT RUN, for the same reason as check 3. Every size class is covered by C2 (1,280 × 800, 800 × 1,280, 1,001 × 667, full-screen 1,512 × 982, each at 1× and 2×) and C3, which pass |
