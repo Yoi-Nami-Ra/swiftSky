@@ -217,3 +217,53 @@ at most 32 ranges, and an increment. On a frame that allocates nothing it adds t
 
 **Rationale**: The frame path is meant to make no allocations, so the walk runs only when there is
 already a defect to find; the before/after run shows whether anything else changed.
+
+---
+
+## R12. An optimised build with the counter: Release plus a command-line condition
+
+**Finding** (during T008): in a Debug build every `for` loop over a range or an `InlineArray` heap-allocates
+40 bytes per step. Built `-Onone`, the loop calls the standard library's unspecialised
+`IndexingIterator.next`, which boxes the element. The counter showed it on every frame: in
+`Simulation.advance(_:ticks:)` (`for _ in 0..<ticks`), in `FrameTimeWindow.mean` and `.worst` (4 Hz), and
+in this feature's own first tests. None of it exists in an optimised build, where the loop is specialised
+and inlined. R1's "an unoptimised build allocates at least as often, so its zero is stricter" was true
+and useless: a Debug run cannot pass, and its failures say nothing about the shipped code.
+
+**Decision**: Check 25, SC-005 and "the method" use a **Release build with the instrumentation condition
+added on the `xcodebuild` command line**:
+
+```sh
+xcodebuild build -project swiftSky.xcodeproj -scheme "swiftSky (iOS)" -configuration Release \
+  -destination "platform=iOS Simulator,id=<udid>" -derivedDataPath <dir> \
+  'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) SWIFTSKY_INSTRUMENTATION' \
+  'GCC_PREPROCESSOR_DEFINITIONS=$(inherited) SWIFTSKY_INSTRUMENTATION=1'
+```
+
+Command-line build settings apply to every target, package targets included, so the layers compile `-O`
+with `-DSWIFTSKY_INSTRUMENTATION` and the counter's C file with the define (checked in the build log),
+and the app carries the summary and the counter (`strings`, `nm`). The Debug build's figures are still
+recorded, for information.
+
+**Rationale**: It is the build Q1 asked for — optimised, with the counter — and needs no project change.
+Making the Profiling configuration do the same stays out of scope (R1).
+
+---
+
+## R13. The text renderer's per-frame completion handler allocated
+
+**Finding** (T010/T011, optimised build): exactly one app-side allocation per frame with text, from
+`_Block_copy` called directly by `TextRenderer.encode`. `commandBuffer.addCompletedHandler(releaseSlot)`
+bridges the stored Swift closure into a new Objective-C block on every call, and the block is copied to
+the heap. This settles 002 R5's open question ("whether `addCompletedHandler` with a stored block is
+allocation-free"): it is not. Storing the handler as a `@convention(block)` value made it worse, two
+allocations per frame: Swift wraps the block in a Swift closure and re-bridges it.
+
+**Decision**: No completion handler. Each ring slot remembers the command buffer that last read it, and
+`acquireSlot()` takes the next slot only when that command buffer's `status` is `.completed` or `.error`;
+`releaseUnusedSlot()` steps the ring back. Slots are used in order and command buffers complete in order,
+so checking the next slot is enough. The invariant is the same — never overwrite instances the GPU may
+still read — and the frame is still skipped, never blocked, when the slot is busy.
+
+**Result**: the macOS optimised run went from `allocs=120 allocframes=120` per 120 frames to
+`allocs=0 allocframes=0`.

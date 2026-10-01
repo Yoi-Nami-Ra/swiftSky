@@ -66,12 +66,19 @@ appear in Profiling builds once that is fixed, with no change here.
   planning**: the Profiling configuration builds the package's layer targets with their Release settings,
   so `SWIFTSKY_INSTRUMENTATION` reaches only the app module and a Profiling build carries no frame
   instrumentation at all (research R1). The Debug build therefore decides PASS. An unoptimised build
-  allocates at least as often as an optimised one, so its zero is the stricter result.
+  allocates at least as often as an optimised one, so its zero is the stricter result. **Revised again
+  during implementation**: "stricter" turned out to mean "wrong" — an unoptimised build allocates on
+  every `for` loop over a range or an inline array (the standard library's unspecialised
+  `IndexingIterator.next`), which the shipped code never does (research R12). An optimised build with
+  the counter compiled in is made instead by passing the instrumentation condition on the `xcodebuild`
+  command line to a Release build, which reaches the package targets too (R12). That build decides
+  PASS, as first answered; the Debug figures are recorded for information.
 - Q: How is the counter's overhead (SC-005) measured? → A: Profiling builds of `main` and of this branch
   on the same simulator, 30 s idle each; the after run's mean frame time is within 10% or 0.1 ms of the
   before run's, whichever is larger, and both report `dropped=0` outside launch (SC-005). **Revised during
   planning**, for the same reason: Debug builds of `main` and of this branch, as the only builds that
-  carry the instrumentation.
+  carry the instrumentation. **Revised again during implementation**: the optimised instrumented build
+  of R12, of `main` and of this branch.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -110,7 +117,7 @@ launch a Debug build and read one summary line with `/usr/bin/log`.
 
 ### User Story 2 - Verify zero draw-path allocations on iOS (Priority: P2)
 
-A developer runs the iOS Debug build on the iPhone 17 Pro simulator for 60 seconds with the
+A developer runs the iOS optimised instrumented build on the iPhone 17 Pro simulator for 60 seconds with the
 default launch arguments (ship and debug overlay shown) and gives no input. Every summary after the first reports zero
 app-side allocations. The result is recorded as PASS in 001's quickstart check 25. If a summary reports
 an allocation, the developer uses the counter to find it, fixes it, and runs again.
@@ -118,12 +125,12 @@ an allocation, the developer uses the counter to find it, fixes it, and runs aga
 **Why this priority**: It is what the ticket asks for, and it closes 001's last open allocation check on
 iOS. It comes second because it needs story 1's counter.
 
-**Independent Test**: Build and launch the iOS Debug app on the booted simulator, wait 60 seconds,
+**Independent Test**: Build and launch the iOS optimised instrumented app on the booted simulator, wait 60 seconds,
 read the summaries with `/usr/bin/log`, and compare them with the targets in SC-003.
 
 **Acceptance Scenarios**:
 
-1. **Given** the iOS Debug app running idle on the simulator, **When** 60 seconds have passed, **Then**
+1. **Given** the iOS optimised instrumented app running idle on the simulator, **When** 60 seconds have passed, **Then**
    every summary after the first reports zero app-side allocations and zero frames that allocated
    (SC-003).
 2. **Given** the same run, **When** the framework count is read, **Then** it is recorded in the
@@ -251,14 +258,15 @@ other guidance; it yields a summary line and a PASS or FAIL against the same tar
 - **SC-002**: A Debug build on iOS and on macOS writes frame summary lines that carry the four new
   fields after the existing ones; a Release build contains none of the counter's symbols or strings and
   writes no summary.
-- **SC-003**: On the iPhone 17 Pro simulator (iOS 27.0), a 60-second idle run of the Debug build with the
-  default launch arguments reports, in every summary after the first, zero app-side allocations on frames
+- **SC-003**: On the iPhone 17 Pro simulator (iOS 27.0), a 60-second idle run of the optimised instrumented build
+  (research R12) with the default launch arguments reports, in every summary after the first, zero app-side allocations on frames
   without an event and zero frames that made an app-side allocation. This is the PASS for 001 check 25
-  (001 SC-004), recorded in its quickstart.
+  (001 SC-004), recorded in its quickstart. The Debug build's figures are recorded beside it for
+  information.
 - **SC-004**: The framework count over the same run is recorded beside the result as allocations per
   frame (lowest and highest summary after the first), so later runs can tell a framework change from an
   app change. It is a reference, not a gate.
-- **SC-005**: Debug builds of `main` (before) and of this branch (after), run idle for 30 seconds
+- **SC-005**: Optimised instrumented builds (research R12) of `main` (before) and of this branch (after), run idle for 30 seconds
   each on the same simulator, are recorded side by side in the quickstart: the after run's mean frame
   time is within 10% or 0.1 ms of the before run's, whichever is larger, and both report `dropped=0`
   outside launch.
