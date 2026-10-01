@@ -15,7 +15,8 @@ import SwiftSkySimulation
 /// Every `private var` below is touched **only** on `thread`'s run loop, from
 /// `metalDisplayLink(_:needsUpdate:)` and the helpers it calls. Nothing else may read or write them.
 /// The one channel in from the main thread is `pendingEvents`, which is mutex-guarded and drained at a
-/// frame boundary (FR-029, FR-031).
+/// frame boundary (FR-029, FR-031). It carries surface changes and, since 008, the player's move order
+/// requests, in the order they happened.
 ///
 /// `@unchecked Sendable` is a genuine opt-out of compiler checking, and worth being explicit about:
 /// FR-030 asks for compiler-enforced transfer safety, and it holds for the types that actually cross
@@ -53,6 +54,13 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
 
     /// The spin's input: built once, not per frame.
     private static let spinInput = ControlInput(thrust: 0, turn: 1)
+
+    /// Whether the current arrival has been logged (008 FR-015). `true` at launch: there is no order,
+    /// so nothing to log. Cleared by every applied order and whenever the ship is not arrived; set when
+    /// the arrival line is written. A flag rather than a before/after comparison around the advance,
+    /// because `setOrder` evaluates the phase at once (006): an order to the ship's own position is
+    /// already arrived before the advance, and would otherwise never be logged (research R6).
+    private var arrivalLogged = true
     #endif
 
     // MARK: - Cross-thread
@@ -197,6 +205,10 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     /// Applies queued events. Runs at a frame boundary only, which is what makes FR-031 hold rather
     /// than merely being intended.
     ///
+    /// Events apply in queue order, so a move order request is converted against the surface as it
+    /// stands after every earlier event in the same drain, and of several requests the last one is the
+    /// order flown (008 FR-005, FR-006, contracts C12).
+    ///
     /// Allocates nothing when the queue is empty, which is the common case.
     private func applyPendingEvents() {
         let events = pendingEvents.withLock { queue -> [SurfaceEvent] in
@@ -222,6 +234,12 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
                 // Frames from before the pause are not the last second's (003 FR-008).
                 if isVisible { instrumentation.restartOverlayWindow() }
                 #endif
+            case .moveOrderRequested(let request):
+                let outcome = request.apply(to: &state, on: surface)
+                instrumentation.recordOrder(outcome, viewPoint: request.viewPoint)
+                #if SWIFTSKY_INSTRUMENTATION
+                if case .ordered = outcome { arrivalLogged = false }
+                #endif
             case .willTerminate:
                 // Handled on the main thread by `post`, which routes it to `stopAndDrain`.
                 break
@@ -237,7 +255,8 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
     /// here: events, renderability, one clock read, the debug overlay's snapshot (003), simulation,
     /// draw, instrumentation.
     public func metalDisplayLink(_ link: CAMetalDisplayLink, needsUpdate update: CAMetalDisplayLink.Update) {
-        // 1. Events, at the frame boundary and nowhere else.
+        // 1. Events, at the frame boundary and nowhere else. A move order applied here is flown by this
+        //    frame's step-4 advance (008 FR-005, SC-005).
         applyPendingEvents()
 
         // 2. Nothing to draw into.
@@ -278,6 +297,19 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
         }
         #else
         state = Simulation.advance(state, ticks: ticks)
+        #endif
+
+        // 4a. Each arrival is logged once (008 FR-015, SC-007b): one comparison and one flag test, in
+        //     debug and profiling builds only.
+        #if SWIFTSKY_INSTRUMENTATION
+        if state.autopilot.phase == .arrived {
+            if !arrivalLogged {
+                instrumentation.recordArrival(position: state.ship.position, tickCount: state.tickCount)
+                arrivalLogged = true
+            }
+        } else {
+            arrivalLogged = false
+        }
         #endif
 
         // 5. Draw. A `false` return is a skipped frame: retain accumulated time, count it, carry on

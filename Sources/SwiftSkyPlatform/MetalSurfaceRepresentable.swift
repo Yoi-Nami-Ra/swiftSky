@@ -21,7 +21,8 @@ struct MetalSurface {
     let device: any MTLDevice
 
     /// Called once with the layer the frame loop's display link should attach to. Returns the sink the
-    /// view pushes surface events into, which the loop drains at a frame boundary (FR-029, FR-031).
+    /// view pushes surface events and, on iOS, taps into, which the loop drains at a frame boundary
+    /// (FR-029, FR-031, 008 FR-004).
     let attach: (CAMetalLayer) -> (SurfaceEvent) -> Void
 
     /// `@MainActor` because everything it touches is: `MetalSurfaceView` is an `NSView`/`UIView`
