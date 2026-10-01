@@ -11,8 +11,11 @@ description: |
   the quickstart advises. The macOS counterpart is SKY-31.
 
   Done when the device is available to run SKY-1's measurement session.
+
+  Dropped 2026-10-01: the iPhone 11 baseline won't be used; iOS baselines are
+  measured on the devices available.
 platform: ios
-status: ready
+status: dropped
 phase: MVP
 priority: high
 parent: null
