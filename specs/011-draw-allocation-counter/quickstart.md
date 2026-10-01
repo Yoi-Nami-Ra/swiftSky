@@ -47,4 +47,8 @@ This is the procedure SKY-4 and the later checks that cite this ticket follow.
 
 ## Results
 
-_To be recorded during implementation._
+| # | Date | Result | Evidence |
+|---|------|--------|----------|
+| 3 | 2026-10-01 | **PASS** | macOS Debug, Apple silicon Mac, 120 Hz: `allocation counter ready`, then e.g. `frames=235 skipped=0 dropped=0 mean=0.139693ms worst=0.766458ms budget=8.333333ms ticks=123 allocs=212 allocframes=120 eventallocs=0 gfxallocs=1320` — existing fields unchanged, four new ones after `ticks=` |
+| 4 | 2026-10-01 | **PASS** | iPhone 17 Pro simulator (iOS 27.0), Debug: `allocation counter ready`, then e.g. `frames=233 skipped=0 dropped=0 mean=0.182022ms worst=2.123833ms budget=16.666667ms ticks=324 allocs=248 allocframes=89 eventallocs=0 gfxallocs=3360`. `log show` inside the simulator returns nothing here (it reports `getpwuid_r did not find a match for uid 502`); `log stream` works, so the method uses it |
+| 5 | 2026-10-01 | **PASS** | Release builds of both apps (macOS executable and iOS-simulator executable): `nm` finds 0 `sky_alloc` symbols; `strings -a` finds 0 of `allocs=`, `gfxallocs=`, `allocation counter`, and 0 of 001 check 27's probes (`skipped=`, `dropped=`, `worst=`, `SWIFTSKY_INSTRUMENTATION`, and the `recordPresented`/`recordSkipped`/`updateBudget`/`summary` symbols) |

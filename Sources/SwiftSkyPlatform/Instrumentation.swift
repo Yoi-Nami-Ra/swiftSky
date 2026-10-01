@@ -10,7 +10,12 @@ import SwiftSkySimulation
 ///
 /// Allocates nothing on the per-frame path (FR-021f): counters are inline integers on a struct the
 /// loop owns, and the only string formatting happens in `summary()`, which the loop calls once per
-/// reporting interval rather than once per frame.
+/// reporting interval rather than once per frame, and in the one line that reports the allocation
+/// counter's self-test at start.
+///
+/// Since 011 it also reports FR-021d's draw-path allocation counts: the frame loop's thread's heap
+/// allocations per summary interval, the app's and the graphics framework's apart, counted by
+/// `SwiftSkyAllocationCounter` and kept here in `FrameAllocationCounts`.
 ///
 /// It also logs each move order and each arrival (008 FR-015), so a run can be checked against where
 /// the player tapped. Those lines are written only on the frames where an order is applied or the ship
@@ -50,6 +55,14 @@ struct Instrumentation {
     /// When the overlay's next snapshot is due: four times a second (003 FR-006).
     private var schedule = OverlayRefreshSchedule()
 
+    /// The frame path's allocations since the last summary (011 FR-006).
+    private var allocations = FrameAllocationCounts()
+
+    /// Whether the allocation counter passed its self-test at start (011 research R8). Until it has, the
+    /// summary reports `allocs=unavailable` rather than counts: a counter that is not counting would
+    /// otherwise report the very zero check 25 is looking for.
+    private(set) var allocationCounterReady = false
+
     init(budgetSeconds: Double) {
         self.budgetSeconds = budgetSeconds
     }
@@ -69,6 +82,22 @@ struct Instrumentation {
         skippedFrames += 1
     }
 
+    /// Records one frame's allocation counts: whether it applied a queued event decides which field the
+    /// app's allocations go to (011 FR-004). No allocation.
+    mutating func recordFrameAllocations(app: UInt64, graphics: UInt64, appliedEvent: Bool) {
+        allocations.record(app: app, graphics: graphics, appliedEvent: appliedEvent)
+    }
+
+    /// Records the allocation counter's self-test result and logs it, once, at start (011 research R8).
+    mutating func markAllocationCounter(ready: Bool) {
+        allocationCounterReady = ready
+        if ready {
+            Self.log.notice("allocation counter ready")
+        } else {
+            Self.log.notice("allocation counter unavailable")
+        }
+    }
+
     /// Updates the frame budget, and **restarts the measurement**.
     ///
     /// The restart is the point, not a side effect. Counters accumulated against the previous budget
@@ -84,6 +113,7 @@ struct Instrumentation {
         droppedFrames = 0
         totalFrameSeconds = 0
         worstFrameSeconds = 0
+        allocations.reset()
         restartOverlayWindow()
     }
 
@@ -117,27 +147,58 @@ struct Instrumentation {
         schedule.restart()
     }
 
-    /// Emits a summary. Called on a reporting interval, never per frame — this is the only place that
-    /// formats a string.
+    /// Emits a summary, then starts a new allocation interval (011 FR-006). Called on a reporting interval,
+    /// never per frame, and outside the counted stretch, so its formatting is never counted — this is the
+    /// only per-run place that formats a string.
     ///
     /// `notice`, not `info`, and that is the entire reason FR-021d's output was invisible: `info`-level
     /// messages live in a memory ring buffer and are not written to the log store, so `log show` — which
     /// reads the store — finds nothing, with no error to say why. `notice` is the lowest level that
     /// persists by default, so the measurements can simply be read back after a run. Debug and
     /// profiling builds only (FR-021e), so this adds no release logging.
-    func summary() {
+    ///
+    /// The allocation fields follow the existing ones, which keep their names and order (011 FR-006,
+    /// research R9): app-side allocations on frames without an event, frames without an event that
+    /// allocated, app-side allocations on frames with an event, and graphics framework allocations.
+    mutating func summary() {
+        logSummary()
+        allocations.reset()
+    }
+
+    /// Writes the summary line. Non-mutating, because `Logger`'s interpolations are escaping autoclosures
+    /// and cannot capture a mutating `self`.
+    private func logSummary() {
         let mean = presentedFrames > 0 ? totalFrameSeconds / Double(presentedFrames) : 0
-        Self.log.notice(
-            """
-            frames=\(self.presentedFrames, privacy: .public) \
-            skipped=\(self.skippedFrames, privacy: .public) \
-            dropped=\(self.droppedFrames, privacy: .public) \
-            mean=\(mean * 1000, privacy: .public)ms \
-            worst=\(self.worstFrameSeconds * 1000, privacy: .public)ms \
-            budget=\(self.budgetSeconds * 1000, privacy: .public)ms \
-            ticks=\(self.lastTickCount, privacy: .public)
-            """
-        )
+        if allocationCounterReady {
+            Self.log.notice(
+                """
+                frames=\(self.presentedFrames, privacy: .public) \
+                skipped=\(self.skippedFrames, privacy: .public) \
+                dropped=\(self.droppedFrames, privacy: .public) \
+                mean=\(mean * 1000, privacy: .public)ms \
+                worst=\(self.worstFrameSeconds * 1000, privacy: .public)ms \
+                budget=\(self.budgetSeconds * 1000, privacy: .public)ms \
+                ticks=\(self.lastTickCount, privacy: .public) \
+                allocs=\(self.allocations.appAllocations, privacy: .public) \
+                allocframes=\(self.allocations.allocatingFrames, privacy: .public) \
+                eventallocs=\(self.allocations.eventAppAllocations, privacy: .public) \
+                gfxallocs=\(self.allocations.graphicsAllocations, privacy: .public)
+                """
+            )
+        } else {
+            Self.log.notice(
+                """
+                frames=\(self.presentedFrames, privacy: .public) \
+                skipped=\(self.skippedFrames, privacy: .public) \
+                dropped=\(self.droppedFrames, privacy: .public) \
+                mean=\(mean * 1000, privacy: .public)ms \
+                worst=\(self.worstFrameSeconds * 1000, privacy: .public)ms \
+                budget=\(self.budgetSeconds * 1000, privacy: .public)ms \
+                ticks=\(self.lastTickCount, privacy: .public) \
+                allocs=unavailable
+                """
+            )
+        }
     }
 
     /// Logs one applied move order request: where it was given and where it sent the ship, or why it was
@@ -199,8 +260,10 @@ struct Instrumentation {
     init(budgetSeconds: Double) {}
     @inline(__always) mutating func recordPresented(frameSeconds: Double, tickCount: UInt64) {}
     @inline(__always) mutating func recordSkipped() {}
+    @inline(__always) mutating func recordFrameAllocations(app: UInt64, graphics: UInt64, appliedEvent: Bool) {}
+    @inline(__always) mutating func markAllocationCounter(ready: Bool) {}
     @inline(__always) mutating func updateBudget(seconds: Double) {}
-    @inline(__always) func summary() {}
+    @inline(__always) mutating func summary() {}
     @inline(__always) func recordOrder(_ outcome: MoveOrderOutcome, viewPoint: Vector2, path: PlannedPath) {}
     @inline(__always) func recordArrival(position: Vector2, tickCount: UInt64) {}
 
