@@ -24,7 +24,7 @@ black background and under the debug overlay) and
 and `specs/009-click-to-order-macos` (a primary click does the same on macOS, through the same order
 request) and `specs/010-ship-path-prediction` (giving an order also predicts its planned path in the
 logic layer; nothing draws it yet) and `specs/011-draw-allocation-counter` (001 FR-021d's draw-path
-allocation counts in the frame summary; check 25, zero allocations per frame, PASS on iOS). Layer libraries and
+allocation counts in the frame summary; check 25, zero allocations per frame, PASS on iOS and, by SKY-4, on macOS). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
