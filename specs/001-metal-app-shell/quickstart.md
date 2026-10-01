@@ -314,8 +314,8 @@ phys_footprint: 101 MB   phys_footprint_peak: 129 MB
   the display's true interval, not the 16.6 ms default. See the SC-003 note below.
 - **Check 26**: 101 MB resident against the 250 MB macOS tripwire. A Debug build with instrumentation
   compiled in, so a Release figure would be lower.
-- **Check 25** (zero heap allocations in the draw path) — **iOS: PASS (2026-10-01, 011)**; macOS is
-  SKY-4. FR-021d's allocation counter was built by `specs/011-draw-allocation-counter` and reports in
+- **Check 25** (zero heap allocations in the draw path) — **iOS: PASS (2026-10-01, 011); macOS: PASS
+  (2026-10-01, SKY-4)**. FR-021d's allocation counter was built by `specs/011-draw-allocation-counter` and reports in
   this summary line (`allocs= allocframes= eventallocs= gfxallocs=`). iPhone 17 Pro simulator (iOS 27.0),
   an optimised build with the counter compiled in (Release plus the instrumentation condition on the
   command line — a Profiling build carries no instrumentation, 011 research R1, R12), default launch
@@ -326,6 +326,14 @@ phys_footprint: 101 MB   phys_footprint_peak: 129 MB
   not a gate. Getting there fixed one real per-frame allocation: the text renderer's completion handler
   was re-bridged and heap-copied on every frame with text (011 research R13). How to repeat it:
   `specs/011-draw-allocation-counter/quickstart.md`, "The method".
+  macOS (SKY-4), by the same method: Apple M1 Pro, macOS 26.7, 120 Hz display, the same optimised
+  build of `swiftSky (macOS)`, no launch arguments, 62 s idle: `allocation counter ready`, then all 62
+  summaries `allocs=0 allocframes=0`, `budget=8.333333ms` throughout. `eventallocs=2` in the first
+  summary (start-up events), 0 in the other 61. Last summary: `frames=7434 skipped=0 dropped=0
+  mean=0.161551ms worst=6.112208ms budget=8.333333ms ticks=3751 allocs=0 allocframes=0 eventallocs=0
+  gfxallocs=1200`. Metal's per-frame reference on this Mac: 10.0 (`gfxallocs ÷ frames`, lowest 10.0,
+  highest 10.0). No fix was needed: 011's R13 fix had already removed the one per-frame allocation the
+  macOS run had shown (`allocs=120` per 120 frames before it).
 
 > **The frame budget was wrong until 2026-07-28, and the gate was passing because of it.** It was
 > hardcoded to 1/60 and `Instrumentation.updateBudget` was never called, so on this 120 Hz display a
@@ -595,6 +603,9 @@ on something this environment cannot provide. Two checks passed only *after* a d
 fixed (14 and 41), and a third gate (24) was passing for the wrong reason until the frame budget was
 corrected.
 
+Since then, check 25 has passed on both platforms (iOS 2026-10-01 in 011, macOS 2026-10-01 in SKY-4)
+and is no longer open.
+
 | # | Check | Why it is still open |
 |---|-------|----------------------|
 | 2 | No flash on launch | Needs a human watching, or screen recording (permission not granted) |
@@ -603,7 +614,6 @@ corrected.
 | 7, 8 | Resize range, minimum size | Needs interactive window dragging |
 | 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |
-| 25 | Zero draw-path allocations | iOS PASS (011); the macOS run is SKY-4 |
 | 29 | Continuous resize under TSan | Race half PASSES; the resize half needs UI automation |
 | 33 | Notice under VoiceOver, dismiss exits | Needs VoiceOver and a click |
 | 36, 37 | VoiceOver on the surface, Reduce Motion | Needs VoiceOver and a system settings change |
