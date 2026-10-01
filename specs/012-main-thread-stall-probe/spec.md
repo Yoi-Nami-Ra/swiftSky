@@ -55,6 +55,18 @@ will appear in Profiling builds once that is fixed, with no change here.
 - **Extended**: the frame summary line (001 FR-021d, extended by 011) gains the main-thread figures.
   Its existing fields keep their names, order and meaning.
 
+## Clarifications
+
+### Session 2026-10-01
+
+- Q: How are the summaries that cover the drag identified? → A: Builds with the instrumentation log one
+  line when a window's live resize starts and one when it ends; the summaries covering the drag are those
+  written after the start line up to and including the first one written after the end line (FR-013).
+- Q: What if a stretch over the frame interval comes entirely from the window system's own work, with
+  none of the app's code involved? → A: The gate stays absolute: any stretch over the interval is a FAIL.
+  Its source is found from a sampled main-thread stack; a cause wholly inside the system is recorded in
+  check 29 as a FAIL with that evidence and a follow-up ticket, never waived (FR-011).
+
 ## User Scenarios & Testing *(mandatory)*
 
 The users of this feature are the developers of swiftSky, who need to know whether a change makes the
@@ -190,10 +202,17 @@ seconds, read the sanitizer output and the summaries, and compare with SC-003 an
 - **FR-011**: The result MUST be recorded in 001's quickstart check 29 and its open-checks row: the date,
   the Mac and display, the builds, the drag's length and how it was made, the sanitizer's verdict, and
   the stall figures of every summary covering the drag. A race or stall found MUST be fixed and the drag
-  repeated before PASS is recorded.
+  repeated before PASS is recorded. A stall whose sampled main-thread stack shows the time spent wholly
+  in system code, with none of the app's code on it, is still a FAIL: it is recorded with that evidence
+  and a follow-up ticket, and is not waived.
 - **FR-012**: This feature's quickstart MUST describe the drag procedure — the two builds, how to read
   the sanitizer output and the summaries, and the PASS rule — so it can be repeated by hand for later
   resize work.
+
+- **FR-013**: In builds compiled with the instrumentation, the app MUST write one log line when a
+  window's live resize starts and one when it ends, in the same log category as the frame summary, so the
+  summaries covering a drag can be found from the log alone. A summary covers the drag when it is written
+  after the start line, up to and including the first summary written after the end line.
 
 ### Key Entities
 
@@ -203,6 +222,8 @@ seconds, read the sanitizer output and the summaries, and compare with SC-003 an
   stretches longer than the frame interval. Restarted after each summary.
 - **Frame interval**: the display's frame interval the frame loop has learned (001), the budget field
   already in the summary.
+- **Live-resize markers**: the two log lines written when a window's live resize starts and ends; they
+  bracket the summaries that cover a drag.
 - **Frame summary**: the existing log line written every 120 frames, extended with the main-thread
   figures.
 
@@ -223,7 +244,7 @@ seconds, read the sanitizer output and the summaries, and compare with SC-003 an
   at least 10 seconds through a range of sizes, reports zero data races, and the app keeps drawing
   throughout (summaries keep being written). This is the race half of 001 check 29 (SC-015).
 - **SC-004**: The optimised build with the instrumentation compiled in (011 research R12), with the
-  same drag, reports in every summary covering the drag a worst main-thread stretch no longer than the
+  same drag, reports in every summary covering the drag (FR-013) a worst main-thread stretch no longer than the
   frame interval and a count over the interval of 0. This is the stall half of 001 check 29 (SC-016).
   The sanitizer build's stall figures are recorded beside it for information.
 - **SC-005**: Optimised instrumented builds of `main` (before) and of this branch (after), run idle for
