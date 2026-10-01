@@ -569,6 +569,21 @@ renamed to `swiftsky_quad_fragment_RENAMED_SKY7`; change reverted after the buil
 - **VoiceOver — NOT VERIFIED.** The iOS simulator has no VoiceOver and no physical device was available;
   moved to SKY-39.
 
+**Check 33, macOS — PASS (2026-10-02, SKY-8).** Release build with the fragment shader entry point renamed
+to `swiftsky_quad_fragment_RENAMED_SKY8` (reverted after the build); it logged
+`renderer initialisation failed code=shader_function_missing` at Error level and showed the notice. Observed
+by hand with VoiceOver on:
+
+- **VoiceOver — PASS.** Focus first lands on a group (the notice's `.accessibilityElement(children: .contain)`
+  container); after moving out of it, VoiceOver reads "swiftSky cannot start" and then the message naming
+  the missing shader function.
+- **Layout — PASS.** No text clipped, at the default window size or at the window's minimum size.
+- **Dismissal — PASS.** Clicking Quit closes the app.
+- **Dynamic Type — not applicable.** macOS has no system Dynamic Type setting that SwiftUI's `.body` and
+  `.headline` follow, so there is no text size to raise. The fonts are the semantic ones, so a future
+  macOS text-size setting would apply. SKY-38's macOS part reduces to the minimum-window check above.
+- No screenshot: Screen Recording permission is not granted to the session.
+
 ### Accessibility
 
 | # | Check | Expected | Criterion |
@@ -607,6 +622,19 @@ logged once at launch with Reduce Motion off too, so it is unrelated.
 **Check 36, iOS — NOT VERIFIED (2026-10-02, SKY-7).** Still needs VoiceOver: the iOS simulator has none,
 and its accessibility tree could not be read from the host (`AXIsProcessTrusted() == false`). Moved to
 SKY-39.
+
+**Checks 36, 37, macOS — PASS (2026-10-02, SKY-8).** Debug build, observed by hand.
+
+- **Check 36.** With VoiceOver on, focus stops at the window first; moving inside it, VoiceOver announces
+  "swiftSky game surface, image". The debug overlay's text is not exposed as separate elements (003 check
+  12), and a click with VoiceOver on orders the ship (009 check 10).
+- **Check 37.** Reduce motion switched on in System Settings → Accessibility → Display while the app was
+  running; read as on iOS ("gameplay motion is unchanged, no assertion or warning"). Nothing looked
+  different, and the log shows each order followed by its `arrived world=…` line, with nothing from
+  `com.swiftsky.app` at Error or Fault level. The system errors are AppIntents registration noise and the
+  same single `nextDrawable` nil at launch as on iOS. `defaults read com.apple.universalaccess reduceMotion`
+  reports the key as missing from this session, so the setting is confirmed by the person at the Mac, not
+  by the log.
 
 **Check 38 — PASS (2026-07-28).** Zero third-party dependencies. `Package.swift` declares no
 `dependencies:` on the package itself (only inter-target ones: Rendering → Simulation, Platform →
@@ -651,8 +679,8 @@ the end of live resize keeps it open (SKY-37).
 | 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |
 | 29 | Continuous resize under TSan | Races PASS; stalls PASS mid-drag; one system-side stall at the end of live resize (SKY-37) |
-| 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type FAIL (SKY-38), VoiceOver needs a device (SKY-39); macOS: SKY-8 |
-| 36, 37 | VoiceOver on the surface, Reduce Motion | iOS: 37 PASS, 36 needs a device (SKY-39); macOS: SKY-8 |
+| 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type FAIL (SKY-38), VoiceOver needs a device (SKY-39); macOS: PASS (SKY-8) |
+| 36, 37 | VoiceOver on the surface, Reduce Motion | iOS: 37 PASS, 36 needs a device (SKY-39); macOS: both PASS (SKY-8) |
 
 The common blocker for most of these is that Accessibility (UI scripting) and Screen Recording
 permission are not granted to this session, so nothing can drive or capture the UI:

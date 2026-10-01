@@ -15,8 +15,9 @@ description: |
 
   Scope: make the notice readable at every Dynamic Type size, in portrait and
   landscape, on iPhone and iPad (for example, wrap the text in a ScrollView and
-  keep Quit reachable). Check macOS at its largest text size too, since the
-  view is shared.
+  keep Quit reachable). The view is shared with macOS, so re-check it there:
+  SKY-8 found no clipping on macOS at the default or minimum window size
+  (macOS has no Dynamic Type setting to raise), and the fix must keep it so.
 
   Done when: at accessibility-extra-extra-extra-large in landscape on the
   smallest supported iPhone, all of the heading and body can be read (by
