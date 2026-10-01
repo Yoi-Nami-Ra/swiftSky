@@ -10,8 +10,11 @@ description: |
   Apple's macOS 26 compatibility list first, as the quickstart advises.
 
   Done when the machine is available to run SKY-2's measurement session.
+
+  Dropped 2026-10-01: the Intel MacBook Pro baseline won't be used; macOS
+  baselines are measured on Apple silicon only.
 platform: macos
-status: ready
+status: dropped
 phase: MVP
 priority: high
 parent: null

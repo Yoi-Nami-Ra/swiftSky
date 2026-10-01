@@ -1,0 +1,38 @@
+id: 35
+title: "Draw a space background image"
+type: feature
+description: |
+  Rendering layer. Replace the plain black background with the space image
+  in design/backgrounds/space.jpg (1920×1080, opaque JPEG: stars, a blue
+  nebula and two small planets), drawn behind the ship (SKY-27) and the
+  debug overlay. This reverses SKY-23's "background: plain black" decision
+  and the "no starfield" note in its out-of-scope list.
+
+  Likely shape, following SKY-27: ship the image with the rendering layer
+  (byte-identical to the design file, checked by Scripts/verify.sh), load it
+  into an sRGB texture once at startup (a missing image is a renderer-init
+  failure), and draw it in place of — or over — the full-screen black quad.
+  No per-frame allocation (001 FR-020).
+
+  Open questions:
+  - Anchoring: fixed to the screen (simplest: the camera never moves), or
+    fixed to the world so it would scroll if the camera ever pans?
+  - Fit: the surface's aspect varies (resizable Mac window, iPad Split View,
+    portrait-shaped panes). Fill and crop (aspect-fill, centred), or tile?
+    At 1920×1080 a large Retina window will upscale it — is that acceptable,
+    or is a larger source needed?
+  - Contrast: dim it so the ship and the overlay text stay readable?
+  - Earlier "uniformly black" checks: hide the background with --no-ship /
+    a new Debug switch, or update them?
+
+  Done when the background shows behind the ship on both platforms, fills
+  every window shape without stretching, and the frame-time and allocation
+  checks stay within budget.
+platform: macos
+status: refine
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs:
+  - design/backgrounds/space.jpg
