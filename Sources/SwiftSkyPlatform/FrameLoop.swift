@@ -22,6 +22,10 @@ import SwiftSkyAllocationCounter
 /// frame boundary (FR-029, FR-031). It carries surface changes and, since 008, the player's move order
 /// requests, in the order they happened.
 ///
+/// Since 012, instrumented builds have a second, lock-free channel the other way: `stallProbe`, whose
+/// observers run on the main thread and whose figures this loop takes, through atomics, at each summary.
+/// It is installed in `start()` and removed in `stopAndDrain()`, both on the main thread.
+///
 /// `@unchecked Sendable` is a genuine opt-out of compiler checking, and worth being explicit about:
 /// FR-030 asks for compiler-enforced transfer safety, and it holds for the types that actually cross
 /// the boundary — `SurfaceEvent` and `RenderSurface` are value types the compiler verifies. It does not
@@ -49,6 +53,11 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
 
     private let renderer: Renderer
     private let layer: CAMetalLayer
+
+    #if SWIFTSKY_INSTRUMENTATION
+    /// The main thread's busy stretches (012). Sendable; the instrumentation holds the same instance.
+    private let stallProbe = MainThreadStallProbe()
+    #endif
 
     #if SWIFTSKY_INSTRUMENTATION
     /// `--debug-ship-spin` (007 FR-013): feed every tick a full counter-clockwise turn and no thrust, so
@@ -86,7 +95,11 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
         self.renderer = renderer
         self.layer = layer
         // Assume 60 Hz until the display tells us otherwise.
+        #if SWIFTSKY_INSTRUMENTATION
+        self.instrumentation = Instrumentation(budgetSeconds: 1.0 / 60.0, stallProbe: stallProbe)
+        #else
         self.instrumentation = Instrumentation(budgetSeconds: 1.0 / 60.0)
+        #endif
         super.init()
     }
 
@@ -106,6 +119,9 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     public func start() {
         guard thread == nil else { return }
         drained.withLock { $0 = false }
+        #if SWIFTSKY_INSTRUMENTATION
+        stallProbe.install()
+        #endif
 
         // A dedicated Thread rather than a DispatchQueue: `CAMetalDisplayLink` attaches to a RunLoop
         // (`add(to:forMode:)`) and a DispatchQueue has none. research.md R4 originally specified a
@@ -124,6 +140,9 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     /// presented.
     public func stopAndDrain() {
         guard let loopThread = thread else { return }
+        #if SWIFTSKY_INSTRUMENTATION
+        stallProbe.uninstall()
+        #endif
         loopThread.cancel()
 
         // Bounded wait. A loop that will not drain must not hang the app on exit.
