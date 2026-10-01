@@ -108,7 +108,9 @@ work (the thread is not in the run loop's wait), but a spin is unambiguous. It f
 **Decision**: the stretch tracker (R1, R3) and the packed figures (R4) are plain types compiled in every
 build, like `FrameAllocationCounts`, and tested headlessly in `SwiftSkyPlatformTests`: sequences of
 after/before-waiting with given timestamps; nesting; a before-waiting with no open stretch; the worst and
-the count; a take mid-stretch; a restart; an interval change between stretches; saturation. The observers
+the count; an interval change between stretches; saturation. The probe's `record`, `take` and
+`restart` are tested too, driven directly without installing the observers (a stretch recorded after a
+take lands in the next one; a restart discards and switches the interval). The observers
 themselves need a run loop and are covered by quickstart checks 1–3, as 011 covered its install.
 
 ## R11 — iOS

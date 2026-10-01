@@ -181,7 +181,8 @@ seconds, read the sanitizer output and the summaries, and compare with SC-003 an
 
 - **FR-007**: The probe MUST NOT allocate, lock, or block either thread. On the main thread its work per
   busy stretch MUST be bounded: reading the clock twice and updating a fixed number of values. On the
-  frame loop's thread it MUST add no work to a frame other than the one that writes the summary. Zero
+  frame loop's thread it MUST add no work to a frame other than the one that writes the summary and the
+  rare one that relearns the frame budget. Zero
   app-side allocations per frame MUST still hold, as measured by 011's counter (SC-006).
 - **FR-008**: The probe MUST be compiled under the same condition as the rest of the instrumentation
   only and MUST be absent from Release builds, confirmed by inspecting the built product as 001 SC-004a
