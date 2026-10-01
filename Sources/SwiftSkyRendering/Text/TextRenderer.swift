@@ -1,5 +1,4 @@
 import CoreText
-import Dispatch
 import Metal
 
 /// The GPU side of text: the atlas texture, the text pipeline, and a ring of per-frame instance
@@ -8,15 +7,20 @@ import Metal
 /// ## Why a ring of three buffers
 ///
 /// The CPU rewrites the text every frame while the GPU may still be reading the previous frames'
-/// instances. One buffer would race. Three buffers, handed out round-robin and guarded by a semaphore
-/// that each frame's command buffer signals on completion, make "never overwrite what the GPU is
-/// reading" the renderer's own invariant rather than a side effect of the layer's drawable count
-/// (research.md R5).
+/// instances. One buffer would race. Three buffers, handed out round-robin, each remembering the
+/// command buffer that last read it, make "never overwrite what the GPU is reading" the renderer's own
+/// invariant rather than a side effect of the layer's drawable count (research.md R5): a slot is free
+/// only once that command buffer has completed.
 ///
-/// The semaphore is only ever taken with a zero timeout. If no buffer is free the frame is skipped,
-/// exactly like a missing drawable (001 FR-027a) — the loop never blocks. With the layer's three
-/// drawables a free drawable already implies a free buffer, so this does not happen in practice; if it
-/// ever does, it shows up in the skipped-frame count rather than hiding.
+/// That is checked, never waited for. If the next buffer is still in use the frame is skipped, exactly
+/// like a missing drawable (001 FR-027a) — the loop never blocks. With the layer's three drawables a
+/// free drawable already implies a free buffer, so this does not happen in practice; if it ever does,
+/// it shows up in the skipped-frame count rather than hiding.
+///
+/// Why a status check and not a completion handler, as R5 first had it: any handler passed to
+/// `addCompletedHandler` from Swift is bridged into a new Objective-C block on every call, and
+/// `_Block_copy` moves that block to the heap — one allocation per frame with text, two when the handler
+/// is stored as a `@convention(block)` value. 011's draw-path allocation counter found both.
 final class TextRenderer {
     /// Mirrors `swiftsky::TextUniforms` in `Shaders.metal`.
     struct Uniforms {
@@ -32,13 +36,12 @@ final class TextRenderer {
     private let font: CTFont
     private let pipelineState: any MTLRenderPipelineState
     private let instanceBuffers: [any MTLBuffer]
-    private let inFlight: DispatchSemaphore
+
+    /// The command buffer that last read each slot's instances, or `nil` if none has. Assigned in place,
+    /// so recording one is a retain, not an allocation.
+    private var slotReaders: [(any MTLCommandBuffer)?]
     private var nextSlot = 0
 
-    /// Signals `inFlight` when a frame's command buffer completes. Created once and reused, so adding
-    /// it to each frame's command buffer creates no closure per frame (research.md R5 — confirmed or
-    /// refuted by quickstart check 15).
-    private let releaseSlot: MTLCommandBufferHandler
 
     private var atlas: (any MTLTexture)?
     private(set) var metrics: TextMetrics?
@@ -90,9 +93,7 @@ final class TextRenderer {
         }
         instanceBuffers = buffers
 
-        let semaphore = DispatchSemaphore(value: Self.ringSize)
-        inFlight = semaphore
-        releaseSlot = { _ in semaphore.signal() }
+        slotReaders = Array(repeating: nil, count: Self.ringSize)
     }
 
     /// Rasterises the glyphs at `scale` and uploads them, replacing any previous atlas. Called on the
@@ -133,23 +134,30 @@ final class TextRenderer {
     /// Takes an instance buffer for this frame, or `nil` if all three are still in use. Never blocks.
     ///
     /// Call only when there is text to draw: a frame with no text takes no slot, so text-free frames —
-    /// every Release frame among them — never touch the semaphore.
+    /// every Release frame among them — never touch the ring.
+    ///
+    /// Slots are used in order and command buffers complete in order, so only the next slot needs
+    /// checking.
     func acquireSlot() -> Int? {
-        guard inFlight.wait(timeout: .now()) == .success else { return nil }
+        if let reader = slotReaders[nextSlot] {
+            let status = reader.status
+            guard status == .completed || status == .error else { return nil }
+        }
         let slot = nextSlot
         nextSlot = (nextSlot + 1) % Self.ringSize
         return slot
     }
 
     /// Returns a slot that was acquired but never submitted — the frame failed before its command buffer
-    /// could be committed. Without this the slot would be lost for good.
+    /// could be created — so the next frame takes the same slot again rather than skipping over it.
     func releaseUnusedSlot() {
-        inFlight.signal()
+        nextSlot = (nextSlot + Self.ringSize - 1) % Self.ringSize
     }
 
     /// Copies `buffer`'s instances into `slot` and draws them. Allocates nothing.
     ///
-    /// The command buffer is given the slot's release handler here, so the caller must commit it.
+    /// The slot records `commandBuffer` as its reader here, so the caller must commit it: the slot is free
+    /// again once that command buffer completes.
     func encode(
         _ buffer: TextBuffer,
         slot: Int,
@@ -157,7 +165,7 @@ final class TextRenderer {
         encoder: any MTLRenderCommandEncoder,
         commandBuffer: any MTLCommandBuffer
     ) {
-        commandBuffer.addCompletedHandler(releaseSlot)
+        slotReaders[slot] = commandBuffer
 
         guard let atlas, let metrics, let source = buffer.instances.baseAddress else { return }
         let instanceBuffer = instanceBuffers[slot]
