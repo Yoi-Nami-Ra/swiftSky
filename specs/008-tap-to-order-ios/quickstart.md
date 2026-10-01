@@ -91,6 +91,9 @@ simulator ran in landscape, so the surface was 874 × 402 points.
 
 | 11 | iPad simulator | NOT RUN. Split View and Slide Over need multitasking controls the input tool cannot drive, and taps stopped reaching this iPad simulator (check 4). Every Split View shape is covered by C3 and C4 (320 × 1,194 narrow pane, 1,001 × 667) and by C6 (zero-area during a resize). Needs a manual pass on an iPad or the iPad simulator |
 | 13 | `./Scripts/verify.sh`, macOS host | PASS. The macOS app builds; `MoveOrderRequestTests` (12 tests) run on the Mac. Review (T015): `MoveOrderRequest.swift`, `SurfaceEvent.swift`, `FrameLoop.swift` and `Instrumentation.swift` contain no UIKit or `os(iOS)` code; the tap is the only iOS-only part, in `MetalSurfaceView.swift` |
+| 3 | `git diff main --stat -- Sources/SwiftSkySimulation Sources/SwiftSkyRendering` | PASS. Empty: the logic and rendering layers are unchanged (FR-009) |
+| 12 | iPhone 17 Pro simulator | NOT RUN. Profiling builds of `main` and of this branch were built for the same simulator, but the simulator became unresponsive under host load: `simctl install` hung for over 5 minutes, and the running Debug app's frame times rose from mean 0.2 ms / worst 0.9 ms to mean 2.86 ms / worst 68.6 ms with no code change, so no timing taken then would be comparable. Taken earlier, while the simulator was healthy, the Debug overlay and summaries during the tap runs showed `dropped=0 skipped=0`, mean 0.13–0.30 ms, worst 0.4–2.0 ms against a 16.67 ms budget. By construction, frames without a tap do the 007 work plus one enum comparison and one flag test (Debug only, R9). The formal before/after with Instruments Allocations still needs a run on a device or a quiet simulator |
+| 14 | Release build, iOS simulator SDK | PASS (binary). `strings` on the Release `swiftSky` binary finds none of `order view`, `order dropped`, `arrived world`, `no-camera`, `invalid-destination`; the Debug binary has them. The Release run-time log check was not run (simulator unresponsive, see check 12) |
 | 10 | — | NOT RUN. The iOS simulator has no VoiceOver. `.allowsDirectInteraction` is set (C15, code review); needs a device |
 
 **Check 4 log** (view points → world; arrival):
@@ -121,3 +124,8 @@ their edge, as SC-001 asks. No code change: an app cannot receive those touches.
 11:59:38.533 order view=(300, 102) world=(-137, 99)
 11:59:42.899 arrived world=(-136.957, 98.926)
 ```
+
+**Still open, for a manual pass on a device or a quiet simulator**: check 4 on the iPad, check 10
+(VoiceOver), check 11 (Split View, Slide Over, resize mid-flight), check 12 (formal before/after with
+Instruments Allocations) and the run-time half of check 14. The headless checks and the final
+`./Scripts/verify.sh` run (2026-10-01, `VERIFICATION PASSED`) are complete.
