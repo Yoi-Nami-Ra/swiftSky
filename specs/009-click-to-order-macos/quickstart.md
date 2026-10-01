@@ -57,7 +57,7 @@ All checks: 2026-10-01, Debug build, Xcode 27.0 (27A266a), macOS host.
 | 8 | Mac | NOT RUN, for the same reason as check 3. Every size class is covered by C2 (1,280 × 800, 800 × 1,280, 1,001 × 667, full-screen 1,512 × 982, each at 1× and 2×) and C3, which pass |
 | 2 | `git diff main --stat` on the shared files | PASS. Empty for the logic and rendering layers, `MoveOrderRequest.swift`, `SurfaceEvent.swift`, `FrameLoop.swift` and `Instrumentation.swift`; no accessibility line in `MetalSurfaceView.swift` changed |
 | 9 | Mac, 120 Hz, Profiling builds under `xctrace` Allocations, 30 s each | PARTIAL. Frame times: before (`main`) `frames=3953 skipped=0 dropped=0 mean=0.176ms worst=3.10ms`; after (this branch) `frames=3953 skipped=0 dropped=0 mean=0.178ms worst=3.98ms`, budget 8.33 ms; no difference beyond noise. The after run had no clicks (none could be posted, check 3). The allocation count per thread is not exportable from the trace without the Instruments UI; the recogniser runs only on the main thread when the mouse is used, and nothing is added to the frame loop (R6) |
-| 10 | Mac | NOT RUN (VoiceOver needs the UI). By review: `configureAccessibility()` is unchanged on macOS (check 2) |
+| 10 | Mac | PASS (2026-10-02, SKY-8). With VoiceOver on, focus inside the window reads "swiftSky game surface, image", and a click still orders the ship (each order logged with its `arrived world=…`) |
 
 **Still open, for a manual pass on the Mac**: checks 3–8 (clicks: send, not mirrored, replace,
 non-ordering and ordering clicks, window sizes and full screen), check 9's allocation count and its

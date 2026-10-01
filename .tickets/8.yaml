@@ -17,7 +17,7 @@ description: |
 
   Record results in the quickstart. The iOS run is SKY-7.
 platform: macos
-status: ready
+status: done
 phase: MVP
 priority: medium
 parent: null
