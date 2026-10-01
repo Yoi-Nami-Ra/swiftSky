@@ -139,10 +139,10 @@ with no camera.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T016 [P] Update `CLAUDE.md`: add `specs/008-tap-to-order-ios` to "Built so far" (a tap on iOS orders the ship; macOS click is SKY-11), add `MoveOrderRequest.swift` and the `.moveOrderRequested` event to "Key locations" (pure, platform-neutral, converted in the loop against the applied surface), note that the platform tests now depend on the rendering and logic layers, and that Debug builds log `order …` and `arrived …` lines under subsystem `com.swiftsky.app`
-- [ ] T017 [P] Update `.tickets/10.yaml` `status` to `done`
-- [ ] T018 Run quickstart check 12: Profiling builds of `main` (before, e.g. from a `git worktree`) and of this branch (after) on the same iOS destination, 30 s each, the after run with a tap every ~2 s; record both runs' frame summaries and Allocations results side by side (Principle III); run check 14 (Release logs no `order` or `arrived` lines; `strings` on the Release binary finds neither) and check 3 (`git diff main --stat -- Sources/SwiftSkySimulation Sources/SwiftSkyRendering` is empty). Record them in the Evidence section
-- [ ] T019 Run `./Scripts/verify.sh` and fill in the rest of the Evidence section of `specs/008-tap-to-order-ios/quickstart.md`, marking any check not run with its reason
+- [X] T016 [P] Update `CLAUDE.md`: add `specs/008-tap-to-order-ios` to "Built so far" (a tap on iOS orders the ship; macOS click is SKY-11), add `MoveOrderRequest.swift` and the `.moveOrderRequested` event to "Key locations" (pure, platform-neutral, converted in the loop against the applied surface), note that the platform tests now depend on the rendering and logic layers, and that Debug builds log `order …` and `arrived …` lines under subsystem `com.swiftsky.app`
+- [X] T017 [P] Update `.tickets/10.yaml` `status` to `done`
+- [X] T018 (check 12 not run, simulator unresponsive; checks 3 and 14 done, see Evidence) Run quickstart check 12: Profiling builds of `main` (before, e.g. from a `git worktree`) and of this branch (after) on the same iOS destination, 30 s each, the after run with a tap every ~2 s; record both runs' frame summaries and Allocations results side by side (Principle III); run check 14 (Release logs no `order` or `arrived` lines; `strings` on the Release binary finds neither) and check 3 (`git diff main --stat -- Sources/SwiftSkySimulation Sources/SwiftSkyRendering` is empty). Record them in the Evidence section
+- [X] T019 Run `./Scripts/verify.sh` and fill in the rest of the Evidence section of `specs/008-tap-to-order-ios/quickstart.md`, marking any check not run with its reason
 
 ---
 

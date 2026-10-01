@@ -17,7 +17,7 @@ description: |
   in iPad Split View sizes, and the screen → world conversion is unit-tested.
   The macOS counterpart is SKY-11.
 platform: ios
-status: ready
+status: done
 phase: MVP
 priority: high
 parent: 22

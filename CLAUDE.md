@@ -19,7 +19,9 @@ with the origin at the centre of the whole surface; nothing wired in yet) and
 `specs/006-ship-autopilot` (a move order and the autopilot that flies it — turn, burn, flip, brake,
 then keep station — in the logic layer; nothing issues orders yet) and
 `specs/007-ship-sprite-rendering` (the ship drawn from `ship.png` at its position and heading, over the
-black background and under the debug overlay; it sits still at the centre until orders exist). Layer libraries and
+black background and under the debug overlay) and
+`specs/008-tap-to-order-ios` (a tap on the iOS surface orders the ship to the point under the finger;
+the macOS click is SKY-11, which reuses the same order request). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
@@ -116,9 +118,16 @@ artifacts, keep them consistent with these templates.
   `Sources/SwiftSkyRendering/Resources/ship.png`, a byte-identical copy of `design/sprites/ship.png`,
   which is the source of truth: `verify.sh` fails if they differ, so copy the design file over it.
   A missing or unusable image is `RendererError.shipImageUnavailable` (`ship_image_unavailable`).
+- `Sources/SwiftSkyPlatform/MoveOrderRequest.swift` — "order the ship to the world point under this
+  view position": pure and platform-neutral, posted as `SurfaceEvent.moveOrderRequested` through the frame
+  loop's one event queue, and converted in the loop against the surface it has applied up to that event.
+  The iOS tap recogniser (one tap, one finger) and the VoiceOver `.allowsDirectInteraction` trait are in
+  `MetalSurfaceView.swift`. Debug and Profiling builds log `order view=… world=…` and `arrived world=…`
+  lines under subsystem `com.swiftsky.app` (category `frame`).
 - `Tests/SwiftSkySimulationTests/`, `Tests/SwiftSkyRenderingTests/`, `Tests/SwiftSkyPlatformTests/`
-  — headless Swift Testing suites. The platform tests cover pure measurement structs only.
-  They must never create a Metal device; `verify.sh` enforces this.
+  — headless Swift Testing suites. The platform tests cover pure structs only (measurement and the move
+  order request), and depend on the rendering and logic layers to name `RenderSurface`, `Vector2` and
+  `SimulationState`. They must never create a Metal device; `verify.sh` enforces this.
 - Debug launch arguments (Debug/Profiling builds only): the live debug overlay is shown by default,
   and `--no-debug-overlay` hides it. `--no-ship` stops the ship being drawn; together with
   `--no-debug-overlay` it leaves the uniformly black surface that 001's and 002's visible-output checks
