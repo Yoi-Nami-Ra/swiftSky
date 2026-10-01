@@ -25,11 +25,21 @@ public enum Simulation {
         guard ticks > 0 else { return state }
         var next = state
         for _ in 0..<ticks {
-            let input = next.autopilot.control(for: next.ship)
-            next.ship.step(input)
+            tick(&next.ship, &next.autopilot)
         }
         next.tickCount += UInt64(ticks)
         return next
+    }
+
+    /// One tick flown by the autopilot: the input it chooses for `ship`, then the ship stepped with it.
+    ///
+    /// The phase the autopilot records is evaluated from the ship at the start of the tick (006 research
+    /// R6). Shared by `advance(_:ticks:)` and the path prediction, so a predicted path is the real flight
+    /// by construction rather than by keeping two copies of these lines in step (010 FR-002, research R3).
+    @inline(__always)
+    static func tick(_ ship: inout Ship, _ autopilot: inout Autopilot) {
+        let input = autopilot.control(for: ship)
+        ship.step(input)
     }
 
     /// Advances `state` by `ticks` fixed timesteps, every one of them driven by `input`.
