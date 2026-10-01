@@ -94,11 +94,11 @@ checks 4, 6, 8, 9 and 10.
 
 ### Tests for User Story 2
 
-- [ ] T011 [US2] Add to `Tests/SwiftSkyPlatformTests/MoveOrderRequestTests.swift`: C8 (on a state with the ship flying towards A, after a few ticks of `Simulation.advance`, apply request B: the order is B's destination, and the state equals a copy on which `setOrder(to: B)` was called directly; applying A then B in one go leaves B, as two requests drained in one frame would); C9 (a request at the view position of the ship's own world point, at rest at the origin, orders it there, and after `Simulation.advance(_, ticks: 60)` the phase is `.arrived` and the position is unchanged within the arrival tolerance)
+- [X] T011 [US2] Add to `Tests/SwiftSkyPlatformTests/MoveOrderRequestTests.swift`: C8 (on a state with the ship flying towards A, after a few ticks of `Simulation.advance`, apply request B: the order is B's destination, and the state equals a copy on which `setOrder(to: B)` was called directly; applying A then B in one go leaves B, as two requests drained in one frame would); C9 (a request at the view position of the ship's own world point, at rest at the origin, orders it there, and after `Simulation.advance(_, ticks: 60)` the phase is `.arrived` and the position is unchanged within the arrival tolerance)
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] No code: confirm by review that `FrameLoop.applyPendingEvents()` applies every drained event in order (the loop over `events`), so a burst of taps ends with the last (US2-2, C12). Run quickstart check 5 on the iPhone simulator and record it in the Evidence section of `specs/008-tap-to-order-ios/quickstart.md`
+- [X] T012 [US2] No code: confirm by review that `FrameLoop.applyPendingEvents()` applies every drained event in order (the loop over `events`), so a burst of taps ends with the last (US2-2, C12). Run quickstart check 5 on the iPhone simulator and record it in the Evidence section of `specs/008-tap-to-order-ios/quickstart.md`
 
 **Checkpoint**: Re-ordering mid-flight works and is tested.
 

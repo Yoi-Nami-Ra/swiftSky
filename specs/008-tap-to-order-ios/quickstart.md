@@ -83,6 +83,7 @@ simulator ran in landscape, so the surface was 874 × 402 points.
 | 2 | `./Scripts/verify.sh` | PASS. `VERIFICATION PASSED`, both app targets built, no warnings |
 | 4 | iPad Pro 11-inch (M5) simulator, portrait 834 × 1,210 pt | PARTIAL. The one tap the simulator delivered was handled correctly: `order view=(600, 300) world=(183, 305)`, `arrived world=(182.959, 304.927)`. The input tool then stopped delivering taps on this freshly created iPad, even on the Home Screen (no app launched from the Dock), while the Home button worked. That is a simulator tooling fault, not this feature. The nine-point run on the iPad is left for a manual pass |
 | 4 | iPhone 17 Pro simulator | PASS, with one deviation at the sensor housing, below. All nine points, each `order` then `arrived`, within 0.12 units (log excerpt below) |
+| 5 | iPhone 17 Pro simulator | PARTIAL. Three runs of a new order replacing the current one: each time the ship flew only to the last tap, and only that one `arrived` line appeared (log below). The simulator's input tool delivered the taps of each run in one burst (same or 40–50 ms apart), so each burst was drained in one frame, which is US2-2. A tap seconds into a flight could not be produced with this tool; that case is C8 (`replacesMidFlight`) |
 | 6 | iPhone 17 Pro simulator | PASS. Each `order` line is written in the frame boundary that applies it, and the ship was seen turning towards the tap in the next screenshot. The exact latency was not measured; that the same frame's advance flies the order is C10/C13 |
 | 8 | iPhone 17 Pro simulator | PASS. Taps 20 pt from the corners beside the Dynamic Island, and at the bottom edge above the home indicator, ordered the ship there |
 | 9 | iPhone 17 Pro simulator | PASS for drag, 1.5 s long press and two-finger tap: no `order` line after 11:24:25. The home gesture was not reproducible with the simulator's input tool (an edge swipe left the app in front and issued no order); not run on a device |
@@ -108,3 +109,12 @@ Taps 20 pt and 45 pt from that edge at its midpoint never reached the app: no `o
 other touch is lost. The system owns the touches over and around the sensor housing, which FR-003
 leaves alone. At 70 pt the tap ordered the ship normally. The other eight points are within 20 pt of
 their edge, as SC-001 asks. No code change: an app cannot receive those touches.
+
+**Check 5 log** (third run: three taps in one burst):
+
+```text
+11:59:38.533 order view=(854, 382) world=(417, -181)
+11:59:38.533 order view=(20, 20)   world=(-417, 181)
+11:59:38.533 order view=(300, 102) world=(-137, 99)
+11:59:42.899 arrived world=(-136.957, 98.926)
+```

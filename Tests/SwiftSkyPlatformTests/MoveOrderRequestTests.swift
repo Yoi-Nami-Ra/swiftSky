@@ -97,4 +97,43 @@ struct MoveOrderRequestTests {
         #expect(Simulation.advance(viaRequest, ticks: 600) == Simulation.advance(direct, ticks: 600))
     }
 
+    // MARK: - User Story 2
+
+    @Test("A request mid-flight replaces the order whole, exactly as setOrder(to:) (C8)")
+    func replacesMidFlight() throws {
+        let surface = surface(widthPoints: 393, heightPoints: 852, scale: 3)
+        var viaRequest = flyingState()
+        var direct = viaRequest
+        let outcome = request(300, 800).apply(to: &viaRequest, on: surface)
+        let b = try #require(destination(outcome))
+        direct.setOrder(to: b)
+        #expect(viaRequest.autopilot.order?.destination == b)
+        #expect(viaRequest == direct)
+    }
+
+    @Test("Of two requests drained in one frame, the last is the order (C8)")
+    func lastOfTwoWins() {
+        let surface = surface(widthPoints: 393, heightPoints: 852, scale: 3)
+        var both = flyingState()
+        var onlyB = both
+        _ = request(10, 10).apply(to: &both, on: surface)
+        _ = request(380, 840).apply(to: &both, on: surface)
+        _ = request(380, 840).apply(to: &onlyB, on: surface)
+        #expect(both == onlyB)
+        #expect(both.autopilot.order?.destination == Vector2(x: 183.5, y: -414))
+    }
+
+    @Test("A request at the ship's own position orders it there and it keeps station (C9)")
+    func orderHere() throws {
+        let surface = surface(widthPoints: 393, heightPoints: 852, scale: 3)
+        let camera = try #require(Camera(surface: surface))
+        var state = SimulationState()
+        let here = camera.view(fromWorld: state.ship.position)
+        let outcome = MoveOrderRequest(viewPoint: here).apply(to: &state, on: surface)
+        #expect(outcome == .ordered(destination: .zero))
+        let later = Simulation.advance(state, ticks: 60)
+        #expect(later.autopilot.phase == .arrived)
+        #expect(near(later.ship.position, .zero, within: ArrivalTolerances.default.position))
+    }
+
 }
