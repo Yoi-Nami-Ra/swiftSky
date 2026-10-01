@@ -236,7 +236,8 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
                 #endif
             case .moveOrderRequested(let request):
                 let outcome = request.apply(to: &state, on: surface)
-                instrumentation.recordOrder(outcome, viewPoint: request.viewPoint)
+                // The order's planned path rides along for the Debug log line (010 FR-014).
+                instrumentation.recordOrder(outcome, viewPoint: request.viewPoint, path: state.plannedPath)
                 #if SWIFTSKY_INSTRUMENTATION
                 if case .ordered = outcome { arrivalLogged = false }
                 #endif
