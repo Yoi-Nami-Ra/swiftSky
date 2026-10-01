@@ -15,7 +15,8 @@ import SwiftSkySimulation
 /// Every `private var` below is touched **only** on `thread`'s run loop, from
 /// `metalDisplayLink(_:needsUpdate:)` and the helpers it calls. Nothing else may read or write them.
 /// The one channel in from the main thread is `pendingEvents`, which is mutex-guarded and drained at a
-/// frame boundary (FR-029, FR-031).
+/// frame boundary (FR-029, FR-031). It carries surface changes and, since 008, the player's move order
+/// requests, in the order they happened.
 ///
 /// `@unchecked Sendable` is a genuine opt-out of compiler checking, and worth being explicit about:
 /// FR-030 asks for compiler-enforced transfer safety, and it holds for the types that actually cross
@@ -197,6 +198,10 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     /// Applies queued events. Runs at a frame boundary only, which is what makes FR-031 hold rather
     /// than merely being intended.
     ///
+    /// Events apply in queue order, so a move order request is converted against the surface as it
+    /// stands after every earlier event in the same drain, and of several requests the last one is the
+    /// order flown (008 FR-005, FR-006, contracts C12).
+    ///
     /// Allocates nothing when the queue is empty, which is the common case.
     private func applyPendingEvents() {
         let events = pendingEvents.withLock { queue -> [SurfaceEvent] in
@@ -222,6 +227,8 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
                 // Frames from before the pause are not the last second's (003 FR-008).
                 if isVisible { instrumentation.restartOverlayWindow() }
                 #endif
+            case .moveOrderRequested(let request):
+                _ = request.apply(to: &state, on: surface)
             case .willTerminate:
                 // Handled on the main thread by `post`, which routes it to `stopAndDrain`.
                 break
@@ -237,7 +244,8 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
     /// here: events, renderability, one clock read, the debug overlay's snapshot (003), simulation,
     /// draw, instrumentation.
     public func metalDisplayLink(_ link: CAMetalDisplayLink, needsUpdate update: CAMetalDisplayLink.Update) {
-        // 1. Events, at the frame boundary and nowhere else.
+        // 1. Events, at the frame boundary and nowhere else. A move order applied here is flown by this
+        //    frame's step-4 advance (008 FR-005, SC-005).
         applyPendingEvents()
 
         // 2. Nothing to draw into.

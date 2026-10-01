@@ -1,6 +1,10 @@
 import SwiftSkyRendering
 
-/// Something the frame loop must react to, originating on the main thread.
+/// Something the frame loop must react to, originating on the main thread: a change to the surface,
+/// or the player's input (008).
+///
+/// Surface changes and input travel through this one channel, so the loop applies them in the order
+/// they happened — a tap posted after a resize is read against the new size (008 FR-005, research R1).
 ///
 /// The main thread never touches the loop's state directly. It posts one of these and returns
 /// immediately, so UI responsiveness is never coupled to the frame budget (FR-029). The loop applies
@@ -21,6 +25,14 @@ public enum SurfaceEvent: Sendable, Equatable {
     /// Content became visible or stopped being visible — backgrounded, minimised, occluded, or the
     /// scene disconnected. Drives loop start/stop (FR-008, FR-021).
     case visibilityChanged(isVisible: Bool)
+
+    /// The player asked for the ship to fly to a point on the surface: a tap on iOS (008), a click on
+    /// macOS (SKY-11).
+    ///
+    /// Carried as a view position and converted in the loop, against the surface as it stands after
+    /// every earlier event in the queue, so it is never read against stale geometry (008 FR-004 to
+    /// FR-006, research R2).
+    case moveOrderRequested(MoveOrderRequest)
 
     /// The app is about to terminate. The only case the main thread waits on, and it waits for the
     /// loop to drain rather than for a frame to be presented (FR-032).
