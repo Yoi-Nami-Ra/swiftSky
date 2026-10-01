@@ -46,3 +46,10 @@ The same `order …` and `arrived …` lines as 008.
 
 Filled in by `/speckit-implement`: for each check, the Mac, the date and the outcome, with log excerpts
 where they apply. A check that could not be run is listed as not run, with the reason.
+
+All checks: 2026-10-01, Debug build, Xcode 27.0 (27A266a), macOS host.
+
+| # | Where | Outcome |
+|---|-------|---------|
+| 1 | `./Scripts/verify.sh` | PASS. `ClickPositionTests` C1, C4, C5 green; 008's suites still pass |
+| 3, 4, 6, 7 | Mac | NOT RUN. Clicks could not be produced: synthetic mouse events posted through CGEvent were dropped, because the session has neither Accessibility nor event-posting access (`AXIsProcessTrusted` and `CGPreflightPostEventAccess` both false), and granting them is the user's decision. The app itself ran normally: a 1,280 × 720 window at 120 Hz, `frames=7074 skipped=0 dropped=1 mean=0.301ms`. Needs a manual pass |
