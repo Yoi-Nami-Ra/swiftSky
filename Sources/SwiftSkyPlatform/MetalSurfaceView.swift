@@ -1,5 +1,6 @@
 import QuartzCore
 import SwiftSkyRendering
+import SwiftSkySimulation
 
 #if os(macOS)
 import AppKit
@@ -19,8 +20,9 @@ typealias PlatformView = UIView
 /// owns the drawable lifecycle, which fights FR-028's off-main loop and FR-027a's skip-on-unavailable
 /// behaviour (research.md R5, R6).
 final class MetalSurfaceView: PlatformView {
-    /// Called whenever the drawable's size or scale changes. The receiver marshals it to the frame
-    /// loop's isolation domain; this view never touches loop state itself (FR-029).
+    /// Called whenever the drawable's size or scale changes, and on iOS whenever the player taps the
+    /// surface (008). The receiver marshals it to the frame loop's isolation domain; this view never
+    /// touches loop state itself (FR-029).
     var onSurfaceChange: ((SurfaceEvent) -> Void)?
 
     let metalLayer = CAMetalLayer()
@@ -59,6 +61,7 @@ final class MetalSurfaceView: PlatformView {
 
         #if os(iOS)
         registerForScaleChanges()
+        registerForTaps()
         #endif
     }
 
@@ -73,7 +76,9 @@ final class MetalSurfaceView: PlatformView {
         setAccessibilityLabel("swiftSky game surface")
         #else
         isAccessibilityElement = true
-        accessibilityTraits = .image
+        // Direct interaction: with VoiceOver on, a tap on the surface reaches the game and orders the
+        // ship, rather than only selecting the element (008 FR-014, research R5).
+        accessibilityTraits = [.image, .allowsDirectInteraction]
         accessibilityLabel = "swiftSky game surface"
         #endif
     }
@@ -251,6 +256,32 @@ final class MetalSurfaceView: PlatformView {
         registerForTraitChanges([UITraitDisplayScale.self]) { (view: MetalSurfaceView, _) in
             view.surfaceGeometryChanged(scaleChanged: true)
         }
+    }
+
+    // MARK: - Taps (008)
+
+    /// A tap anywhere on the surface orders the ship there (008 FR-001, FR-002, research R4).
+    ///
+    /// The system recogniser is the platform's definition of a tap — movement and duration limits,
+    /// failure on a second finger — and it leaves the system's own edge gestures alone (FR-003). It does
+    /// not touch layout, the scale registration or visibility, so the surface's reporting is unchanged.
+    private func registerForTaps() {
+        let recognizer = UITapGestureRecognizer(target: self, action: #selector(tapped(_:)))
+        recognizer.numberOfTapsRequired = 1
+        recognizer.numberOfTouchesRequired = 1
+        addGestureRecognizer(recognizer)
+    }
+
+    /// Posts the tap and returns; the main thread never waits for a frame (008 FR-004).
+    ///
+    /// `location(in: self)` is in this view's points from its top-left corner, +y down — the camera's
+    /// view space (005 FR-004). The view fills the window edge to edge, so the whole surface is
+    /// tappable, including outside the safe area (008 FR-002). The loop converts the position against
+    /// the surface it has applied (research R2).
+    @objc private func tapped(_ recognizer: UITapGestureRecognizer) {
+        let location = recognizer.location(in: self)
+        let request = MoveOrderRequest(viewPoint: Vector2(x: Double(location.x), y: Double(location.y)))
+        onSurfaceChange?(.moveOrderRequested(request))
     }
 
     #endif
