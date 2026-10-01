@@ -12,8 +12,11 @@ description: |
   are not the baseline — research R2 fixed the baseline as an Intel Mac, and an
   Apple-silicon number would be a different machine's answer under the
   baseline's label. The iOS half is SKY-1.
+
+  Dropped 2026-10-01: the Intel MacBook Pro baseline won't be used; macOS
+  baselines are measured on Apple silicon only.
 platform: macos
-status: ready
+status: dropped
 phase: MVP
 priority: high
 parent: null
