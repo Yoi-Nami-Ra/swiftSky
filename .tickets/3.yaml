@@ -11,7 +11,7 @@ description: |
   Done when the check is recorded as PASS (or a found allocation is fixed) in
   the quickstart. The macOS run is SKY-4.
 platform: ios
-status: ready
+status: in-progress
 phase: MVP
 priority: medium
 parent: null
