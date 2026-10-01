@@ -105,10 +105,10 @@ No setup: the platform test target already depends on the rendering and logic la
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T008 [P] Update `CLAUDE.md`: add `specs/009-click-to-order-macos` to "Built so far" (a click on macOS orders the ship, through 008's request), and to "Key locations" `ClickPosition.swift` (the bottom-left → top-left flip, pure) and the macOS click recogniser in `MetalSurfaceView.swift` (primary button, Control-click ignored, `acceptsFirstMouse` false)
-- [ ] T009 [P] Update `.tickets/11.yaml` `status` to `done`
-- [ ] T010 Run quickstart check 2 (shared code untouched), check 9 (Profiling builds of `main` and this branch on the same Mac, window frontmost, 30 s each, summaries and Allocations side by side, Principle III) and check 10 (VoiceOver description unchanged); record them in the Evidence section
-- [ ] T011 Run `./Scripts/verify.sh` and fill in the rest of the Evidence section of `specs/009-click-to-order-macos/quickstart.md`, marking any check not run with its reason
+- [X] T008 [P] Update `CLAUDE.md`: add `specs/009-click-to-order-macos` to "Built so far" (a click on macOS orders the ship, through 008's request), and to "Key locations" `ClickPosition.swift` (the bottom-left → top-left flip, pure) and the macOS click recogniser in `MetalSurfaceView.swift` (primary button, Control-click ignored, `acceptsFirstMouse` false)
+- [X] T009 [P] Update `.tickets/11.yaml` `status` to `done`
+- [X] T010 (check 9 partial, check 10 not run; see Evidence) Run quickstart check 2 (shared code untouched), check 9 (Profiling builds of `main` and this branch on the same Mac, window frontmost, 30 s each, summaries and Allocations side by side, Principle III) and check 10 (VoiceOver description unchanged); record them in the Evidence section
+- [X] T011 Run `./Scripts/verify.sh` and fill in the rest of the Evidence section of `specs/009-click-to-order-macos/quickstart.md`, marking any check not run with its reason
 
 ---
 
