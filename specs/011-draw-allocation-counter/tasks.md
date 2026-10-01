@@ -105,9 +105,9 @@ in `Sources/SwiftSkyRendering/Text/TextRenderer.swift` — a rendering-layer cha
 
 **Independent Test**: check 9 — follow "The method" for macOS without other guidance.
 
-- [ ] T014 [US3] Review `specs/011-draw-allocation-counter/quickstart.md` "The method" against what T008–T012 actually did (exact build commands, the simulator and Mac log commands, the time window, the PASS rule, what to record) and correct any step that differed; add the exact `xcodebuild` and `simctl` commands used. Depends on T012
-- [ ] T015 [P] [US3] Add a one-line pointer "Method: `specs/011-draw-allocation-counter/quickstart.md`, The method (Debug builds; Profiling carries no instrumentation, 011 R1)" beside each check that cites "the method of SKY-3" — 002 #15, 003 #13, 004 #8, 006 #11, 008 #12, 010 #10 — in their quickstarts' results notes, without changing their status (they stay "Not run" until their own runs). Depends on T014
-- [ ] T016 [US3] Run check 9: read "The method" as a SKY-4 reader and confirm every step is executable on macOS without Instruments; record the answer in quickstart.md's Results. Depends on T014
+- [X] T014 [US3] Review `specs/011-draw-allocation-counter/quickstart.md` "The method" against what T008–T012 actually did (exact build commands, the simulator and Mac log commands, the time window, the PASS rule, what to record) and correct any step that differed; add the exact `xcodebuild` and `simctl` commands used. Depends on T012
+- [X] T015 [P] [US3] Add a one-line pointer "Method: `specs/011-draw-allocation-counter/quickstart.md`, The method (Debug builds; Profiling carries no instrumentation, 011 R1)" beside each check that cites "the method of SKY-3" — 002 #15, 003 #13, 004 #8, 006 #11, 008 #12, 010 #10 — in their quickstarts' results notes, without changing their status (they stay "Not run" until their own runs). Depends on T014
+- [X] T016 [US3] Run check 9: read "The method" as a SKY-4 reader and confirm every step is executable on macOS without Instruments; record the answer in quickstart.md's Results. Depends on T014
 
 **Checkpoint**: US3 complete.
 
