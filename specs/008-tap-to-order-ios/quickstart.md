@@ -90,6 +90,7 @@ simulator ran in landscape, so the surface was 874 × 402 points.
 | 9 | iPhone 17 Pro simulator | PASS for drag, 1.5 s long press and two-finger tap: no `order` line after 11:24:25. The home gesture was not reproducible with the simulator's input tool (an edge swipe left the app in front and issued no order); not run on a device |
 
 | 11 | iPad simulator | NOT RUN. Split View and Slide Over need multitasking controls the input tool cannot drive, and taps stopped reaching this iPad simulator (check 4). Every Split View shape is covered by C3 and C4 (320 × 1,194 narrow pane, 1,001 × 667) and by C6 (zero-area during a resize). Needs a manual pass on an iPad or the iPad simulator |
+| 13 | `./Scripts/verify.sh`, macOS host | PASS. The macOS app builds; `MoveOrderRequestTests` (12 tests) run on the Mac. Review (T015): `MoveOrderRequest.swift`, `SurfaceEvent.swift`, `FrameLoop.swift` and `Instrumentation.swift` contain no UIKit or `os(iOS)` code; the tap is the only iOS-only part, in `MetalSurfaceView.swift` |
 | 10 | — | NOT RUN. The iOS simulator has no VoiceOver. `.allowsDirectInteraction` is set (C15, code review); needs a device |
 
 **Check 4 log** (view points → world; arrival):

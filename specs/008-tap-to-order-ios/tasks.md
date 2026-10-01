@@ -131,7 +131,7 @@ with no camera.
 
 ### Implementation for User Story 4
 
-- [ ] T015 [US4] Review `Sources/SwiftSkyPlatform/MoveOrderRequest.swift`, `SurfaceEvent.swift` and `FrameLoop.swift` for iOS-only code: there must be none outside `MetalSurfaceView.swift`'s `#if os(iOS)` blocks (FR-010, C16). Add one sentence to `MoveOrderRequest`'s doc comment telling SKY-11 what is left to do (post `.moveOrderRequested` from a click's location in the view's points, flipped from AppKit's bottom-left origin unless the view is flipped). Run quickstart check 13 (`./Scripts/verify.sh` builds the macOS app and runs `MoveOrderRequestTests` on the Mac host) and record it in the Evidence section of `specs/008-tap-to-order-ios/quickstart.md`
+- [X] T015 [US4] Review `Sources/SwiftSkyPlatform/MoveOrderRequest.swift`, `SurfaceEvent.swift` and `FrameLoop.swift` for iOS-only code: there must be none outside `MetalSurfaceView.swift`'s `#if os(iOS)` blocks (FR-010, C16). Add one sentence to `MoveOrderRequest`'s doc comment telling SKY-11 what is left to do (post `.moveOrderRequested` from a click's location in the view's points, flipped from AppKit's bottom-left origin unless the view is flipped). Run quickstart check 13 (`./Scripts/verify.sh` builds the macOS app and runs `MoveOrderRequestTests` on the Mac host) and record it in the Evidence section of `specs/008-tap-to-order-ios/quickstart.md`
 
 **Checkpoint**: SKY-11 can start from a posted event.
 
