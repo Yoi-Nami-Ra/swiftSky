@@ -45,6 +45,7 @@ Owns the cross-thread state and the observers.
 |-----------|--------|--------|
 | `install()` | main | Adds both observers to the main run loop's common modes (R2). Idempotent |
 | `uninstall()` | main | Removes them |
+| `record(stretchNanoseconds:)` | main (tests: any) | Folds one ended stretch into `figures` against the current interval (CAS loop). Called by the before-waiting observer; internal, so tests drive it without observers |
 | `take() -> MainThreadStallFigures` | loop | `exchange(0)`: the interval's figures; the next interval starts empty |
 | `restart(intervalSeconds:)` | loop | Publishes the interval, then `take()` and discard (R6) |
 

@@ -41,7 +41,10 @@ stall shows up.
   backwards yields 0. For `MainThreadStallFigures` — packing round-trips; `recording` keeps the maximum in
   microseconds; a stretch equal to the interval is not over, one nanosecond longer is; counts accumulate;
   an interval change between two stretches judges each against its own interval; worst and count saturate
-  at 2⁴⁰−1 µs and 2²⁴−1; `.zero` is all zeros (data-model.md). These fail until T003
+  at 2⁴⁰−1 µs and 2²⁴−1; `.zero` is all zeros (data-model.md). For `MainThreadStallProbe`, driven through `record(stretchNanoseconds:)`
+  without `install()`: `take()` returns what was recorded and leaves zero; a stretch recorded after a
+  `take()` appears only in the next one (FR-005); `restart(intervalSeconds:)` discards the figures and
+  judges later stretches against the new interval (FR-006). These fail until T003 and T004
 
 ### Implementation for User Story 1
 
@@ -57,7 +60,8 @@ stall shows up.
   `kCFRunLoopBeforeWaiting` at order `Int.max` closes it and folds it into `figures` with a
   compare-and-exchange loop using the current interval (research R1, R2, R4). Clock:
   `clock_gettime_nsec_np(CLOCK_UPTIME_RAW)`. `install()` / `uninstall()` (main thread, idempotent), `take()`
-  (`exchange(0)`), `restart(intervalSeconds:)` (store interval, then `take()`) per data-model.md. No
+  (`exchange(0)`), `restart(intervalSeconds:)` (store interval, then `take()`) and the internal
+  `record(stretchNanoseconds:)` the observer calls, per data-model.md; make T002's probe tests pass. No
   allocation after `install()`
 - [ ] T005 [US1] Change `Sources/SwiftSkyPlatform/Instrumentation.swift`: in the instrumented branch, hold a
   `let stallProbe: MainThreadStallProbe` (passed to `init`), call `stallProbe.restart(intervalSeconds:)`
