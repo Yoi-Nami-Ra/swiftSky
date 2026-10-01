@@ -117,3 +117,32 @@ themselves need a run loop and are covered by quickstart checks 1–3, as 011 co
 
 The observers and the tracker are platform-neutral, so the probe runs on iOS too with no separate path
 (FR-009's MAY). The live-resize markers are macOS only: iOS has no live resize.
+
+## R12 — Found by the check: a race in 011's allocation hook
+
+The first Thread Sanitizer run reported one data race before any drag: `skyHook` (any allocating thread)
+read the plain global `previousLogger` that `sky_alloc_counter_install` writes on the frame loop's thread.
+Nothing ordered the write before the reads. `previousLogger` is now `_Atomic`, stored with release before
+the hook is published and loaded with acquire in the hook. Re-run: 0 races. Under the sanitizer the
+counter reports `allocation counter unavailable` (the sanitizer replaces `malloc`, so the hook never
+fires), as designed.
+
+## R13 — Found by the check: a paused frame loop never resumed
+
+`visibilityChanged(false)` pauses the display link, but events were applied only inside a frame, so the
+`visibilityChanged(true)` that should resume it was never applied: the loop stayed paused for good after
+the window was hidden or occluded once. The sanitizer's slow launch hit it every time; it also explains
+earlier runs that wrote one summary and stopped. The loop thread now applies queued events on each 0.1 s
+run-loop turn while the link is paused; no frame is in flight then, so the turn is a frame boundary (001
+FR-031). Unpatched `main` shows the defect: it wrote no summary in a 30 s run.
+
+## R14 — Found by the check: the drawable resize on the main thread
+
+The optimised build's first drag overran the interval in 6 of 17 summaries. A sample put ~205 ms of the
+main thread's drag work in `MetalSurfaceView.setFrameSize` → `CAMetalLayer.setDrawableSize`, which tears
+down the old drawables' textures and IOSurfaces synchronously. The frame loop now sets the drawable size
+when it applies the `resized` or `backingScaleChanged` event. The main thread still sets the first size,
+because the display link delivers no frame until the layer has one. The frame that applies a resize draws
+into the drawable it was handed at the old size; the next has the new size. Nothing looked wrong on screen.
+After: 0 of 15 mid-drag summaries over the interval. What remains is one system-side stretch at the end of
+live resize (SKY-37).

@@ -145,7 +145,12 @@ final class MetalSurfaceView: PlatformView {
         metalLayer.frame = bounds
         #endif
 
-        if surface.isRenderable {
+        // Later sizes are set by the frame loop when it applies this event, not here: setting the size
+        // frees the old drawables' textures synchronously, and on the main thread that was the app's
+        // share of the stalls 012's continuous-resize check measured (012 T016). The first size is set
+        // here, because the display link delivers no frame — so the loop applies no event — until the
+        // layer has one.
+        if surface.isRenderable, metalLayer.drawableSize.width == 0 || metalLayer.drawableSize.height == 0 {
             metalLayer.drawableSize = CGSize(
                 width: Double(surface.widthPixels),
                 height: Double(surface.heightPixels)

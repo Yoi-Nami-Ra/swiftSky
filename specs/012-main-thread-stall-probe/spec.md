@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-01
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "SKY-5 — Verify continuous resize under Thread Sanitizer" (`.tickets/5.yaml`).
 Quickstart check 29 (SC-015, SC-016) of `specs/001-metal-app-shell` is only partial: a 30 s Thread

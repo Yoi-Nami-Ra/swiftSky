@@ -281,8 +281,10 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
             switch event {
             case .resized(let new):
                 surface = new
+                resizeDrawables(to: new)
             case .backingScaleChanged(let new):
                 surface = new
+                resizeDrawables(to: new)
                 // A backing-property change is the signal that the surface may have moved to another
                 // display (FR-031), which may refresh at a different rate. Relearn it rather than
                 // keeping a budget belonging to the display we left.
@@ -306,6 +308,15 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
             }
         }
         return true
+    }
+
+    /// Sizes the layer's drawables to the surface, on the loop thread (012 T016). Releasing the old
+    /// drawables is synchronous GPU-resource teardown; done here it costs the loop an event frame, where on
+    /// the main thread it stalled live resize. The frame that applies the event still draws into the
+    /// drawable the display link handed it at the old size; the next one gets the new size.
+    private func resizeDrawables(to new: RenderSurface) {
+        guard new.isRenderable else { return }
+        layer.drawableSize = CGSize(width: Double(new.widthPixels), height: Double(new.heightPixels))
     }
 
     /// How far a frame got: what step 6 records for it.

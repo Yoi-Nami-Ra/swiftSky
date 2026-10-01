@@ -24,7 +24,8 @@ black background and under the debug overlay) and
 and `specs/009-click-to-order-macos` (a primary click does the same on macOS, through the same order
 request) and `specs/010-ship-path-prediction` (giving an order also predicts its planned path in the
 logic layer; nothing draws it yet) and `specs/011-draw-allocation-counter` (001 FR-021d's draw-path
-allocation counts in the frame summary; check 25, zero allocations per frame, PASS on iOS and, by SKY-4, on macOS). Layer libraries and
+allocation counts in the frame summary; check 25, zero allocations per frame, PASS on iOS and, by SKY-4, on macOS) and `specs/012-main-thread-stall-probe` (the main thread's worst busy
+stretch in the frame summary; check 29's continuous resize: no races, no stall mid-drag). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
@@ -155,6 +156,19 @@ artifacts, keep them consistent with these templates.
   the simulator `log show` returns nothing; use `xcrun simctl spawn <udid> log stream`. Inside a counted
   stretch in tests, loop with `while`, not `for _ in 0..<n`. The procedure is "The method" in
   `specs/011-draw-allocation-counter/quickstart.md`.
+- `Sources/SwiftSkyPlatform/MainThreadStallProbe.swift` and `MainThreadStallFigures.swift` (012) — two
+  run-loop observers on the main run loop, in the common modes so live resize and menus count, measure each
+  busy stretch between two waits; one packed `Atomic<UInt64>` hands the worst (µs) and the count over the
+  frame interval to the loop, which logs `mainworst=…ms mainover=…` at the end of every summary. The frame
+  figures cannot show this: they are measured on the loop thread. macOS logs `live resize began` / `live
+  resize ended` around a drag; the summaries after the first, up to the first after the second, cover it.
+  `--debug-main-stall` spins the main thread for 50 ms once, 5 s after launch. The drag procedure (by
+  hand: Accessibility is not granted) is `specs/012-main-thread-stall-probe/quickstart.md`. Launch apps
+  with `open -n <app>` so the window comes to the front; a covered window pauses the loop.
+- The frame loop sets the layer's `drawableSize` when it applies a resize (012 R14); only the first size
+  is set on the main thread. While the display link is paused, the loop thread applies queued events on
+  each 0.1 s run-loop turn, so a hidden-then-shown window resumes (012 R13). In the allocation counter,
+  `previousLogger` is atomic (012 R12).
 - The text renderer's instance ring has no completion handler: a handler passed from Swift is re-bridged
   into a heap block on every call. Each slot remembers its last command buffer and is reused once that
   buffer's `status` is `.completed` or `.error` (011 R13).
@@ -166,6 +180,7 @@ artifacts, keep them consistent with these templates.
 - Debug launch arguments (Debug/Profiling builds only): the live debug overlay is shown by default,
   and `--no-debug-overlay` hides it. `--no-ship` stops the ship being drawn; together with
   `--no-debug-overlay` it leaves the uniformly black surface that 001's and 002's visible-output checks
-  expect. `--debug-ship-spin` turns the ship counter-clockwise in place at its top rate. `--debug-text` draws the test string with live FPS, and
+  expect. `--debug-ship-spin` turns the ship counter-clockwise in place at its top rate. `--debug-main-stall`
+  stalls the main thread once (012). `--debug-text` draws the test string with live FPS, and
   `--debug-text-fill` fills the 1,024-character text capacity. Either one replaces the overlay.
 - `.claude/skills/speckit-*/` — the skill definitions backing each `/speckit.*` command.
