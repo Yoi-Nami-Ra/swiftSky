@@ -60,6 +60,84 @@ struct PlannedPathTests {
         #expect(bits(path[0]) == bits(state.ship.position))
         expectPathIsTheRealFlight(state, "already there")
     }
+
+    // MARK: - US2: long and endless flights
+
+    @Test("Every flight length from 0 to 3,700 ticks fits in 256 evenly spaced points, ending on the last (SC-003)")
+    func thinningAtEveryLength() {
+        // Each synthetic position encodes its own tick, so a point's value says which tick it kept.
+        func position(_ tick: Int) -> Vector2 { Vector2(x: Double(tick), y: -Double(tick)) }
+        var failures: [String] = []
+        func check(_ condition: Bool, _ message: @autoclosure () -> String) {
+            if !condition, failures.count < 20 { failures.append(message()) }
+        }
+
+        for ticks in 0...3_700 {
+            var path = PlannedPath(start: position(0), tick: 1_000)
+            for tick in stride(from: 1, through: ticks, by: 1) {
+                path.append(position(tick))
+            }
+            path.finish(reachesArrival: true)
+
+            let count = path.count
+            let spacing = path.spacing
+            check(count >= 1 && count <= PlannedPath.capacity, "\(ticks) ticks: \(count) points")
+            check(path.startTick == 1_000 && path.endTick == 1_000 + UInt64(ticks), "\(ticks) ticks: ticks \(path.startTick)…\(path.endTick)")
+            check(path.reachesArrival, "\(ticks) ticks: arrival flag lost")
+            if ticks <= 255 {
+                check(count == ticks + 1 && spacing == 1, "\(ticks) ticks: \(count) points at spacing \(spacing), expected every tick")
+            } else {
+                check(count >= 128, "\(ticks) ticks: only \(count) points")
+            }
+            check(spacing > 0 && spacing & (spacing - 1) == 0, "\(ticks) ticks: spacing \(spacing) is not a power of two")
+            for index in 0..<(count - 1) where bits(path[index]) != bits(position(index * spacing)) {
+                check(false, "\(ticks) ticks: point \(index) is \(path[index]), expected tick \(index * spacing)")
+                break
+            }
+            check(path.last.map { bits($0) == bits(position(ticks)) } ?? false, "\(ticks) ticks: last point is not the final position")
+            if count >= 2 {
+                check(ticks > (count - 2) * spacing && ticks <= (count - 1) * spacing,
+                      "\(ticks) ticks: last point's tick is not after point \(count - 2)'s and within one spacing")
+            }
+        }
+        #expect(failures.isEmpty, "\(failures.joined(separator: "\n"))")
+    }
+
+    @Test(
+        "A flight that cannot complete stops at the cap, on the real position after 3,600 ticks (SC-004)",
+        arguments: ["zero thrust", "zero angular acceleration, facing away"]
+    )
+    func cappedFlight(_ name: String) throws {
+        let defaults = ShipLimits.default
+        let ship = switch name {
+        case "zero thrust":
+            Ship(limits: ShipLimits(
+                maxThrustAcceleration: 0,
+                maxAngularSpeed: defaults.maxAngularSpeed,
+                maxAngularAcceleration: defaults.maxAngularAcceleration
+            ))
+        default:
+            Ship(
+                position: .zero, velocity: .zero, heading: .pi, angularVelocity: 0,
+                limits: ShipLimits(
+                    maxThrustAcceleration: defaults.maxThrustAcceleration,
+                    maxAngularSpeed: defaults.maxAngularSpeed,
+                    maxAngularAcceleration: 0
+                )
+            )
+        }
+        let state = AutopilotTests.ordered(to: Vector2(x: 1_000, y: 0), ship: ship)
+        let path = state.plannedPath
+        let real = Simulation.advance(state, ticks: PlannedPath.maxFlightTicks)
+
+        #expect(real.autopilot.phase != .arrived)
+        #expect(!path.reachesArrival)
+        #expect(path.endTick - path.startTick == UInt64(PlannedPath.maxFlightTicks))
+        #expect(path.count == 226)
+        #expect(path.spacing == 16)
+        let last = try #require(path.last)
+        #expect(bits(last) == bits(real.ship.position))
+    }
 }
 
 // MARK: - The real flight
@@ -102,6 +180,8 @@ func expectPathIsTheRealFlight(_ state: SimulationState, _ label: String) {
 
     #expect(path.count >= 1 && path.count <= PlannedPath.capacity, "\(label): \(path.count) points")
     #expect(path.startTick == state.tickCount, "\(label)")
+    // The work bound (SC-004): no prediction flies more than the cap.
+    #expect(path.endTick - path.startTick <= UInt64(PlannedPath.maxFlightTicks), "\(label): predicted past the cap")
     #expect(bits(path[0]) == bits(state.ship.position), "\(label): first point")
 
     guard let arrivalTick = flight.arrivalTick else {
