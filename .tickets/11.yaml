@@ -15,7 +15,7 @@ description: |
   size, including full screen, and the screen → world conversion is
   unit-tested.
 platform: macos
-status: ready
+status: done
 phase: MVP
 priority: high
 parent: 22
