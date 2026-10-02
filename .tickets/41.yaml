@@ -1,0 +1,25 @@
+id: 41
+title: "Visualise main engines and rotation thrusters"
+type: feature
+description: |
+  Show the ship's engines firing: a big plume from the main engines when it
+  burns, and small puffs from rotation thrusters when it turns, so the
+  autopilot's turn, burn, flip and brake (SKY-25) can be read at a glance.
+
+  Notes:
+  - The data is already there: each tick's ControlInput carries `thrust`
+    (0…1, forward only) and `turn` (target rate of turn, −1…1), so the
+    rendering layer can size the main plume from thrust and pick which
+    thrusters fire from the sign of the turn or the angular acceleration.
+  - Builds on the ship sprite (SKY-27); the thruster positions depend on
+    ship.png's art.
+  - Open: sprite frames vs. procedural (shader) flames, whether braking
+    and turning show distinct thrusters, and the Reduce Motion behaviour
+    (constitution IV) for flickering effects.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

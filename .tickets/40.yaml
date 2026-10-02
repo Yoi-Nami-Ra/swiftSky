@@ -1,0 +1,27 @@
+id: 40
+title: "Add a central planet with an off-screen arrow"
+type: feature
+description: |
+  Put a planet (or a space station) at the centre of the scene, at the world
+  origin, as a fixed landmark the ship flies around. When the ship moves far
+  enough that the planet leaves the visible surface, draw an arrow at the
+  edge of the screen pointing back towards it, so the player never loses
+  their bearings.
+
+  Notes:
+  - The camera is fixed with the origin at the surface centre (SKY-23), so
+    today the planet would always be on screen while the ship flies off
+    instead. The arrow only matters once the camera follows the ship (no
+    ticket yet), or it should point from the ship to the planet when the
+    ship is off screen. Decide which during refinement.
+  - SKY-35 draws two small planets as part of a static background image;
+    this one is a game-space object at a world position, not background art.
+  - Open: planet or station, size in world units, whether it has gravity or
+    collision, and the arrow's look.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []
