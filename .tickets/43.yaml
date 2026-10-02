@@ -1,0 +1,31 @@
+id: 43
+title: "Design: planet sprite"
+type: task
+description: |
+  Why it's needed: SKY-40 draws a planet at the world origin as a landmark,
+  drawn from an image like the ship (SKY-27). No planet art exists.
+
+  When it shows: always, at the world origin, behind the ship and above the
+  space background (SKY-35).
+
+  Built from: design/sprites/ship.png for format and style (a square,
+  transparent PNG, top-down) and design/backgrounds/space.jpg for palette,
+  so the planet sits naturally on that background. It must read clearly as
+  a game object, not as one of the background's painted planets.
+
+  Proposal: none yet.
+
+  Open questions: the planet's look (rocky, gas giant, ringed); its size on
+  screen, for which SKY-40 proposes 200 world units (points) across, five
+  ship lengths; the source resolution, which must stay sharp at 3× (600 px
+  across, so at least 1024 × 1024).
+
+  Done when: design/sprites/planet.png exists, is approved, and SKY-40's
+  `designs` points at it.
+platform: macos
+status: refine
+phase: Backlog
+priority: medium
+parent: 40
+blocked_by: []
+designs: []
