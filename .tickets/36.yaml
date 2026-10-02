@@ -1,38 +1,62 @@
 id: 36
-title: "Carry instrumentation into Profiling builds"
+title: "Replace the Profiling build with an instrumented script"
 type: bug
 description: |
   The Profiling configuration is meant to be an optimised build with the frame
-  instrumentation compiled in (001 research R12, FR-021e), but it carries none of
-  it. Found while planning SKY-3 (specs/011-draw-allocation-counter, research R1):
-  SWIFTSKY_INSTRUMENTATION is set on the Xcode project's Profiling configuration
-  and reaches only the app module. SwiftPM knows only Debug and Release, so Xcode
-  builds every package target (SwiftSkyPlatform, SwiftSkyRendering,
-  SwiftSkyAllocationCounter) with its Release settings: -O, no define. A Profiling
-  binary has no frame summary, no allocation counter and no debug overlay
-  (`strings -a … | grep dropped=` → 0).
+  instrumentation compiled in (001 research R12, FR-021e), but it carries none
+  of it. Found while planning SKY-3 (specs/011-draw-allocation-counter,
+  research R1).
 
-  Effect: any evidence recorded as coming from a "Profiling build" — 008 quickstart
-  check 12, 009 check 9 — could not have come from the package's instrumentation
-  and should be re-read. Today's workaround (011 research R12): a Release build
-  with 'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) SWIFTSKY_INSTRUMENTATION'
-  and 'GCC_PREPROCESSOR_DEFINITIONS=$(inherited) SWIFTSKY_INSTRUMENTATION=1' on the
-  xcodebuild command line, which reaches package targets too.
+  Already in place: Package.swift defines SWIFTSKY_INSTRUMENTATION only
+  `.when(configuration: .debug)` (Swift and C settings). SwiftPM knows only
+  Debug and Release, and Xcode builds every package target as Release when
+  the app uses Profiling, so the define reaches the app module only. A
+  Profiling binary has no frame summary, no allocation counter and no debug
+  overlay (`strings -a … | grep dropped=` → 0). 011 research R12 has the
+  working method: a Release build with
+  'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) SWIFTSKY_INSTRUMENTATION'
+  and 'GCC_PREPROCESSOR_DEFINITIONS=$(inherited) SWIFTSKY_INSTRUMENTATION=1'
+  on the xcodebuild command line, which reaches the package targets too. The
+  Xcode schemes are not shared, so no checked-in scheme uses Profiling.
 
-  Open questions:
-  - Fix: keep Profiling and pass the define to package targets some other way
-    (an xcconfig, a scheme, a build-setting override Xcode applies to packages),
-    or drop the Profiling configuration and document the command-line Release
-    build as the profiling build?
-  - Should Scripts/verify.sh build Profiling and check that the summary strings
-    are present, so this cannot regress silently?
-  - Re-run or annotate 008 #12 and 009 #9.
+  Scope:
+  1. Remove the Profiling configuration from swiftSky.xcodeproj (its project
+     and target build-configuration blocks), leaving Debug and Release.
+  2. Add Scripts/build-instrumented.sh: builds the iOS (simulator) and/or
+     macOS app in Release with the two overrides above, into a fixed derived
+     data folder, and prints the path of each built app. Takes the platform
+     as its only argument (ios, macos, or both by default).
+  3. Guard it in Scripts/verify.sh: build the instrumented macOS app and
+     check its binary contains the frame-summary strings (`dropped=`), and
+     check the Release binary contains none (001 check 27). Both checks fail
+     the run.
+  4. Update the docs from "Debug/Profiling" to "Debug and instrumented
+     Release builds": CLAUDE.md (6 places), the 001 plan's Complexity
+     Tracking row for the third build configuration, and 011 quickstart's
+     "The method", which then calls the script.
+  5. Annotate 008 quickstart check 12 and 009 quickstart check 9: a Profiling
+     build carried no package instrumentation, so the recorded frame figures
+     cannot have come from it; point to the script for any future
+     measurement. Their results are not re-run: the "before" baselines were
+     built from older commits.
+  6. Leave a note in the other quickstarts (001–004, 006, 007, 010) only
+     where they say a check was run on a Profiling build; elsewhere the
+     wording follows step 4.
 
-  Done when a Profiling build (or its documented replacement) is optimised and
-  contains the instrumentation, Release still contains none of it (001 check 27),
-  and the affected quickstart checks are corrected.
+  Out of scope: changing what the instrumentation measures, adding
+  instrumentation to plain Release, and re-running 008 #12 and 009 #9.
+
+  Done when:
+  - `xcodebuild -list` shows only Debug and Release.
+  - `./Scripts/build-instrumented.sh macos` builds an optimised app whose log
+    shows `allocation counter ready` and frame summaries, and whose binary
+    contains `dropped=`; the same on iOS in the simulator.
+  - `./Scripts/verify.sh` passes, and fails if the overrides are removed from
+    the script (tried once, then restored).
+  - No "Profiling build" remains in CLAUDE.md or the 001 plan, and 008 #12
+    and 009 #9 carry the annotation.
 platform: macos
-status: refine
+status: ready
 phase: Backlog
 priority: medium
 parent: null
