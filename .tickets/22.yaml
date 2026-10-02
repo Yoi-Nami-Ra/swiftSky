@@ -9,22 +9,32 @@ description: |
   destination and planned path. A debug overlay in the top-left corner shows
   live data in debug builds.
 
-  This is a new feature for the Spec Kit cycle (/speckit.specify → spec 002).
-  That spec has to supersede two rules from 001: FR-002 (the surface is
-  uniformly black) and FR-021e (instrumentation never reaches the rendered
-  surface — relaxed for the debug overlay in Debug/Profiling builds only).
-  Everything visible stays Metal-drawn (FR-001, FR-007 unchanged).
+  This is a parent ticket: each child goes through its own Spec Kit cycle,
+  with its own spec, rather than one spec for the whole slice. Everything
+  visible stays Metal-drawn (001 FR-001, FR-007).
 
-  Children, roughly in build order: SKY-23 (game space), SKY-24 (ship physics),
-  SKY-25 (autopilot), SKY-26 (path prediction), SKY-27 (ship sprite), SKY-10 and
-  SKY-11 (tap/click orders), SKY-30 (order overlay), SKY-28 and SKY-29 (debug
-  overlay), SKY-12 (interpolation). Shared across platforms; `platform` is set
-  to macos because a ticket can hold only one.
+  Already in place (done): SKY-28 text rendering (specs/002), SKY-29 debug
+  overlay (specs/003), SKY-24 ship physics (specs/004), SKY-23 game space and
+  camera (specs/005), SKY-25 autopilot (specs/006), SKY-27 ship sprite
+  (specs/007), SKY-10 tap to order on iOS (specs/008), SKY-11 click to order
+  on macOS (specs/009) and SKY-26 path prediction (specs/010).
 
-  Done when all children are done and the spec 002 quickstart passes on both
-  platforms.
+  Still open, all required for the first playable:
+  1. SKY-30: draw the order overlay (destination and planned path).
+  2. SKY-12: interpolate rendering between simulation ticks, so the ship
+     doesn't judder on 120 Hz displays.
+  3. SKY-33: finish the text-rendering verification checks.
+  4. SKY-34: show the ship and the order on the debug overlay.
+
+  Shared across platforms; `platform` is set to macos because a ticket can
+  hold only one.
+
+  Done when SKY-12, SKY-30, SKY-33 and SKY-34 are done, and each child's
+  quickstart passes on both platforms (checks that need hardware this project
+  doesn't have, such as SKY-39's device-only VoiceOver run, are tracked in
+  their own tickets and don't hold this one).
 platform: macos
-status: refine
+status: in-progress
 phase: MVP
 priority: high
 parent: null

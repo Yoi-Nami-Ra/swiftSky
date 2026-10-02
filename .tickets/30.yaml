@@ -21,5 +21,5 @@ status: ready
 phase: MVP
 priority: medium
 parent: 22
-blocked_by: [23, 26, 27]
+blocked_by: [12, 23, 26, 27]
 designs: []
