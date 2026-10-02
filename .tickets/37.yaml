@@ -4,28 +4,55 @@ type: bug
 description: |
   001 check 29's stall half fails at one point only: when a continuous macOS
   window drag ends, the main thread is busy for one stretch of ~15 ms (25 ms
-  with a sampler attached) against the 8.33 ms frame interval. Mid-drag it
-  passes (15 of 15 summaries, `mainworst` 2.7–6.7 ms) since SKY-5 moved the
-  drawable resize to the frame loop (012 research R14).
+  with a sampler attached) against the 8.33 ms frame interval, which breaks
+  001 SC-016 ("no main-thread stall exceeding one frame interval").
 
-  A sampled drag (012 quickstart check 6) puts the stretch wholly in system
-  code: AppKit's end of live resize (`_endLiveResize` itself 2 ms), SwiftUI's
-  `NSHostingView.layout()` and Core Animation transaction commits. The app's
-  own code was ~30 ms of 2.0 s of main-thread work over the whole run.
+  Already in place: mid-drag passes (15 of 15 summaries, `mainworst`
+  2.7–6.7 ms) since SKY-5 moved the drawable resize to the frame loop (012
+  research R14). A sampled drag (012 quickstart check 6) puts the stretch
+  wholly in system code: AppKit's end of live resize (`_endLiveResize` itself
+  2 ms), SwiftUI's `NSHostingView.layout()` and Core Animation transaction
+  commits; the app's own code was ~30 ms of 2.0 s of main-thread work over
+  the whole run. The surface is an NSViewRepresentable in a SwiftUI `Window`
+  scene; MetalSurfaceView sets `layerContentsRedrawPolicy =
+  .duringViewResize`, and its `viewWillStartLiveResize` /
+  `viewDidEndLiveResize` only log the `live resize began/ended` markers.
 
-  To investigate: whether hosting the Metal view outside SwiftUI (a plain
-  NSView/NSWindow for the surface, or `NSHostingView` sizing options) removes
-  the final layout pass; whether `layerContentsRedrawPolicy` or
-  `presentsWithTransaction` changes the final commit; or whether the stretch
-  is unavoidable AppKit work, in which case record that and decide whether
-  001 SC-016 should exempt the end of live resize. Measure with 012's
-  procedure (`mainworst=` / `mainover=` between the `live resize` markers).
+  Scope: a bounded investigation that ends in a fix or an exemption.
+  1. Measure the baseline with 012's procedure on an optimised instrumented
+     build (SKY-36's script once it lands, 011 R12's command line before
+     that): `mainworst=` / `mainover=` in the summaries between the markers,
+     five drags.
+  2. Try each small change on its own, measured the same way and reverted
+     if it doesn't help:
+     a. `presentsWithTransaction` on the Metal layer at the end of live
+        resize;
+     b. other `layerContentsRedrawPolicy` values;
+     c. the hosting view's sizing options (NSHostingView / `.windowResizability`
+        and related scene settings), so the final layout pass does less;
+     d. deferring anything the app does in `viewDidEndLiveResize` or the
+        last size update to after the resize ends.
+  3. If one change, or a combination, keeps every summary covering the end
+     of the drag at `mainover=0` with `mainworst` within budget, ship it and
+     record the measurements in 012's quickstart.
+  4. If none does, record the measurements as evidence that the stretch is
+     AppKit/SwiftUI work the app cannot avoid, and amend 001 SC-016 to exempt
+     the end of live resize (mid-drag stays covered), updating 001 check 29
+     to PASS on that basis.
 
-  Also seen while idle in Debug builds: occasional 14–45 ms system-side
-  stretches in window-server Space-change handling; not seen in the
-  optimised build (0 of 62 idle summaries over).
+  Out of scope: hosting the Metal view outside SwiftUI (a plain NSView in the
+  window), and the 14–45 ms idle stretches seen in Debug builds during
+  window-server Space changes, which don't appear in the optimised build
+  (0 of 62 idle summaries over).
+
+  Done when:
+  - Each experiment in step 2 has its five-drag measurement recorded in 012's
+    quickstart, kept or reverted.
+  - Either the end of the drag stays within budget in all five drags, or
+    001 SC-016 carries the exemption with that evidence cited.
+  - 001 check 29 is no longer open in the 001 quickstart's roll-up.
 platform: macos
-status: refine
+status: ready
 phase: Backlog
 priority: medium
 parent: null
