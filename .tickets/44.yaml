@@ -1,0 +1,27 @@
+id: 44
+title: "Add a radar layer for off-screen indicators"
+type: feature
+description: |
+  Draw the arrows that point to planets and other important off-screen
+  objects in their own "radar" layer, rather than as a one-off for the
+  planet. The layer sits above the world (background, planet, ship, order
+  overlay) and below the debug overlay, collects every object marked as
+  important, and draws one edge indicator per off-screen object.
+
+  Notes:
+  - SKY-40 (ready) already scopes one such arrow, for the planet, placed by
+    pure maths on the screen edge. This idea generalises it: SKY-40's arrow
+    could become the radar layer's first indicator, or SKY-40 could be
+    re-scoped to build the layer. Decide when this is refined.
+  - Only meaningful once the camera follows the ship (SKY-42); with today's
+    fixed camera nothing important ever leaves the screen.
+  - Open: which objects count as important (planets, stations, the order's
+    destination?), whether indicators differ by object type, how many can
+    show at once, and what happens when two point the same way.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

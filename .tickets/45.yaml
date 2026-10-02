@@ -1,0 +1,31 @@
+id: 45
+title: "Zoom the view in and out by scrolling"
+type: feature
+description: |
+  Scrolling zooms the view span in and out: scrolling one way shows more of
+  the world, the other way less, around the ship at the centre of the
+  screen (SKY-42).
+
+  Notes:
+  - Today one world unit is one point, fixed (SKY-23, specs/005): the
+    camera has no scale. Zoom adds one, and every world → view, view →
+    world and world → clip conversion uses it, including the conversion of
+    taps and clicks into orders (SKY-10, SKY-11).
+  - The ship sprite is 40 points at 1:1 (GameSpace.shipLength). Open: does
+    the ship shrink and grow with the zoom, or stay a fixed size on screen
+    as a marker? Same for the planet (SKY-40, 200 units) and the order
+    overlay (SKY-30).
+  - Scrolling is a Mac input (mouse wheel and two-finger trackpad scroll).
+    Open: iOS needs its own gesture, most likely pinch to zoom; in scope here
+    or a separate ticket?
+  - Open: the zoom range (minimum and maximum span), whether zoom steps or
+    is continuous, whether it is smoothed, and Reduce Motion for any
+    smoothing.
+  - The background (SKY-35) is fixed to the screen, so it doesn't zoom.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

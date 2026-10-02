@@ -21,11 +21,16 @@ description: |
   - Background (SKY-35) stays fixed to the screen as decided there; revisit
     if moving without visible motion against the background feels wrong.
 
-  Open questions:
-  - Follow rule: hard-locked on the ship, or a dead zone / smoothing so the
-    ship can move within the screen before the camera moves?
-  - Does the camera lead in the direction of travel?
-  - Reduce Motion: should smoothing or lead be turned off with it on?
+  Decided (2026-10-02, from the user's idea): the camera stays centred on
+  the ship, hard-locked, with the planet fixed at world (0, 0) (SKY-40). So
+  there is no dead zone, no smoothing and no lead, and Reduce Motion has
+  nothing extra to turn off.
+
+  Scale: this ticket keeps one world unit = one point; zoom is SKY-45.
+
+  Still to settle when refined: tests and the "done when", and whether the
+  camera centres on SKY-12's blended pose or the tick pose (the blended
+  pose, unless SKY-12 hasn't landed).
 platform: macos
 status: refine
 phase: Backlog
