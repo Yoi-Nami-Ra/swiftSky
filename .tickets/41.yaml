@@ -17,7 +17,7 @@ description: |
     and turning show distinct thrusters, and the Reduce Motion behaviour
     (constitution IV) for flickering effects.
 platform: macos
-status: idea
+status: refine
 phase: Backlog
 priority: medium
 parent: null

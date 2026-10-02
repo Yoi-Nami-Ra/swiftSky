@@ -2,18 +2,58 @@ id: 12
 title: "Interpolate rendering between simulation ticks"
 type: feature
 description: |
-  specs/001-metal-app-shell runs a 60 Hz fixed timestep decoupled from render
-  rate and explicitly defers render-side interpolation. On 120 Hz ProMotion
-  displays every other frame repeats the previous tick's state, so the moving
-  ship (SKY-27) will judder. Interpolate between the last two simulation
-  states using the accumulator's leftover fraction. Shared logic for both
-  platforms. Reduce Motion must still be honoured (see SKY-7, SKY-8).
+  The simulation runs on a 60 Hz fixed timestep (specs/001-metal-app-shell),
+  so on 120 Hz ProMotion displays every other frame repeats the previous
+  tick's pose and the ship (SKY-27) judders. Draw the ship between its last
+  two ticks instead.
 
-  Open questions: interpolate positions only, or heading too (with
-  shortest-arc wrap); and whether the order overlay (SKY-30) follows the
-  interpolated or the tick pose.
+  Already in place: TimeAccumulator keeps the leftover time in `unconsumed`
+  (Sources/SwiftSkySimulation/TimeAccumulator.swift), which as a fraction of
+  a tick is the blend factor. ShipSpritePlacement builds the sprite from one
+  position and heading and rounds the centre to a whole pixel (007 FR-006a);
+  that rounding stays, applied to the blended pose. Nothing in the simulation
+  teleports (a new order changes the target, not the ship's position), so no
+  snap case is needed.
+
+  Scope:
+  1. Logic layer: the accumulator exposes its leftover as a fraction of a
+     tick in 0..<1, and a pure function blends two ship poses by that
+     fraction: position linearly, heading along the shorter arc across ±π.
+  2. Platform layer: the frame loop remembers the ship's position and heading
+     from the tick before the current one (two Vector2/Double values, not a
+     copy of the ~4.2 KB state), updated only on frames that advance at least
+     one tick. On multi-tick frames the previous pose is the one before the
+     last tick, not the one before the frame.
+  3. Rendering: the ship sprite is placed from the blended pose. This is
+     interpolation, not extrapolation: the drawn pose is always one the
+     simulation really had, at the cost of up to one tick (16.7 ms) of delay.
+  4. The order overlay (SKY-30) uses the same blended pose wherever it draws
+     from the ship's position, so the overlay and the sprite never drift
+     apart. The debug overlay (SKY-34) keeps showing the exact tick values.
+  5. A `--no-interpolation` launch argument (Debug/Profiling only, like the
+     other debug arguments) draws the tick pose, for side-by-side comparison.
+
+  Reduce Motion: no change. Interpolation smooths motion that already
+  happens and adds none; SKY-7 and SKY-8 confirmed that Reduce Motion leaves
+  gameplay motion unchanged.
+
+  Out of scope: the order overlay itself (SKY-30), the debug overlay's ship
+  data (SKY-34), and a camera that follows the ship (no ticket yet; SKY-40
+  and SKY-35 are waiting on that decision).
+
+  Done when:
+  - Tests: the blend returns the previous pose at fraction 0 and the current
+    pose as the fraction approaches 1, bit for bit at the endpoints
+    (StateBits); heading blends the short way across ±π in both directions;
+    the accumulator's fraction stays in 0..<1, including after the catch-up
+    clamp discards time; and the previous pose is tracked correctly on
+    0-tick, 1-tick and multi-tick frames.
+  - On a 120 Hz Mac, the ship moves and turns without visible stepping, and
+    `--no-interpolation` shows the old stepping for comparison.
+  - 011's check 25 still reports zero allocations per frame on both
+    platforms, and frame times stay within budget.
 platform: macos
-status: refine
+status: ready
 phase: MVP
 priority: medium
 parent: 22

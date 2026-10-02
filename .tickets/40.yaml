@@ -19,7 +19,7 @@ description: |
   - Open: planet or station, size in world units, whether it has gravity or
     collision, and the arrow's look.
 platform: macos
-status: idea
+status: refine
 phase: Backlog
 priority: medium
 parent: null
