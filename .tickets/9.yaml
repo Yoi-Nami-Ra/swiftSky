@@ -2,17 +2,54 @@ id: 9
 title: "Add git remote and CI running verify.sh"
 type: task
 description: |
-  Constitution v1.1.0 Principle II requires CI once the repository has a remote;
-  until then Scripts/verify.sh is the required stand-in (specs/001-metal-app-shell
-  FR-019a). The repo still has no remote. Add one, then add a CI job that runs
-  Scripts/verify.sh verbatim on a macOS runner, and remove the "no CI" gap from
-  the plan's Complexity Tracking.
+  Constitution v1.1.0 Principle II requires CI once the repository has a
+  remote; until then Scripts/verify.sh is the required stand-in
+  (specs/001-metal-app-shell FR-019a). The repo still has no remote.
 
-  Open questions: which host (GitHub or other), which runner/Xcode version
-  (verify.sh needs a toolchain that builds iOS 26 and macOS 26), and whether
-  the iOS stage runs against a simulator in CI.
+  Already in place: Scripts/verify.sh takes no arguments and runs every
+  stage CI needs: the Metal toolchain check, `swift build` with the layer
+  boundary enforced, `swift test`, and both app builds through xcodebuild
+  (the iOS app built for the simulator, nothing launched). Any `warning:`
+  line fails a stage. It was written to be the CI job body verbatim. This
+  Mac has Xcode 27.0 (27A266a) and `gh` installed.
+
+  Scope:
+  1. Confirm with the user which GitHub account owns the repository (it is
+     not jwojtasik-intive, the account `gh` is logged in to now), and log
+     `gh` in to that account.
+  2. Create a private GitHub repository named swiftSky under that account,
+     add it as `origin`, and push `main` with its full history.
+  3. Install a GitHub Actions self-hosted runner on this Mac, registered to
+     that repository only, with labels `self-hosted`, `macOS`, `xcode-27`.
+     It uses this Mac's own Xcode 27.0; nothing is installed on the runner
+     image. Document how to start and stop it.
+  4. Add `.github/workflows/verify.yml`: on push to `main` and on pull
+     requests, check out the repository on the self-hosted runner and run
+     `./Scripts/verify.sh` exactly as it is, with no extra steps besides
+     checkout. iOS stays build-only, as verify.sh does today.
+  5. Update the records of the gap: remove the CI-absence entry from
+     specs/001-metal-app-shell/plan.md's Complexity Tracking and its
+     Principle II row, and update CLAUDE.md where it says no remote is
+     configured. Specs 002–012 are merged history and stay as they are;
+     future plans cite the CI job instead.
+
+  Out of scope: a GitHub-hosted runner (decided against: this Mac has the
+  exact Xcode verify.sh needs, and it costs no minutes), launching the iOS
+  app on a simulator in CI, and branch protection rules.
+
+  Note for whoever picks this up: a self-hosted runner only runs while this
+  Mac is on and the runner service is running. A push made while it is off
+  waits in the queue rather than failing.
+
+  Done when:
+  - `git remote -v` shows the private repository and `main` is pushed.
+  - A push to `main` triggers the workflow, it runs on this Mac's runner,
+    and it passes; a pull request triggers it too.
+  - A deliberately broken commit (for example, a test that fails) makes the
+    job fail, then is reverted.
+  - The 001 plan and CLAUDE.md no longer say there is no remote or CI.
 platform: macos
-status: refine
+status: ready
 phase: Backlog
 priority: medium
 parent: null
