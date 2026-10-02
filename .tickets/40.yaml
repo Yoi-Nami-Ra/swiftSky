@@ -2,26 +2,53 @@ id: 40
 title: "Add a central planet with an off-screen arrow"
 type: feature
 description: |
-  Put a planet (or a space station) at the centre of the scene, at the world
-  origin, as a fixed landmark the ship flies around. When the ship moves far
-  enough that the planet leaves the visible surface, draw an arrow at the
-  edge of the screen pointing back towards it, so the player never loses
-  their bearings.
+  Put a planet at the world origin as a fixed landmark the ship flies
+  around. When the camera has followed the ship far enough that the planet
+  is off screen, an arrow at the screen edge points back to it, so the
+  player never loses their bearings.
 
-  Notes:
-  - The camera is fixed with the origin at the surface centre (SKY-23), so
-    today the planet would always be on screen while the ship flies off
-    instead. The arrow only matters once the camera follows the ship (no
-    ticket yet), or it should point from the ship to the planet when the
-    ship is off screen. Decide which during refinement.
-  - SKY-35 draws two small planets as part of a static background image;
-    this one is a game-space object at a world position, not background art.
-  - Open: planet or station, size in world units, whether it has gravity or
-    collision, and the arrow's look.
+  Already in place: the ship sprite pipeline (SKY-27: image copied
+  byte-identically from design/, verify.sh checks it, decoded once into a
+  mipmapped texture, placed by pure maths in ShipSpritePlacement) and the
+  camera's world → view conversion (SKY-23). This ticket waits on SKY-42
+  (the camera follows the ship; with today's fixed camera the planet is
+  always on screen) and SKY-43 (the planet art).
+
+  Scope:
+  1. The planet is a landmark only: a world position (the origin) and a
+     size in the logic layer, with no effect on the ship. It has no
+     collision and no gravity, and the autopilot and path prediction ignore
+     it; the ship flies over it.
+  2. Draw it from design/sprites/planet.png (SKY-43), 200 world units
+     across, following SKY-27's pattern: byte-identical copy in the
+     rendering layer, checked by verify.sh, decoded once at startup, a
+     missing image is a renderer-init failure. Drawn above the background
+     (SKY-35) and below the ship.
+  3. The arrow: a Metal-drawn arrow shown only while the planet's disc is
+     entirely off screen. It sits on the screen edge, inset so it is fully
+     visible and clear of the safe area, on the line from the screen centre
+     to the planet, and points along that line. It is placed by pure maths
+     (camera, planet position, surface), like ShipSpritePlacement.
+  4. No distance label.
+
+  Out of scope: the follow camera (SKY-42), the art (SKY-43), collision or
+  gravity (their own tickets if wanted), and a distance readout.
+
+  Done when:
+  - Tests for the arrow placement: no arrow while any part of the planet's
+    disc is on screen; with the planet off screen in each direction
+    (left, right, above, below and the four corners) the arrow is on the
+    matching edge, fully inside the surface, pointing at the planet; on
+    wide, tall and square surfaces at 1×, 2× and 3×.
+  - On iOS and macOS, flying away from the origin makes the planet leave the
+    screen and the arrow appear on the right edge, and flying back makes the
+    arrow disappear as the planet returns.
+  - 011's check 25 still reports zero allocations per frame on both
+    platforms, and frame times stay within budget.
 platform: macos
-status: refine
+status: ready
 phase: Backlog
 priority: medium
 parent: null
-blocked_by: []
+blocked_by: [42, 43]
 designs: []

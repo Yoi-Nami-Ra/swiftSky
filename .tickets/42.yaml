@@ -1,0 +1,35 @@
+id: 42
+title: "Make the camera follow the ship"
+type: feature
+description: |
+  Today the camera is fixed with the world origin at the centre of the
+  surface (SKY-23, specs/005), and orders come from a tap or click on that
+  surface, so the ship can never leave the screen. Make the camera follow
+  the ship so the world is bigger than one screen. SKY-23 listed following
+  the ship as "not planned; needs its own ticket" — this is that ticket.
+  Split out of SKY-40, whose off-screen arrow only makes sense with it.
+
+  What it touches:
+  - Camera (Sources/SwiftSkyRendering/Camera.swift): a centre point in the
+    world instead of the fixed origin, for world → view, view → world and
+    world → clip.
+  - Orders (SKY-10, SKY-11, MoveOrderRequest): a tap or click converts to a
+    world point through the camera as it is at that event, which now moves.
+  - Drawing: the ship sprite (SKY-27), the order overlay (SKY-30), and the
+    interpolated pose (SKY-12): the camera should follow the same blended
+    pose, or the ship shimmers against it.
+  - Background (SKY-35) stays fixed to the screen as decided there; revisit
+    if moving without visible motion against the background feels wrong.
+
+  Open questions:
+  - Follow rule: hard-locked on the ship, or a dead zone / smoothing so the
+    ship can move within the screen before the camera moves?
+  - Does the camera lead in the direction of travel?
+  - Reduce Motion: should smoothing or lead be turned off with it on?
+platform: macos
+status: refine
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []
