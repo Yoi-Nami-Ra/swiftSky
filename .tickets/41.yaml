@@ -2,22 +2,56 @@ id: 41
 title: "Visualise main engines and rotation thrusters"
 type: feature
 description: |
-  Show the ship's engines firing: a big plume from the main engines when it
-  burns, and small puffs from rotation thrusters when it turns, so the
-  autopilot's turn, burn, flip and brake (SKY-25) can be read at a glance.
+  Show the ship's engines firing: a plume from the main engine when it
+  burns, and small jets from the rotation thrusters when the turn rate
+  changes, so the autopilot's turn, burn, flip and brake (SKY-25) can be
+  read at a glance.
 
-  Notes:
-  - The data is already there: each tick's ControlInput carries `thrust`
-    (0…1, forward only) and `turn` (target rate of turn, −1…1), so the
-    rendering layer can size the main plume from thrust and pick which
-    thrusters fire from the sign of the turn or the angular acceleration.
-  - Builds on the ship sprite (SKY-27); the thruster positions depend on
-    ship.png's art.
-  - Open: sprite frames vs. procedural (shader) flames, whether braking
-    and turning show distinct thrusters, and the Reduce Motion behaviour
-    (constitution IV) for flickering effects.
+  Already in place: each tick's ControlInput carries `thrust` (0…1, forward
+  only; the ship cannot push backwards, so SKY-25's brake is a flip and a
+  main-engine burn, not a separate thruster) and `turn` (a target rate of
+  turn). Ship holds `angularVelocity`. The ship sprite (SKY-27) is
+  design/sprites/ship.png, 80 × 80 px, drawn 40 points across, placed by
+  ShipSpritePlacement. Missing: SimulationState doesn't keep the input, so
+  the renderer can't see what fired.
+
+  Scope:
+  1. Logic layer: SimulationState records what the engines did on the last
+     tick: the main engine's thrust (0…1) and the angular acceleration
+     applied (signed). Both entry points record it, the autopilot's and the
+     explicit-input one used by `--debug-ship-spin`. A tick with no order
+     records zero for both.
+  2. Positions: the main engine at the tail, and four rotation thrusters
+     (nose left, nose right, tail left, tail right), set as fractions of the
+     ship length in GameSpace and matched to ship.png by eye. A
+     counter-clockwise angular acceleration fires the opposite pair to a
+     clockwise one.
+  3. Drawing: procedural flames in a Metal shader, drawn with the ship and
+     placed from the same pose as the sprite (SKY-12's blended pose once
+     that lands). The main plume's length and brightness follow thrust; the
+     thrusters fire while the angular acceleration is non-zero and are
+     quiet during a steady turn. No art and no new design files.
+  4. Reduce Motion: the flames still appear and still show how hard each
+     engine fires, but hold steady instead of flickering.
+
+  Out of scope: sound, particle trails left behind the ship, damage or fuel,
+  and redrawing ship.png at a higher resolution.
+
+  Done when:
+  - Tests: the recorded thrust and angular acceleration match the input the
+    tick used, for both entry points and for a tick with no order; the
+    thruster pair chosen for a given sign of angular acceleration; and the
+    flame placement maths (positions from pose and ship length) at 1×, 2×
+    and 3×.
+  - On iOS and macOS, an order shows the turn (thrusters), the burn (main
+    plume), the flip (thrusters) and the brake (main plume), and nothing
+    fires while the ship keeps station; `--debug-ship-spin` fires thrusters
+    only while the spin speeds up.
+  - With Reduce Motion on, the flames are steady.
+  - 011's check 25 still reports zero allocations per frame on both
+    platforms, and frame times stay within budget.
 platform: macos
-status: refine
+status: ready
 phase: Backlog
 priority: medium
 parent: null
