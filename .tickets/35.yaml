@@ -2,34 +2,59 @@ id: 35
 title: "Draw a space background image"
 type: feature
 description: |
-  Rendering layer. Replace the plain black background with the space image
-  in design/backgrounds/space.jpg (1920×1080, opaque JPEG: stars, a blue
+  Replace the plain black background with the space image in
+  design/backgrounds/space.jpg (1920×1080, RGB, opaque JPEG: stars, a blue
   nebula and two small planets), drawn behind the ship (SKY-27) and the
-  debug overlay. This reverses SKY-23's "background: plain black" decision
-  and the "no starfield" note in its out-of-scope list.
+  debug overlay. This reverses the "background: plain black" decision of
+  SKY-23 and specs/005, and supersedes 001 FR-002 (uniformly black surface)
+  for normal launches.
 
-  Likely shape, following SKY-27: ship the image with the rendering layer
-  (byte-identical to the design file, checked by Scripts/verify.sh), load it
-  into an sRGB texture once at startup (a missing image is a renderer-init
-  failure), and draw it in place of — or over — the full-screen black quad.
-  No per-frame allocation (001 FR-020).
+  Already in place: the black comes from FullscreenQuad, a full-screen quad
+  built once and drawn first in the one render pass, with a black clear
+  colour as a fallback. SKY-27 set the pattern for an image asset: the
+  rendering layer keeps a byte-identical copy of the design file, verify.sh
+  fails if they differ, the image is decoded on the CPU into a texture once
+  at startup, and a missing image is a renderer-init failure
+  (RendererError.shipImageUnavailable). 007 set the pattern for black-surface
+  checks: they launch with `--no-ship --no-debug-overlay`.
 
-  Open questions:
-  - Anchoring: fixed to the screen (simplest: the camera never moves), or
-    fixed to the world so it would scroll if the camera ever pans?
-  - Fit: the surface's aspect varies (resizable Mac window, iPad Split View,
-    portrait-shaped panes). Fill and crop (aspect-fill, centred), or tile?
-    At 1920×1080 a large Retina window will upscale it — is that acceptable,
-    or is a larger source needed?
-  - Contrast: dim it so the ship and the overlay text stay readable?
-  - Earlier "uniformly black" checks: hide the background with --no-ship /
-    a new Debug switch, or update them?
+  Scope:
+  1. Copy space.jpg into the rendering layer's resources, byte-identical to
+     the design file, and extend verify.sh's check to cover it.
+  2. Decode it once at startup into an sRGB texture. A missing or unusable
+     image is a renderer-init failure with its own RendererError case, shown
+     through the existing failure notice.
+  3. Draw it in place of the black quad, first in the pass, fixed to the
+     screen (the camera never moves; SKY-23). It fills the whole surface:
+     scaled to cover, aspect ratio kept, the overflow cropped evenly on both
+     sides, centred. No stretching, no seams, no letterbox bars, at every
+     surface shape: resizable Mac window, iPhone portrait and landscape,
+     iPad Split View panes. Upscaling on large Retina windows is accepted.
+  4. Drawn as designed, with no dimming.
+  5. A `--no-background` launch argument (Debug/Profiling only) draws plain
+     black instead. Every earlier check that expects a uniformly black
+     surface adds it, as 007 did with `--no-ship`; Release checks expect the
+     background.
 
-  Done when the background shows behind the ship on both platforms, fills
-  every window shape without stretching, and the frame-time and allocation
-  checks stay within budget.
+  Out of scope: a background that scrolls with a moving camera (no camera
+  ticket yet; SKY-40 waits on the same decision), parallax or animated
+  stars, dimming (only if the readability check below fails), and a
+  larger source image.
+
+  Done when:
+  - Tests: the fill-and-crop maths (pure, like ShipSpritePlacement) for
+    wide, tall and square surfaces, at 1×, 2× and 3×: the image always
+    covers the surface, its aspect ratio is kept, and the crop is centred.
+  - The background shows behind the ship on iOS and macOS, filling every
+    window shape without stretching, and the ship and the debug overlay's
+    text stay readable on top of it (checked by eye; if not, a follow-up
+    ticket decides on dimming).
+  - `--no-background --no-ship --no-debug-overlay` gives the uniformly black
+    surface the earlier checks expect.
+  - 011's check 25 still reports zero allocations per frame on both
+    platforms, and frame times stay within budget.
 platform: macos
-status: refine
+status: ready
 phase: Backlog
 priority: medium
 parent: null
