@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a **GitHub Spec Kit** project (v0.14.1) initialized with the Claude integration and
 Spec-Driven Development (SDD) workflow. The project is named `swiftSky`: a **cross-platform game for
 iOS and macOS built in Swift with a Metal rendering pipeline** (SwiftUI shell). It is a git
-repository (`main`), with no remote configured yet.
+repository (`main`) with `origin` set to `git@github.com:Yoi-Nami-Ra/swiftSky.git`.
 
 Built so far: `specs/001-metal-app-shell` (a black Metal surface on both platforms, three layers,
 an off-main frame loop, instrumentation), `specs/002-metal-text-rendering` (Metal-drawn text from
@@ -67,7 +67,8 @@ When creating a new spec, feature directories/branches are numbered sequentially
 The user's global instruction requires: **always check remote branches first** to determine the
 latest spec number so numbers don't collide across machines/branches —
 `git fetch --prune && git branch -r | grep -E 'spec|[0-9]{3}-'` — do **not** rely only on the local
-`specs/` directory. (No remote is configured yet, so add one before relying on this check.)
+`specs/` directory. (`origin` is configured, but nothing has been pushed yet, so until `main` is pushed the remote
+branch list is empty.)
 
 ## Scripts
 
