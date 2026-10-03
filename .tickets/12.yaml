@@ -30,7 +30,7 @@ description: |
   4. The order overlay (SKY-30) uses the same blended pose wherever it draws
      from the ship's position, so the overlay and the sprite never drift
      apart. The debug overlay (SKY-34) keeps showing the exact tick values.
-  5. A `--no-interpolation` launch argument (Debug/Profiling only, like the
+  5. A `--no-interpolation` launch argument (instrumented builds only, like the
      other debug arguments) draws the tick pose, for side-by-side comparison.
 
   Reduce Motion: no change. Interpolation smooths motion that already
@@ -38,8 +38,8 @@ description: |
   gameplay motion unchanged.
 
   Out of scope: the order overlay itself (SKY-30), the debug overlay's ship
-  data (SKY-34), and a camera that follows the ship (no ticket yet; SKY-40
-  and SKY-35 are waiting on that decision).
+  data (SKY-34), and the camera that follows the ship (SKY-42, which
+  centres on this ticket's blended pose and waits on it).
 
   Done when:
   - Tests: the blend returns the previous pose at fraction 0 and the current
