@@ -9,21 +9,32 @@ description: |
   space background (SKY-35).
 
   Built from: design/sprites/ship.png for format and style (a square,
-  transparent PNG, top-down) and design/backgrounds/space.jpg for palette,
-  so the planet sits naturally on that background. It must read clearly as
-  a game object, not as one of the background's painted planets.
+  transparent PNG, top-down) and design/backgrounds/space.jpg for palette.
+  The background has a blue nebula and two small painted planets, so this
+  planet must read as a game object, not as one of those.
 
-  Proposal: none yet.
+  Proposal: a warm rocky or desert planet in orange-brown with a thin
+  atmosphere glow and no ring, lit from the upper left with a soft
+  terminator and no fully black side. 2-3 variants as
+  design/proposal/43-planet-<variant>.png; the chosen one becomes
+  design/sprites/planet.png and the proposals are deleted.
 
-  Open questions: the planet's look (rocky, gas giant, ringed); its size on
-  screen, for which SKY-40 proposes 200 world units (points) across, five
-  ship lengths; the source resolution, which must stay sharp at 3× (600 px
-  across, so at least 1024 × 1024).
+  Spec:
+  1. 1024 x 1024 px, sRGB, transparent PNG.
+  2. The disc spans the full image width and height, so the disc is exactly
+     the 200 world units SKY-40 draws (600 px at 3x). Corners are
+     transparent, edges anti-aliased, any atmosphere glow inside the disc
+     edge.
+  3. No ring, moons or text, so the outline stays a clean circle for
+     SKY-40's off-screen test.
 
-  Done when: design/sprites/planet.png exists, is approved, and SKY-40's
-  `designs` points at it.
+  Open questions: none beyond approval of the variants.
+
+  Done when: design/sprites/planet.png exists and is approved, the proposal
+  files are deleted, this ticket's `designs` and SKY-40's `designs` point at
+  it, and the disc measures 1024 px across (checked on the file).
 platform: macos
-status: refine
+status: ready
 phase: Backlog
 priority: medium
 parent: 40
