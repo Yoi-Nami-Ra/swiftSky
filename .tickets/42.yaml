@@ -33,7 +33,7 @@ description: |
      are drawn through that same camera.
   3. MoveOrderRequest.apply takes the camera centre the last frame was drawn
      with, so a tap or click lands on the world point under the finger.
-  4. A Debug/Profiling-only --debug-world-grid launch argument draws a faint
+  4. An instrumented-builds-only --debug-world-grid launch argument draws a faint
      grid fixed to the world, so movement is visible before the planet
      exists. It follows 011's check-25 allocation rules: built once, fixed
      capacity.

@@ -25,19 +25,19 @@ description: |
      image is a renderer-init failure with its own RendererError case, shown
      through the existing failure notice.
   3. Draw it in place of the black quad, first in the pass, fixed to the
-     screen (the camera never moves; SKY-23). It fills the whole surface:
+     screen, also once the camera follows the ship (SKY-42). It fills the whole surface:
      scaled to cover, aspect ratio kept, the overflow cropped evenly on both
      sides, centred. No stretching, no seams, no letterbox bars, at every
      surface shape: resizable Mac window, iPhone portrait and landscape,
      iPad Split View panes. Upscaling on large Retina windows is accepted.
   4. Drawn as designed, with no dimming.
-  5. A `--no-background` launch argument (Debug/Profiling only) draws plain
+  5. A `--no-background` launch argument (instrumented builds only) draws plain
      black instead. Every earlier check that expects a uniformly black
      surface adds it, as 007 did with `--no-ship`; Release checks expect the
      background.
 
-  Out of scope: a background that scrolls with a moving camera (no camera
-  ticket yet; SKY-40 waits on the same decision), parallax or animated
+  Out of scope: a background that scrolls with the moving camera (SKY-42
+  keeps it fixed to the screen), parallax or animated
   stars, dimming (only if the readability check below fails), and a
   larger source image.
 
