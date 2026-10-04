@@ -59,6 +59,21 @@ any change to the simulation's rate, motion rule or autopilot.
   points against the camera as before; 010's planned path; 003's debug overlay; 012's main-thread
   probe; the Debug order and arrival log lines, which keep reporting tick values.
 
+## Clarifications
+
+### Session 2026-10-04
+
+- Q: On a 60 Hz display, what does "looks as it did before" mean, given the ship is now drawn up to a
+  tick behind at a blend? → A: Equally smooth, with no new stepping; it is not pixel-identical, since
+  the drawn pose lags by the tick fraction (US1 scenario 3, SC-004).
+- Q: Does `--no-interpolation` also switch the pose that later consumers (SKY-30's overlay, SKY-42's
+  camera) draw from? → A: Yes: it switches the one drawn pose that everything uses, so they never
+  disagree with the sprite (FR-008).
+- Q: What range is the blended heading in? → A: (−π, π], like the ship's own heading (004 FR-005)
+  (FR-002).
+- Q: Which way do two exactly opposite headings blend? → A: Counter-clockwise (increasing heading),
+  a fixed convention, since one tick can never turn half a turn (FR-002).
+
 ## User Scenarios & Testing *(mandatory)*
 
 The users are the player, who sees the ship move, and the developers building the order overlay
@@ -82,8 +97,8 @@ watch it turn and fly; relaunch with `--no-interpolation` and compare.
    visible stepping (SC-004).
 2. **Given** the same display and `--no-interpolation`, **When** the ship flies the same order,
    **Then** the old stepping is visible again, for comparison (SC-004).
-3. **Given** a 60 Hz display, **When** the ship flies an order, **Then** it looks as it did before:
-   one new pose per frame (SC-004).
+3. **Given** a 60 Hz display, **When** the ship flies an order, **Then** it is as smooth as before,
+   with no new stepping; it is drawn up to one tick behind, so not pixel-identical (SC-004).
 4. **Given** `--debug-ship-spin`, **When** the ship turns in place through the ±π heading, **Then** it
    turns continuously the short way, with no frame that spins it the long way round (SC-002).
 
@@ -146,8 +161,9 @@ on both platforms with an order being flown.
   the one before the frame, so the drawing never blends across more than one tick.
 - **Catch-up clamp discards time**: the fraction is the leftover after the discard, still in 0..<1.
 - **Ship at rest or station-keeping**: the two poses are equal and the blend returns that pose exactly.
-- **Heading across ±π**: blended the short way. Headings exactly π apart (never reached in one tick,
-  whose turn is bounded by the ship's angular rate) blend in a fixed, documented direction.
+- **Heading across ±π**: blended the short way, and the result wrapped into (−π, π]. Headings
+  exactly π apart (never reached in one tick, whose turn is bounded by the ship's angular rate) blend
+  counter-clockwise.
 - **New order**: an order changes the target, not the ship's position or heading, so no snap is
   needed; the blend continues across it.
 - **Explicit input** (`--debug-ship-spin`, tests): the poses come from whatever ticks were advanced;
@@ -172,7 +188,9 @@ on both platforms with an order being flown.
 
 - **FR-002**: The logic layer MUST provide a pure function that blends a previous and a current ship
   pose (position and heading) by a fraction in 0..<1. Position MUST be blended linearly. Heading MUST
-  be blended along the shorter arc between the two headings, crossing ±π when that is shorter.
+  be blended along the shorter arc between the two headings, crossing ±π when that is shorter, and
+  the result MUST be in (−π, π] like the ship's own heading (004 FR-005). Two exactly opposite
+  headings MUST blend counter-clockwise (increasing heading).
 - **FR-003**: At fraction 0 the blend MUST return the previous pose bit for bit. When the two poses
   are equal, it MUST return that pose bit for bit at every fraction. As the fraction approaches 1 the
   result MUST approach the current pose.
@@ -197,7 +215,8 @@ on both platforms with an order being flown.
   the ship's pose, so the order overlay (SKY-30) and the following camera (SKY-42) can use the same
   pose as the sprite. The debug overlay and the Debug log lines MUST keep reporting tick values.
 - **FR-008**: In Debug and Profiling builds, the launch argument `--no-interpolation` MUST draw the
-  current tick pose instead of the blended one. Release builds MUST NOT recognise it.
+  current tick pose instead of the blended one. It switches the one drawn pose of FR-007, so
+  everything that draws from the ship's pose follows it. Release builds MUST NOT recognise it.
 
 **Cost and accessibility**
 
@@ -228,13 +247,14 @@ on both platforms with an order being flown.
   position is the fraction of the whole distance, to within 1e-9 of it.
 - **SC-002**: For heading pairs across the ±π seam in both directions (for example 3.1 → −3.1 and
   −3.1 → 3.1), every blended heading lies on the short arc between them; no blend ever turns more than
-  half a turn. With `--debug-ship-spin` no frame shows the ship turning the long way.
+  half a turn, and every blended heading is in (−π, π]. With `--debug-ship-spin` no frame shows the ship turning the long way.
 - **SC-003**: Over at least 10,000 elapsed-time values, including 0, negative, non-finite, sub-tick,
   exact multiples of a tick and stalls of 10 s, the fraction is always ≥ 0 and < 1. For frames
   advancing 0, 1, 2 and 4 ticks, the tracked previous pose matches FR-005 bit for bit, and the state
   after the split advance is byte-identical to the unsplit advance.
 - **SC-004**: On a 120 Hz Mac, a ship flying an order and spinning in place shows no visible stepping;
-  with `--no-interpolation` the stepping is visible. On a 60 Hz display the picture is unchanged.
+  with `--no-interpolation` the stepping is visible. On a 60 Hz display the motion is as smooth as
+  before, with no new stepping.
   Checked by eye and recorded in the quickstart.
 - **SC-005**: 011's check 25 reports zero allocations per frame over 60 seconds of flying orders on
   both iOS and macOS, and frame times stay within the 001 frame budget.
@@ -250,7 +270,7 @@ on both platforms with an order being flown.
 - **No snap case**: nothing in the simulation teleports the ship; a new order changes the target only.
   A future feature that teleports would add its own reset of the previous pose.
 - **Exactly-opposite headings**: cannot occur between two consecutive ticks (one tick's turn is far
-  below half a turn), so their blend direction is a documented convention rather than a product
+  below half a turn), so their counter-clockwise blend is a convention rather than a product
   decision.
 - **Visual check by eye**: smoothness is a perceptual property; the automated tests verify the rules
   that produce it, and the by-eye check is recorded in the quickstart, as 007 recorded its visual
