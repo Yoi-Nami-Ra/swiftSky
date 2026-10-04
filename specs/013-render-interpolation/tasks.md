@@ -39,7 +39,7 @@ previous-pose tracking.
 - [x] T005 [US1] Change `render(state:surface:drawable:timestamp:)` to `render(state:shipPose:surface:drawable:timestamp:)` and make `encodeShip` place the sprite from the pose (position and heading) per contract C4 in `Sources/SwiftSkyRendering/Renderer.swift`
 - [x] T006 [US1] Add `interpolates` (false with `--no-interpolation`) and its argument constant to `DebugShipOptions`, and hand it to the frame loop where `spins` is handed over, in `Sources/SwiftSkyPlatform/GameSurfaceView.swift`
 - [x] T007 [US1] In `Sources/SwiftSkyPlatform/FrameLoop.swift`: add `previousPose` (initialised from the initial state's ship) and, under `SWIFTSKY_INSTRUMENTATION`, `debugNoInterpolation`; advance with the `previousPose:` variants in both the autopilot and the spin branches; compute the drawn pose by `ShipPose.blended(from:to:fraction:)` at `accumulator.tickFraction`, or the tick pose when `debugNoInterpolation`; pass it to `render` (depends on T004, T005, T006)
-- [ ] T008 [US1] Build both apps (`./Scripts/verify.sh` covers the macOS and iOS `xcodebuild` stages) and run quickstart checks 8 and 9 on the development Mac; record the results in `specs/013-render-interpolation/quickstart.md`
+- [x] T008 [US1] Build both apps (`./Scripts/verify.sh` covers the macOS and iOS `xcodebuild` stages) and run quickstart checks 8 and 9 on the development Mac; record the results in `specs/013-render-interpolation/quickstart.md`
 
 **Checkpoint**: the ship flies smoothly at 120 Hz; the switch restores the old stepping.
 
