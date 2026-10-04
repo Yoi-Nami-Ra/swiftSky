@@ -35,6 +35,10 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     // MARK: - Owned by the loop thread
 
     private var state = SimulationState()
+
+    /// The ship's pose one tick before `state`, for drawing between the two (013 FR-005). The initial
+    /// pose until the first tick.
+    private var previousPose = ShipPose(SimulationState().ship)
     private var accumulator = TimeAccumulator()
     private var surface = RenderSurface(widthPixels: 0, heightPixels: 0, backingScale: 1)
     private var instrumentation: Instrumentation
@@ -64,6 +68,10 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     /// the ship turns in place at its top rate. Set once on the main thread before `start()`, which
     /// publishes it to the loop thread; read only on the loop thread afterwards.
     public var debugShipSpin = false
+
+    /// `--no-interpolation` (013 FR-008): draw the ship at its latest tick's pose. Set and published like
+    /// `debugShipSpin`.
+    public var debugNoInterpolation = false
 
     /// The spin's input: built once, not per frame.
     private static let spinInput = ControlInput(thrust: 0, turn: 1)
@@ -409,13 +417,25 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
         #if SWIFTSKY_INSTRUMENTATION
         // `--debug-ship-spin` uses the explicit-input entry point, which leaves any order alone (006).
         if debugShipSpin {
-            state = Simulation.advance(state, ticks: ticks, input: Self.spinInput)
+            state = Simulation.advance(state, ticks: ticks, input: Self.spinInput, previousPose: &previousPose)
         } else {
-            state = Simulation.advance(state, ticks: ticks)
+            state = Simulation.advance(state, ticks: ticks, previousPose: &previousPose)
         }
         #else
-        state = Simulation.advance(state, ticks: ticks)
+        state = Simulation.advance(state, ticks: ticks, previousPose: &previousPose)
         #endif
+
+        // 4b. The pose the ship is drawn at: between the last two ticks, by how far the next tick has
+        //     progressed (013 FR-006). Up to one tick behind the simulation, never ahead of it.
+        #if SWIFTSKY_INSTRUMENTATION
+        let interpolates = !debugNoInterpolation
+        #else
+        let interpolates = true
+        #endif
+        let tickPose = ShipPose(state.ship)
+        let shipPose = interpolates
+            ? ShipPose.blended(from: previousPose, to: tickPose, fraction: accumulator.tickFraction)
+            : tickPose
 
         // 4a. Each arrival is logged once (008 FR-015, SC-007b): one comparison and one flag test, in
         //     debug and profiling builds only.
@@ -433,7 +453,13 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
         // 5. Draw. A `false` return is a skipped frame: retain accumulated time, count it, carry on
         //    (FR-027a, FR-027b).
         let frameStart = CACurrentMediaTime()
-        let presented = renderer.render(state: state, surface: surface, drawable: update.drawable, timestamp: now)
+        let presented = renderer.render(
+            state: state,
+            shipPose: shipPose,
+            surface: surface,
+            drawable: update.drawable,
+            timestamp: now
+        )
         let frameSeconds = CACurrentMediaTime() - frameStart
         return (presented ? .presented(seconds: frameSeconds) : .skipped, appliedEvent)
     }

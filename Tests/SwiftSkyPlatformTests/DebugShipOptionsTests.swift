@@ -24,6 +24,23 @@ struct DebugShipOptionsTests {
         let options = DebugShipOptions(arguments: ["swiftSky"] + arguments)
         #expect(options.spins == spins)
         #expect(options.hidesShip == hidesShip)
+        #expect(options.interpolates)
+    }
+
+    @Test(
+        "--no-interpolation turns interpolation off, independent of the other switches (013 FR-008)",
+        arguments: [
+            ([String](), true),
+            (["--no-interpolation"], false),
+            (["--no-interpolation", "--debug-ship-spin", "--no-ship"], false),
+            (["--debug-ship-spin", "--no-debug-overlay"], true),
+        ]
+    )
+    func interpolation(arguments: [String], interpolates: Bool) {
+        let options = DebugShipOptions(arguments: ["swiftSky"] + arguments)
+        #expect(options.interpolates == interpolates)
+        #expect(options.spins == arguments.contains("--debug-ship-spin"))
+        #expect(options.hidesShip == arguments.contains("--no-ship"))
     }
 }
 #endif

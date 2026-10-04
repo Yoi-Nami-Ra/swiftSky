@@ -53,7 +53,7 @@ description: |
   - 011's check 25 still reports zero allocations per frame on both
     platforms, and frame times stay within budget.
 platform: macos
-status: ready
+status: in-progress
 phase: MVP
 priority: medium
 parent: 22
