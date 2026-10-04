@@ -114,6 +114,49 @@ struct TimeAccumulatorTests {
         #expect(accumulator.unconsumed == 0)
     }
 
+    // MARK: - The tick fraction (013 FR-001, SC-003)
+
+    @Test("The fraction is the leftover as a share of one tick")
+    func fractionOfLeftover() {
+        var accumulator = TimeAccumulator()
+        #expect(accumulator.tickFraction == 0)
+        _ = accumulator.consume(elapsed: Self.tick * 1.25)
+        #expect(abs(accumulator.tickFraction - 0.25) <= 1e-9)
+    }
+
+    /// SC-003: across zero, negative, non-finite, sub-tick, exact-multiple, near-multiple and 10 s
+    /// elapsed values, the fraction never leaves [0, 1) and `unconsumed` never goes negative.
+    @Test("The fraction stays in [0, 1) and the leftover non-negative over 10,000 elapsed values")
+    func fractionStaysInRange() {
+        let specials: [Double] = [
+            0, -0.0, -1, -.infinity, .infinity, .nan, 10, 30,
+            Self.tick, Self.tick * 2, Self.tick * 3, Self.tick * 4, Self.tick * 5,
+            (Self.tick * 3).nextDown, (Self.tick * 3).nextUp, Self.tick.nextDown, Self.tick.nextUp,
+        ]
+        var generator = SplitMix64(seed: 0x0013_0001)
+        var accumulator = TimeAccumulator()
+        var index = 0
+        while index < 10_000 {
+            let elapsed: Double = switch index % 4 {
+            case 0: specials[(index / 4) % specials.count]
+            case 1: generator.next(in: 0...Self.tick)
+            case 2: Self.tick * Double(Int.random(in: 0...6, using: &generator))
+            default: generator.next(in: 0...0.2)
+            }
+            _ = accumulator.consume(elapsed: elapsed)
+            #expect(accumulator.tickFraction >= 0 && accumulator.tickFraction < 1)
+            #expect(accumulator.unconsumed >= 0)
+            index += 1
+        }
+    }
+
+    @Test("After the catch-up clamp discards time, the fraction is still in [0, 1)")
+    func fractionAfterClamp() {
+        var accumulator = TimeAccumulator()
+        _ = accumulator.consume(elapsed: 10.0)
+        #expect(accumulator.tickFraction >= 0 && accumulator.tickFraction < 1)
+    }
+
     // MARK: - Determinism (SC-013)
 
     @Test("An identical sequence of elapsed spans produces an identical tick sequence")

@@ -107,4 +107,59 @@ struct SimulationTests {
         // Documented behaviour, not a defect: the clamp trades simulation time for frame stability.
         #expect(fragmentedTicks > singleTicks)
     }
+
+    // MARK: - The previous pose (013 FR-005, SC-003)
+
+    /// A moving, turning ship flying an order, so consecutive ticks differ in position and heading.
+    static func flyingState() -> SimulationState {
+        let ship = Ship(position: Vector2(x: 30, y: -12), velocity: Vector2(x: 80, y: 25), heading: 2.9, angularVelocity: 0.8)
+        var state = SimulationState(tickCount: 7, ship: ship)
+        state.setOrder(to: Vector2(x: -400, y: 300))
+        return Simulation.advance(state, ticks: 5)
+    }
+
+    static let sentinel = ShipPose(position: Vector2(x: 123, y: 456), heading: -1)
+
+    @Test("With the autopilot, the previous pose is the one before the frame's last tick", arguments: [0, 1, 2, 4])
+    func previousPoseFlown(ticks: Int) {
+        let state = Self.flyingState()
+        var previous = Self.sentinel
+        let next = Simulation.advance(state, ticks: ticks, previousPose: &previous)
+
+        #expect(bits(next) == bits(Simulation.advance(state, ticks: ticks)))
+        if ticks == 0 {
+            #expect(bits(previous) == bits(Self.sentinel))
+        } else {
+            #expect(bits(previous) == bits(ShipPose(Simulation.advance(state, ticks: ticks - 1).ship)))
+        }
+    }
+
+    @Test("With an explicit input, the previous pose is the one before the frame's last tick", arguments: [0, 1, 2, 4])
+    func previousPoseWithInput(ticks: Int) {
+        let state = Self.flyingState()
+        let input = ControlInput(thrust: 1, turn: -1)
+        var previous = Self.sentinel
+        let next = Simulation.advance(state, ticks: ticks, input: input, previousPose: &previous)
+
+        #expect(bits(next) == bits(Simulation.advance(state, ticks: ticks, input: input)))
+        if ticks == 0 {
+            #expect(bits(previous) == bits(Self.sentinel))
+        } else {
+            #expect(bits(previous) == bits(ShipPose(Simulation.advance(state, ticks: ticks - 1, input: input).ship)))
+        }
+    }
+
+    @Test("Frame by frame, the previous pose always trails the state by exactly one tick")
+    func previousPoseTrailsOneTick() {
+        var state = Self.flyingState()
+        var previous = ShipPose(state.ship)
+        for ticks in [1, 0, 0, 2, 1, 4, 0, 3, 1] {
+            let before = state
+            state = Simulation.advance(state, ticks: ticks, previousPose: &previous)
+            if ticks > 0 {
+                #expect(bits(previous) == bits(ShipPose(Simulation.advance(before, ticks: ticks - 1).ship)))
+                #expect(bits(ShipPose(Simulation.advance(before, ticks: ticks).ship)) == bits(ShipPose(state.ship)))
+            }
+        }
+    }
 }
