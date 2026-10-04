@@ -427,14 +427,15 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
 
         // 4b. The pose the ship is drawn at: between the last two ticks, by how far the next tick has
         //     progressed (013 FR-006). Up to one tick behind the simulation, never ahead of it.
-        let tickPose = ShipPose(state.ship)
         #if SWIFTSKY_INSTRUMENTATION
-        let shipPose = debugNoInterpolation
-            ? tickPose
-            : ShipPose.blended(from: previousPose, to: tickPose, fraction: accumulator.tickFraction)
+        let interpolates = !debugNoInterpolation
         #else
-        let shipPose = ShipPose.blended(from: previousPose, to: tickPose, fraction: accumulator.tickFraction)
+        let interpolates = true
         #endif
+        let tickPose = ShipPose(state.ship)
+        let shipPose = interpolates
+            ? ShipPose.blended(from: previousPose, to: tickPose, fraction: accumulator.tickFraction)
+            : tickPose
 
         // 4a. Each arrival is logged once (008 FR-015, SC-007b): one comparison and one flag test, in
         //     debug and profiling builds only.
