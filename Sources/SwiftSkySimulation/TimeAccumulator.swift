@@ -12,6 +12,12 @@ public struct TimeAccumulator: Sendable, Equatable {
         self.unconsumed = 0
     }
 
+    /// How far the current tick has progressed: `unconsumed` as a fraction of one tick, always in [0, 1)
+    /// (013 FR-001). The blend factor between the last two ticks' poses.
+    public var tickFraction: Double {
+        min(max(unconsumed / FixedTimestep.tickDuration, 0), 1.0.nextDown)
+    }
+
     /// Adds `seconds` of elapsed real time and returns the whole number of ticks to advance.
     ///
     /// Returning `0` is normal and common: the simulation runs at 60 Hz while the display may be
@@ -41,7 +47,9 @@ public struct TimeAccumulator: Sendable, Equatable {
             return FixedTimestep.catchUpClamp
         }
 
-        unconsumed -= Double(wholeTicks) * FixedTimestep.tickDuration
+        // The division above can round up to a whole tick that `unconsumed` falls a few ulps short of,
+        // which would leave it just below zero (013 research R1).
+        unconsumed = max(0, unconsumed - Double(wholeTicks) * FixedTimestep.tickDuration)
         return wholeTicks
     }
 }
