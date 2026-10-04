@@ -141,9 +141,13 @@ public final class Renderer {
     ///
     /// - Parameter timestamp: the frame's timestamp, read once per frame by the loop (FR-033). Used only
     ///   to measure the debug text's FPS; nothing else here reads the clock (002 FR-014).
+    /// - Parameter shipPose: where to draw the ship: the frame loop's blend of its last two ticks
+    ///   (013 FR-006, FR-007). Everything else drawn from the ship's pose must use this one too, so it
+    ///   never drifts from the sprite. Read only, never written back.
     @discardableResult
     public func render(
         state: SimulationState,
+        shipPose: ShipPose,
         surface: RenderSurface,
         drawable: any CAMetalDrawable,
         timestamp: Double
@@ -179,9 +183,9 @@ public final class Renderer {
         encoder.setVertexBuffer(quad.vertexBuffer, offset: 0, index: 0)
         encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: FullscreenQuad.vertexCount)
 
-        // The ship over the background, from this frame's state (007 FR-001, FR-009). Nothing here
-        // writes back to the logic layer.
-        encodeShip(state.ship, surface: surface, encoder: encoder)
+        // The ship over the background, at this frame's drawn pose (007 FR-001, FR-009; 013 FR-006).
+        // Nothing here writes back to the logic layer.
+        encodeShip(at: shipPose, surface: surface, encoder: encoder)
 
         // Text on top of the quad, in the same pass (002 FR-001).
         if let textSlot, let textToDraw, let text {
@@ -201,11 +205,11 @@ public final class Renderer {
     ///
     /// Allocation-free (007 FR-011): the placement is a value, and its four corners go to the GPU as 32
     /// bytes through `setVertexBytes`, which copies them into the command stream.
-    private func encodeShip(_ ship: Ship, surface: RenderSurface, encoder: any MTLRenderCommandEncoder) {
+    private func encodeShip(at pose: ShipPose, surface: RenderSurface, encoder: any MTLRenderCommandEncoder) {
         #if SWIFTSKY_INSTRUMENTATION
         guard drawsShip else { return }
         #endif
-        guard let placement = ShipSpritePlacement(position: ship.position, heading: ship.heading, surface: surface)
+        guard let placement = ShipSpritePlacement(position: pose.position, heading: pose.heading, surface: surface)
         else { return }
 
         let (a, b, c, d) = placement.clipCorners
