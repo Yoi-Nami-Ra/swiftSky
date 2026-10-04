@@ -7,10 +7,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a **GitHub Spec Kit** project (v0.14.1) initialized with the Claude integration and
 Spec-Driven Development (SDD) workflow. The project is named `swiftSky`: a **cross-platform game for
 iOS and macOS built in Swift with a Metal rendering pipeline** (SwiftUI shell). It is a git
-repository (`main`) with `origin` set to `git@yoinamira-github:Yoi-Nami-Ra/swiftSky.git`, a private
-GitHub repository. `yoinamira-github` is a host alias in `~/.ssh/config` that signs in with the
-`Yoi-Nami-Ra` key; a plain `git@github.com:` URL signs in as a different account on this Mac and gets
-"Repository not found".
+repository (`main`) with `origin` set to `git@github.com:Yoi-Nami-Ra/swiftSky.git`, a private
+GitHub repository. On this Mac a plain `git@github.com:` connection signs in as a different account
+and gets "Repository not found", so the repo's local `.git/config` rewrites it:
+`git config url."git@yoinamira-github:".insteadOf "git@github.com:"`, where `yoinamira-github` is a
+host alias in `~/.ssh/config` that signs in with the `Yoi-Nami-Ra` key. `git remote -v` therefore
+prints the alias form; `git config --get remote.origin.url` shows the stored URL. A fresh clone needs
+the rule set again.
 
 Built so far: `specs/001-metal-app-shell` (a black Metal surface on both platforms, three layers,
 an off-main frame loop, instrumentation), `specs/002-metal-text-rendering` (Metal-drawn text from
