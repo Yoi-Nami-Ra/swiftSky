@@ -203,8 +203,8 @@ on both platforms with an order being flown.
   current state's tick, as two small values rather than a copy of the simulation state. On a frame
   that advances no tick they MUST NOT change. On a frame that advances one or more ticks they MUST be
   the pose before the last tick of that frame. Before the first tick they MUST equal the initial pose.
-  Splitting a frame's advance to capture that pose MUST leave the resulting state byte-identical to
-  advancing the same ticks at once, with or without an explicit control input.
+  Capturing that pose MUST leave the resulting state byte-identical to advancing the same ticks
+  without capturing it, with or without an explicit control input.
 
 **Drawing**
 
@@ -243,15 +243,15 @@ on both platforms with an order being flown.
 
 - **SC-001**: The blend returns the previous pose bit for bit at fraction 0 and an equal pair's pose
   bit for bit at every tested fraction; across at least 1,000 pose pairs and fractions in 0..<1, every
-  blended position lies on the segment between the two positions and its distance from the previous
-  position is the fraction of the whole distance, to within 1e-9 of it.
+  blended position (with both positions within 10,000 units of the origin) lies within 1e-9 units
+  of the point at that fraction along the segment between the two positions.
 - **SC-002**: For heading pairs across the ±π seam in both directions (for example 3.1 → −3.1 and
   −3.1 → 3.1), every blended heading lies on the short arc between them; no blend ever turns more than
   half a turn, and every blended heading is in (−π, π]. With `--debug-ship-spin` no frame shows the ship turning the long way.
 - **SC-003**: Over at least 10,000 elapsed-time values, including 0, negative, non-finite, sub-tick,
   exact multiples of a tick and stalls of 10 s, the fraction is always ≥ 0 and < 1. For frames
   advancing 0, 1, 2 and 4 ticks, the tracked previous pose matches FR-005 bit for bit, and the state
-  after the split advance is byte-identical to the unsplit advance.
+  after an advance that captures the previous pose is byte-identical to one that does not.
 - **SC-004**: On a 120 Hz Mac, a ship flying an order and spinning in place shows no visible stepping;
   with `--no-interpolation` the stepping is visible. On a 60 Hz display the motion is as smooth as
   before, with no new stepping.

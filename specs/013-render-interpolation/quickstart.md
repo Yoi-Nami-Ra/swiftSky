@@ -29,7 +29,7 @@ How to verify 013. Data shapes are in [data-model.md](./data-model.md), the API 
 |---|-------|----------|--------|
 | 1 | `./Scripts/verify.sh` | Exits 0; all existing and new tests pass; no new `warning:` lines | SC-006, FR-011 |
 | 2 | `swift test --build-system swiftbuild` 10 times in a row | 10 identical passes | SC-006 |
-| 3 | Blend: fraction 0, equal pairs, 1,000+ seeded pairs and fractions | Bit for bit at 0 and for equal pairs; on the segment, at the fraction of the distance within 1e-9 | SC-001, FR-002, FR-003 |
+| 3 | Blend: fraction 0, equal pairs, 1,000+ seeded pairs (within ±10,000 units) and fractions | Bit for bit at 0 and for equal pairs; within 1e-9 units of the exact point at the fraction along the segment | SC-001, FR-002, FR-003 |
 | 4 | Heading seam pairs both ways, opposite headings, range | Short arc; never more than half a turn; opposite blends counter-clockwise; result in (−π, π] | SC-002, FR-002 |
 | 5 | Accumulator over 10,000+ elapsed values incl. 0, negative, non-finite, sub-tick, exact multiples, 10 s stalls | `tickFraction` in [0, 1) and `unconsumed ≥ 0` after each | SC-003, FR-001 |
 | 6 | `advance` with `previousPose` for 0, 1, 2, 4 ticks, autopilot and explicit input | Previous pose per C3; state byte-identical to the plain overload | SC-003, FR-005 |
@@ -41,7 +41,7 @@ How to verify 013. Data shapes are in [data-model.md](./data-model.md), the API 
 |---|-------|----------|--------|
 | 8 | macOS Debug at 120 Hz: fly orders and `--debug-ship-spin`, then the same with `--no-interpolation` | Smooth without the argument; stepping with it; no long-way spin across ±π | SC-004, SC-002, US1 |
 | 9 | macOS at 60 Hz (set the display to 60 Hz in System Settings) | As smooth as before, no new stepping | SC-004, US1-3 |
-| 10 | 011's check 25 by "the method", 60 s with orders, macOS and iOS simulator | `allocs=0` in every frame summary; frame times within budget | SC-005, FR-009 |
+| 10 | 011's check 25 by "the method", 60 s with orders, macOS and iOS simulator | `allocs=0` in every frame summary; frame times within budget, before (`main`) and after recorded | SC-005, FR-009 |
 | 11 | Release build, both platforms | `--no-interpolation` has no effect; the ship is drawn interpolated | FR-008 |
 
 ## Evidence
