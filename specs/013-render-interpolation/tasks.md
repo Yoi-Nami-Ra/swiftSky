@@ -14,7 +14,7 @@ previous-pose tracking.
 
 ## Phase 1: Setup
 
-- [ ] T001 Run `./Scripts/verify.sh` on the branch before any change and note the test counts, as the baseline for SC-006
+- [x] T001 Run `./Scripts/verify.sh` on the branch before any change and note the test counts, as the baseline for SC-006
 
 ---
 
@@ -22,9 +22,9 @@ previous-pose tracking.
 
 **Purpose**: the logic-layer pieces every story uses: the pose, the fraction and the recorded previous pose.
 
-- [ ] T002 [P] Create `ShipPose` (position, heading, `init(_ ship:)`, `init(position:heading:)`, `Equatable`, `Sendable`) and `static func blended(from:to:fraction:)` per research R3 and contract C1 in `Sources/SwiftSkySimulation/ShipPose.swift`: clamp the fraction into `[0, 1.0.nextDown]`; fraction 0 returns `from`; equal position components and equal headings return `from`'s; heading by `remainder(dividingBy: 2π)` with `−π` → `+π`, wrapped by `Ship.wrapped`
-- [ ] T003 [P] Add `tickFraction` (`unconsumed / tickDuration` clamped into `0 ... 1.0.nextDown`) and clamp `unconsumed` to `max(0, …)` after taking whole ticks in `consume(elapsed:)`, per research R1 and contract C2, in `Sources/SwiftSkySimulation/TimeAccumulator.swift`
-- [ ] T004 Add `advance(_:ticks:previousPose:)` and `advance(_:ticks:input:previousPose:)`, recording `ShipPose(ship)` immediately before the last tick of the loop and leaving it alone for `ticks <= 0`; make the two existing overloads call them with a discarded pose, per research R4 and contract C3, in `Sources/SwiftSkySimulation/Simulation.swift` (depends on T002)
+- [x] T002 [P] Create `ShipPose` (position, heading, `init(_ ship:)`, `init(position:heading:)`, `Equatable`, `Sendable`) and `static func blended(from:to:fraction:)` per research R3 and contract C1 in `Sources/SwiftSkySimulation/ShipPose.swift`: clamp the fraction into `[0, 1.0.nextDown]`; fraction 0 returns `from`; equal position components and equal headings return `from`'s; heading by `remainder(dividingBy: 2π)` with `−π` → `+π`, wrapped by `Ship.wrapped`
+- [x] T003 [P] Add `tickFraction` (`unconsumed / tickDuration` clamped into `0 ... 1.0.nextDown`) and clamp `unconsumed` to `max(0, …)` after taking whole ticks in `consume(elapsed:)`, per research R1 and contract C2, in `Sources/SwiftSkySimulation/TimeAccumulator.swift`
+- [x] T004 Add `advance(_:ticks:previousPose:)` and `advance(_:ticks:input:previousPose:)`, recording `ShipPose(ship)` immediately before the last tick of the loop and leaving it alone for `ticks <= 0`; make the two existing overloads call them with a discarded pose, per research R4 and contract C3, in `Sources/SwiftSkySimulation/Simulation.swift` (depends on T002)
 
 **Checkpoint**: `swift build` succeeds; all existing tests still pass.
 

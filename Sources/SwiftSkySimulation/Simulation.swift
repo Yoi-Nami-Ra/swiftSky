@@ -22,11 +22,29 @@ public enum Simulation {
     ///   - ticks: Whole ticks to advance. `0` is legal and returns `state` unchanged.
     /// - Returns: The state after `ticks` advances.
     public static func advance(_ state: SimulationState, ticks: Int) -> SimulationState {
+        var previousPose = ShipPose(state.ship)
+        return advance(state, ticks: ticks, previousPose: &previousPose)
+    }
+
+    /// `advance(_:ticks:)`, also recording the ship's pose from immediately before the last tick
+    /// (013 FR-005, research R4).
+    ///
+    /// The returned state is bit-identical to `advance(_:ticks:)`'s. `previousPose` is left alone when
+    /// `ticks` is 0, so on a frame that advances no tick the drawing keeps blending between the same two
+    /// poses; on a multi-tick frame it is the pose one tick before the result, never the one before the
+    /// frame.
+    public static func advance(
+        _ state: SimulationState,
+        ticks: Int,
+        previousPose: inout ShipPose
+    ) -> SimulationState {
         guard ticks > 0 else { return state }
         var next = state
-        for _ in 0..<ticks {
+        for _ in 1..<ticks {
             tick(&next.ship, &next.autopilot)
         }
+        previousPose = ShipPose(next.ship)
+        tick(&next.ship, &next.autopilot)
         next.tickCount += UInt64(ticks)
         return next
     }
@@ -59,11 +77,25 @@ public enum Simulation {
         ticks: Int,
         input: ControlInput
     ) -> SimulationState {
+        var previousPose = ShipPose(state.ship)
+        return advance(state, ticks: ticks, input: input, previousPose: &previousPose)
+    }
+
+    /// `advance(_:ticks:input:)`, also recording the ship's pose from immediately before the last tick,
+    /// exactly as `advance(_:ticks:previousPose:)` does (013 FR-005).
+    public static func advance(
+        _ state: SimulationState,
+        ticks: Int,
+        input: ControlInput,
+        previousPose: inout ShipPose
+    ) -> SimulationState {
         guard ticks > 0 else { return state }
         var next = state
-        for _ in 0..<ticks {
+        for _ in 1..<ticks {
             next.ship.step(input)
         }
+        previousPose = ShipPose(next.ship)
+        next.ship.step(input)
         next.tickCount += UInt64(ticks)
         return next
     }
