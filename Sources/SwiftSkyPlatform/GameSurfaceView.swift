@@ -72,6 +72,9 @@ public struct GameSurfaceView: View {
         #if SWIFTSKY_INSTRUMENTATION
         /// `--debug-ship-spin`, handed to the loop when it is created (007 FR-013).
         var debugShipSpin = false
+
+        /// `--no-interpolation`, handed to the loop when it is created (013 FR-008).
+        var debugNoInterpolation = false
         #endif
     }
 
@@ -106,6 +109,7 @@ public struct GameSurfaceView: View {
             let created = FrameLoop(renderer: setup.renderer, layer: layer)
             #if SWIFTSKY_INSTRUMENTATION
             created.debugShipSpin = setup.debugShipSpin
+            created.debugNoInterpolation = setup.debugNoInterpolation
             #endif
             loop = created
             created.start()
@@ -139,6 +143,7 @@ public struct GameSurfaceView: View {
             renderer.drawsShip = !shipOptions.hidesShip
             var setup = Setup(device: device, renderer: renderer)
             setup.debugShipSpin = shipOptions.spins
+            setup.debugNoInterpolation = !shipOptions.interpolates
             if DebugMainStall(arguments: arguments).isRequested {
                 DebugMainStall.schedule()
             }
@@ -233,8 +238,8 @@ enum DebugTextMode: Equatable {
 /// The ship switches, from the launch arguments (007 FR-013–FR-015, research R9).
 ///
 /// Debug and Profiling builds only, like `DebugTextMode`: in Release this type, its parsing and both
-/// strings do not exist, so a Release build always draws the ship and never spins it. The two switches
-/// are independent of each other and of the text arguments.
+/// strings do not exist, so a Release build always draws the ship, interpolated, and never spins it. The
+/// switches are independent of each other and of the text arguments.
 struct DebugShipOptions: Equatable {
     /// `--debug-ship-spin`: every tick gets a full counter-clockwise turn and no thrust, so the ship turns
     /// in place at its top rate — the only way to see it rotate before orders exist.
@@ -244,12 +249,18 @@ struct DebugShipOptions: Equatable {
     /// so the earlier black-surface checks still apply. The simulation is untouched.
     var hidesShip: Bool
 
+    /// `false` for `--no-interpolation`: the ship is drawn at its latest tick's pose instead of between
+    /// its last two ticks, so the stepping that interpolation removes can be compared (013 FR-008).
+    var interpolates: Bool
+
     static let spinArgument = "--debug-ship-spin"
     static let noShipArgument = "--no-ship"
+    static let noInterpolationArgument = "--no-interpolation"
 
     init(arguments: [String]) {
         spins = arguments.contains(Self.spinArgument)
         hidesShip = arguments.contains(Self.noShipArgument)
+        interpolates = !arguments.contains(Self.noInterpolationArgument)
     }
 }
 
