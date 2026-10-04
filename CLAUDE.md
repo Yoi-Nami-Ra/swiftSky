@@ -126,12 +126,13 @@ artifacts, keep them consistent with these templates.
   the order log line; the arrival line, written once per frame, can come a tick or two later on
   multi-tick frames.
 - `Sources/SwiftSkySimulation/ShipPose.swift` (013) — position and heading, and the blend between two
- poses (linear position, short-arc heading in (−π, π], bit-exact at fraction 0 and for equal inputs).
- `TimeAccumulator.tickFraction` is the blend factor; `Simulation.advance(…, previousPose:)` records the
- pose before a frame's last tick, which `FrameLoop` keeps. The loop passes the drawn pose to
- `Renderer.render(state:shipPose:…)`: anything drawn from the ship's pose (SKY-30, SKY-42) uses that
- argument, never `state.ship`, so it never drifts from the sprite. `--no-interpolation` (Debug and
- Profiling builds) draws the tick pose instead.
+  poses (linear position, short-arc heading in (−π, π], bit-exact at fraction 0 and for equal inputs).
+  `TimeAccumulator.tickFraction` is the blend factor; `Simulation.advance(…, previousPose:)` records the
+  pose before a frame's last tick, which `FrameLoop` keeps. The loop passes the drawn pose to
+  `Renderer.render(state:shipPose:…)`: anything drawn from the ship's pose (SKY-30, SKY-42) uses that
+  argument, never `state.ship`, so it never drifts from the sprite. `--no-interpolation` draws the tick
+  pose instead; like every debug argument it needs `SWIFTSKY_INSTRUMENTATION` in the package, so Debug
+  or the instrumented Release build, not Profiling (011 R1).
 - `Sources/SwiftSkyRendering/Camera.swift` and `GameSpace.swift` — the camera (world → view points,
   view points → world, world → clip; `init?(surface:)` is `nil` for a zero-area surface or an
   unusable backing scale) and
