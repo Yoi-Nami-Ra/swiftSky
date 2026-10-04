@@ -66,14 +66,14 @@ previous-pose tracking.
 
 **Independent Test**: quickstart check 10.
 
-- [ ] T013 [US3] Run 011's check 25 by "the method" in `specs/011-draw-allocation-counter/quickstart.md` (optimised build carrying the counter, 60 s flying orders) on macOS and in the iOS simulator, on this branch and on `main` for the before figure (Principle III); record `allocs=` and frame times, before and after, in `specs/013-render-interpolation/quickstart.md`
+- [x] T013 [US3] Run 011's check 25 by "the method" in `specs/011-draw-allocation-counter/quickstart.md` (optimised build carrying the counter, 60 s flying orders) on macOS and in the iOS simulator, on this branch and on `main` for the before figure (Principle III); record `allocs=` and frame times, before and after, in `specs/013-render-interpolation/quickstart.md`
 
 ---
 
 ## Phase 6: Polish & cross-cutting
 
-- [ ] T014 [P] Add spec 013 and `ShipPose.swift` (the blend, `tickFraction`, the `previousPose:` advance variants, the drawn pose passed to `render`, `--no-interpolation`) to `CLAUDE.md`
-- [ ] T015 Run `./Scripts/verify.sh` and `swift test --build-system swiftbuild` 10 times in a row (quickstart checks 1, 2); check 11 by reading the Release path (the argument is parsed only under `SWIFTSKY_INSTRUMENTATION`); record all evidence in `specs/013-render-interpolation/quickstart.md`
+- [x] T014 [P] Add spec 013 and `ShipPose.swift` (the blend, `tickFraction`, the `previousPose:` advance variants, the drawn pose passed to `render`, `--no-interpolation`) to `CLAUDE.md`
+- [x] T015 Run `./Scripts/verify.sh` and `swift test --build-system swiftbuild` 10 times in a row (quickstart checks 1, 2); check 11 by reading the Release path (the argument is parsed only under `SWIFTSKY_INSTRUMENTATION`); record all evidence in `specs/013-render-interpolation/quickstart.md`
 
 ---
 

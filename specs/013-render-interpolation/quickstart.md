@@ -48,3 +48,13 @@ How to verify 013. Data shapes are in [data-model.md](./data-model.md), the API 
 
 | # | Result | Notes |
 |---|--------|-------|
+| 1 | **PASS** 2026-10-04 | `./Scripts/verify.sh`: every stage PASS (metal compiler, ship.png identity, swift build with the layer boundary, no Metal device in tests, swift test, xcodebuild macOS and iOS) |
+| 2 | **PASS** 2026-10-04 | 10/10 consecutive `swift test --build-system swiftbuild` runs: 87 simulation, 84 rendering, 58 platform tests |
+| 3–4 | **PASS** 2026-10-04 | `Ship pose` suite: fraction 0 and equal pairs bit for bit (signed zeros included); 2,000 seeded pairs within ±10,000 units on the segment within 1e-9 and on the short arc; seam pairs both ways; opposite headings counter-clockwise from four starts; every heading in (−π, π] |
+| 5 | **PASS** 2026-10-04 | `TimeAccumulator`: 10,000 elapsed values (specials incl. 0, −0, negative, ±∞, NaN, 10 s and 30 s stalls, exact and one-ulp-off tick multiples; random sub-tick, whole-tick and up-to-0.2 s values): `tickFraction` in [0, 1), `unconsumed ≥ 0` after each |
+| 6 | **PASS** 2026-10-04 | `Simulation`: 0, 1, 2, 4 ticks with the autopilot and with an explicit input; previous pose per C3; state byte-identical to the plain overload; a 9-frame mixed sequence trails by exactly one tick |
+| 7 | **PASS** 2026-10-04 | `DebugShipOptions`: `interpolates` false only with `--no-interpolation`, independent of `--debug-ship-spin` and `--no-ship` |
+| 8 | **PENDING** | Needs a 120 Hz display: the development Mac's display ran at 60 Hz (budget 16.67 ms in every summary) |
+| 9 | **PENDING** | By eye, at 60 Hz |
+| 10 | **PASS** 2026-10-04 | Optimised build with the counter (Release + `SWIFTSKY_INSTRUMENTATION`), `--debug-ship-spin` (the heading is blended every frame; orders could not be clicked without Accessibility), 60 s. **macOS**: `allocation counter ready`, 30/30 summaries `allocs=0 allocframes=0`, 0 dropped; mean 0.167 ms, worst 0.91 ms (`main`: 0.184 ms, 1.24 ms). **iOS simulator** (iPhone 17 Pro): 22/22 summaries `allocs=0 allocframes=0`; warm run mean 0.145 ms, worst 13.8 ms, 0 dropped (`main`: 0.157 ms, 29.3 ms, 2 dropped at launch). A first run on a freshly booted simulator had a 297 ms launch frame and mean 0.264 ms; the warm repeat is the comparable figure |
+| 11 | **PASS** 2026-10-04 | By reading: `DebugShipOptions` and its parsing, `FrameLoop.debugNoInterpolation` and the switch's branch are all under `SWIFTSKY_INSTRUMENTATION`; the `#else` branch always blends |

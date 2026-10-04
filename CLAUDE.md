@@ -28,7 +28,9 @@ and `specs/009-click-to-order-macos` (a primary click does the same on macOS, th
 request) and `specs/010-ship-path-prediction` (giving an order also predicts its planned path in the
 logic layer; nothing draws it yet) and `specs/011-draw-allocation-counter` (001 FR-021d's draw-path
 allocation counts in the frame summary; check 25, zero allocations per frame, PASS on iOS and, by SKY-4, on macOS) and `specs/012-main-thread-stall-probe` (the main thread's worst busy
-stretch in the frame summary; check 29's continuous resize: no races, no stall mid-drag). Layer libraries and
+stretch in the frame summary; check 29's continuous resize: no races, no stall mid-drag) and
+`specs/013-render-interpolation` (the ship drawn between its last two ticks, so it moves smoothly on
+120 Hz displays). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
@@ -123,6 +125,13 @@ artifacts, keep them consistent with these templates.
   state that reports arrived. Debug and Profiling builds add `predicted=… ticks=… points=… arrives=…` to
   the order log line; the arrival line, written once per frame, can come a tick or two later on
   multi-tick frames.
+- `Sources/SwiftSkySimulation/ShipPose.swift` (013) — position and heading, and the blend between two
+ poses (linear position, short-arc heading in (−π, π], bit-exact at fraction 0 and for equal inputs).
+ `TimeAccumulator.tickFraction` is the blend factor; `Simulation.advance(…, previousPose:)` records the
+ pose before a frame's last tick, which `FrameLoop` keeps. The loop passes the drawn pose to
+ `Renderer.render(state:shipPose:…)`: anything drawn from the ship's pose (SKY-30, SKY-42) uses that
+ argument, never `state.ship`, so it never drifts from the sprite. `--no-interpolation` (Debug and
+ Profiling builds) draws the tick pose instead.
 - `Sources/SwiftSkyRendering/Camera.swift` and `GameSpace.swift` — the camera (world → view points,
   view points → world, world → clip; `init?(surface:)` is `nil` for a zero-area surface or an
   unusable backing scale) and
@@ -184,7 +193,8 @@ artifacts, keep them consistent with these templates.
 - Debug launch arguments (Debug/Profiling builds only): the live debug overlay is shown by default,
   and `--no-debug-overlay` hides it. `--no-ship` stops the ship being drawn; together with
   `--no-debug-overlay` it leaves the uniformly black surface that 001's and 002's visible-output checks
-  expect. `--debug-ship-spin` turns the ship counter-clockwise in place at its top rate. `--debug-main-stall`
+  expect. `--debug-ship-spin` turns the ship counter-clockwise in place at its top rate. `--no-interpolation`
+  draws the ship at its latest tick instead of between ticks (013). `--debug-main-stall`
   stalls the main thread once (012). `--debug-text` draws the test string with live FPS, and
   `--debug-text-fill` fills the 1,024-character text capacity. Either one replaces the overlay.
 - `.claude/skills/speckit-*/` — the skill definitions backing each `/speckit.*` command.
