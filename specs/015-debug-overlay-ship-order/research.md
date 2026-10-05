@@ -64,7 +64,7 @@ Decision record for [plan.md](./plan.md).
 
   With an order, `order   ` is followed by the phase, and two lines follow:
   `dest    x   300.00 y  -200.00` and `dist        42.10 u`. The longest line is 29 characters
-  (FR-007). The whole overlay, at the normal-range maxima with an order, is under 320 characters.
+  (FR-007). The whole overlay is about 300 characters, and under 384 at the normal-range maxima with an order.
 - **Rationale**: FR-001–FR-004; nine columns hold every normal-range value with a sign; the vectors'
   `x`/`y` keep the line under 33 characters without a second label column.
 

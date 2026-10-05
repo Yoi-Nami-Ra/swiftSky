@@ -45,7 +45,7 @@ Unchanged.
 copy of about 80 bytes four times a second, and about 190 more glyphs written per frame (the overlay is
 rewritten every frame from its last snapshot, 003 R8).
 
-**Constraints**: 1,024-character text capacity (about 300 used after this feature); 33 characters per
+**Constraints**: 1,024-character text capacity (about 300 used after this feature, under 384 at the normal-range maxima); 33 characters per
 line within normal ranges (003 FR-005); printable ASCII only (002's atlas).
 
 **Scale/Scope**: 3 changed source files (`TextBuffer.swift`, `DebugOverlay.swift`, `Renderer.swift`)

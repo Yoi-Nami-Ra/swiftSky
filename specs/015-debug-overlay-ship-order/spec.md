@@ -98,7 +98,7 @@ the overlay from a screenshot.
    velocity `0.00`, `0.00`, speed `0.00`, heading `0.00` and turn `0.00`.
 2. **Given** a Debug build launched with `--debug-ship-spin`, **When** the ship has reached its top turn
    rate, **Then** the turn line reads `180.00 deg/s`, and the heading line changes at every refresh and
-   stays within −180 to 180 degrees.
+   stays within −179.99 to 180.00.
 3. **Given** the ship is flying an order, **When** the overlay refreshes, **Then** speed equals the
    length of the shown velocity to within the shown precision, and the position moves in the direction
    of the shown velocity.
@@ -148,7 +148,7 @@ flight; inspect a Release build's symbols and strings as 003's check 16 does.
    counted over a sustained run with the optimised instrumented build, **Then** there are zero,
    including on refresh frames.
 2. **Given** a Release build, **When** its symbols and strings are inspected, **Then** none of the new
-   labels, units or phase texts are present.
+   labels or units are present (phase names exempt, FR-009).
 
 ---
 
@@ -237,8 +237,10 @@ with edge cases (Principle II); nothing visible depends on this story.
 
 **Builds, cost and boundaries**
 
-- **FR-009**: The new lines, labels, units and phase texts MUST be compiled into Debug and Profiling
-  builds only. A Release build MUST contain none of them (003 FR-009).
+- **FR-009**: The new lines, labels, units and the overlay's phase texts MUST be compiled into Debug and
+  Profiling builds only. A Release build MUST contain none of the new labels or units (003 FR-009). The
+  phase names are exempt from the Release check: they are also the logic layer's own case names, which
+  the compiler keeps as type metadata in every build.
 - **FR-010**: Showing the new lines, including taking the snapshot, MUST NOT allocate memory on the
   per-frame path (003 FR-014, 011 check 25).
 - **FR-011**: The ship and order snapshot MUST be handed to the rendering layer as plain values, as the
@@ -270,8 +272,8 @@ with edge cases (Principle II); nothing visible depends on this story.
   rate, and the heading line only ever reads values from −179.99 to 180.00.
 - **SC-004**: Zero heap allocations per frame with the overlay showing and an order in flight, over a
   sustained run of at least 60 seconds, measured as in 011's check 25.
-- **SC-005**: A Release build contains none of the new labels, units or phase texts, confirmed with
-  `nm` and `strings` as in 003's check 16.
+- **SC-005**: A Release build contains none of the new labels or units and no symbol of the new
+  snapshot, confirmed with `nm` and `strings` as in 003's check 16 (phase names exempt, FR-009).
 - **SC-006**: The new formatting and layout tests pass headlessly and deterministically on the project's
   single test command.
 
@@ -284,7 +286,8 @@ with edge cases (Principle II); nothing visible depends on this story.
   block is one line without an order and three with one.
 - **Distance**: the simulation's own distance remaining (006) is shown, not one recomputed from the
   rounded figures.
-- **Capacity**: the whole overlay stays near 350 of the text renderer's 1,024 characters, and fourteen
+- **Capacity**: the whole overlay uses about 300 of the text renderer's 1,024 characters (under 384 at
+  the normal-range maxima), and fourteen
   lines fit inside a landscape iPhone's safe area at 13-point text.
 - **Checks**: tap- and click-driven checks need a person at the device; launch-only checks can be run
   from screenshots.

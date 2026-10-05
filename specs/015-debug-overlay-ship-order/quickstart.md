@@ -21,15 +21,15 @@ C3), and builds both apps.
 |---|-------|----------|-----------|
 | 1 | `verify.sh` | All suites pass, both apps build, no warnings | FR-013, SC-006 |
 | 2 | iOS Debug, no arguments; screenshot | Six 003 lines, then `pos`/`vel` at `0.00`, `speed 0.00 u/s`, `heading 0.00 deg`, `turn 0.00 deg/s`, `order   none`; all inside the safe area | SC-001, FR-001–FR-004 |
-| 3 | iOS Debug, `--debug-ship-spin`; two screenshots a second apart | `turn  180.00 deg/s`; heading differs between the shots and stays in −179.99…180.00; position `0.00` | SC-003, FR-002 |
+| 3 | iOS Debug, `--debug-ship-spin`; two screenshots a second apart | `turn` reads `180.00 deg/s`; heading differs between the shots and stays in −179.99…180.00; position `0.00` | SC-003, FR-002 |
 | 4 | iOS Debug, tap a point; screenshots during the flight and after arrival | `order` line with a phase, `dest` equal to the log's `order … world=` to two decimals, `dist` falling; after arrival `order   arrived`, `dist` ≤ 1.00 | SC-002, FR-003 |
 | 5 | iOS Debug, tap a second point mid-flight | `dest` changes to the new point at the next refresh | FR-003 |
 | 6 | macOS Debug, no arguments, then click a point | As checks 2 and 4, in the window's top-left | SC-001, SC-002 |
 | 7 | `--no-ship`, `--no-interpolation` (Debug) | Ship and order lines still shown; values unchanged in meaning | Edge cases |
 | 8 | `--no-debug-overlay`, `--debug-text` (Debug) | No overlay lines at all / the test string only | 003 FR-011, FR-012 |
-| 9 | 011 check 25, optimised instrumented build, iOS simulator, 60 s with orders flown | `allocation counter ready`; `allocs=0 allocframes=0` in every summary but the first | SC-004, FR-010 |
-| 10 | Same as 9 on macOS | Same | SC-004 |
-| 11 | Plain Release build (macOS and iOS): `nm` on the binary, unstripped and after `strip -rSTx`; `strings` | 0 `DebugOverlayShip` symbols; 0 of `pos     x`, `heading `, ` deg/s`, ` u/s`, `order   `, `dest    x` | SC-005, FR-009 |
+| 9 | 011 check 25, optimised instrumented build, iOS simulator, 60 s with orders flown; the same on `main` (d6f004e) for the before figures | `allocation counter ready`; `allocs=0 allocframes=0` in every summary but the first; mean/worst frame time recorded before and after (Principle III) | SC-004, FR-010 |
+| 10 | Same as 9 on macOS: idle with `--debug-ship-spin` (no order); with clicked orders by hand | Same | SC-004 |
+| 11 | Plain Release build for macOS, as 003 check 16: `nm` on the binary, unstripped and after `strip -rSTx`; `strings` | 0 `DebugOverlayShip` symbols; 0 of `pos     x`, `heading `, ` deg/s`, ` u/s`, `order   `, `dest    x` | SC-005, FR-009 |
 
 ## Notes
 

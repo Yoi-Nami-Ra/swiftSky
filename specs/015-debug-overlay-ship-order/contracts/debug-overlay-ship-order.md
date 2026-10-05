@@ -26,6 +26,7 @@ extension TextBuffer {
 | `-99999.99` | `-99999.99` |
 | `-123456.789` | `-123456.79` (wider, in full) |
 | `.nan` | `     0.00` |
+| `-.infinity` | `-` and the clamped magnitude, in full |
 
 `writeHundredths` is unchanged (its table in 003's contract still holds).
 
