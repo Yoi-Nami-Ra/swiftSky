@@ -49,7 +49,7 @@ drawing is render code and exempt (Principle II); it is checked by the quickstar
 
 - [ ] T012 [P] [US2] Create Tests/SwiftSkyRenderingTests/OrderOverlayTests.swift covering contract C2: `nil` with no order, when arrived, and with no camera (zero-area surface); marker centre equals the destination's view × scale exactly; highlight centre equals `ShipSpritePlacement.centrePixels`; first line point is the drawn ship position; last point equals the marker centre, both when the path reaches arrival and when it is capped
 - [ ] T013 [P] [US2] Add reached-point tests to Tests/SwiftSkyRenderingTests/OrderOverlayTests.swift: at `poseTick` before the start every path point is drawn; partway, exactly the points with tick > `poseTick`, in order; past the last point only ship and destination remain; a new order (state rebuilt) gives the new destination
-- [ ] T014 [US2] Add the full-capacity case to Tests/SwiftSkyRenderingTests/OrderOverlayTests.swift: an order long enough to fill 256 points gives 258 line points and allocates nothing (counted with the allocation counter's C API inside a `while` loop, as the platform tests do, or by structure if the counter is not linked into the rendering tests)
+- [ ] T014 [US2] Add the full-capacity case to Tests/SwiftSkyRenderingTests/OrderOverlayTests.swift: an order long enough to fill all 256 path points gives 258 line points at `poseTick` before the start. (Allocations are measured by 011 check 25 in T015/T016: the counter is linked only into the platform tests.)
 
 **Checkpoint**: `verify.sh` passes with the new tests.
 

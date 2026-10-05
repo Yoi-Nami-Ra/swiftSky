@@ -7,7 +7,7 @@ Decision record for [plan.md](./plan.md). Each entry: decision, rationale, alter
 **Decision**: `OrderOverlay`, a rendering-layer value built every frame by
 `OrderOverlay(state:shipPose:poseTick:surface:)`. It returns `nil` when nothing is drawn (no order,
 arrived, empty path, no camera), and otherwise holds everything the GPU needs in surface pixels: the
-line's points, the marker's centre and the ring's centre, plus the surface size. The encoder only copies
+line's points, the marker's centre and the highlight's centre, plus the surface size. The encoder only copies
 it into the command stream.
 
 **Rationale**: the same split as `ShipSpritePlacement` (007 R5): what the tests check is exactly what is

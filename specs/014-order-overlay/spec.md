@@ -113,7 +113,7 @@ GPU.
 1. **Given** a state with no order, or with the autopilot reporting arrived, **When** the overlay is
    prepared, **Then** nothing is drawn (SC-003, SC-004).
 2. **Given** a state flying an order, **When** the overlay is prepared, **Then** the marker's centre is
-   the order's destination exactly, the ring's centre is the sprite's whole-pixel centre, the line's
+   the order's destination exactly, the highlight's centre is the sprite's whole-pixel centre, the line's
    first point is the drawn ship position, and its last point is the destination (SC-001, SC-002).
 3. **Given** a planned path and a tick partway through the flight, **When** the remaining path is
    taken, **Then** it holds exactly the predicted points the ship has not reached yet, in order (SC-002).
@@ -183,8 +183,8 @@ on both platforms with orders being flown.
   with an outer radius of 8 points and a stroke of 2 points.
 - **FR-005**: The **ship highlight** MUST be a ring centred on the sprite's centre: the drawn ship
   position (013) rounded to whole pixels exactly as the sprite is (007 FR-006a), so ring and sprite
-  never misalign. It MUST have a radius of 28 points, clear of the 40-point ship sprite (007), and a
-  stroke of 1.5 points, and MUST NOT rotate with the ship. The marker and the line are not rounded.
+  never misalign. It MUST have a radius of 28 points to the middle of its stroke, clear of the 40-point
+  ship sprite (007), and a stroke of 1.5 points, and MUST NOT rotate with the ship. The marker and the line are not rounded.
 - **FR-006**: The **planned path** MUST be a line 1.5 points wide that starts at the drawn ship
   position, then passes through, in order, every predicted path point the ship has not reached yet,
   and ends at the destination. When the prediction stopped before arrival, the line MUST run straight
@@ -194,9 +194,10 @@ on both platforms with orders being flown.
   before the latest tick. Reached points MUST NOT be drawn, so the line never doubles back behind the
   ship.
 - **FR-008**: All three parts MUST use one accent colour, the same in every build, chosen for contrast
-  against the black background, and partly transparent so the ship and the background stay readable
-  through it. The marker and the ring MUST differ by shape and size, not by colour alone
-  (Principle IV).
+  against the black background and drawn at 85 % strength, so the overlay reads as secondary to the
+  ship drawn over it. Where parts overlap (consecutive line segments, the line through the marker) the
+  colour MUST NOT build up brighter. The marker and the highlight MUST differ by size, not by colour
+  alone (Principle IV).
 - **FR-009**: The overlay MUST be drawn after the background and before the ship sprite, so the ship
   is drawn over its own ring and over the start of the line; the debug overlay and debug text MUST
   stay on top of everything.
@@ -230,7 +231,7 @@ on both platforms with orders being flown.
 ### Key Entities
 
 - **Order overlay**: what one frame shows of the current order — whether it is visible, the marker's
-  centre, the ring's centre and the line's points. Prepared from the simulation state and the drawn
+  centre, the highlight's centre and the line's points. Prepared from the simulation state and the drawn
   pose, every frame, without keeping anything between frames.
 - **Remaining path**: the predicted points the ship has not reached yet, between the drawn ship and the
   destination.
