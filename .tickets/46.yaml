@@ -1,0 +1,34 @@
+id: 46
+title: "Autopilot starts a re-order from rest in flipping"
+type: bug
+description: |
+  Seen while verifying SKY-34 (specs/015-debug-overlay-ship-order/quickstart.md,
+  check 5): after the ship had arrived and was keeping station, a new order
+  from rest made the debug overlay read `order   flipping` at once, with
+  `vel x 0.00 y 0.00`. From rest the autopilot should start with `aligning`
+  (specs/006-ship-autopilot: from rest the phases only move forward).
+
+  Likely cause, not yet confirmed: station keeping leaves a residual velocity
+  below the overlay's 0.005 u/s display resolution, pointing away from the
+  new target, and the phase rule (Sources/SwiftSkySimulation/AutopilotLaw.swift)
+  reads that as a ship already moving away, so it picks the flip to brake.
+  If so, the ship spends time flipping and braking a velocity that is
+  effectively zero before it turns to the target.
+
+  To do: reproduce in a logic-layer test (fly an order to arrival, keep
+  station for some ticks, give a new order, check the first phase and the
+  velocity bits), decide whether a velocity this small should count as rest
+  (a threshold tied to ArrivalTolerances.speed, or zeroing the velocity on
+  arrival), fix, and confirm 006's and 010's tests still pass. The planned
+  path (SKY-26) flies the same law, so its prediction changes with the fix.
+
+  Done when a re-order after station keeping starts in `aligning` (or the
+  analysis shows `flipping` is the right choice and the spec says so), with a
+  test that pins it.
+platform: ios
+status: refine
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []
