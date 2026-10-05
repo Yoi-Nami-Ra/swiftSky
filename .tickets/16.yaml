@@ -9,7 +9,7 @@ description: |
   screen. A slow-motion video of the screen is good evidence. Record the result
   in the quickstart. The macOS run is SKY-17.
 platform: ios
-status: ready
+status: done
 phase: MVP
 priority: medium
 parent: null
