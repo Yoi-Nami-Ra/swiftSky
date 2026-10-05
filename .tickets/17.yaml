@@ -8,7 +8,7 @@ description: |
   Screen Recording permission) is good evidence. Record the result in the
   quickstart. The iOS run is SKY-16.
 platform: macos
-status: ready
+status: done
 phase: MVP
 priority: medium
 parent: null
