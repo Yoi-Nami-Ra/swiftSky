@@ -67,6 +67,13 @@ player-facing heads-up display.
 - Q: What is shown after arrival? → A: The order lines stay, with the phase `arrived`, for as long as
   the ship keeps station on that order (FR-003).
 - Q: Where do the new lines go? → A: Under the existing six, in the same top-left block (FR-001).
+- Q: A heading just above −180° rounds to `-180.00`; how is it written? → A: As `180.00`, so the seam
+  always reads one way and the heading line never shows `-180.00` (FR-002).
+- Q: Must the ship lines and the `ticks` line describe the same tick? → A: No. The ship and order values
+  are the state the simulation holds at the refresh; the `ticks` line keeps its 003 meaning (the tick
+  count as of the last drawn frame) and may trail by the ticks of a skipped frame (FR-005).
+- Q: Is speed computed from the exact velocity or from the rounded figures shown? → A: From the exact
+  velocity, then rounded (FR-002).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -173,7 +180,7 @@ with edge cases (Principle II); nothing visible depends on this story.
   the right edge, as 003 FR-005 allows. Values beyond what the writer can hold are clamped, not trapped
   on.
 - **Heading at the seam**: heading is shown in (−180, 180], so a heading of exactly π reads `180.00`,
-  never `-180.00`.
+  and a heading just above −π that rounds to −180.00 also reads `180.00`, never `-180.00`.
 - **The ship is not drawn** (`--no-ship`): the ship and order lines are still shown, since the ship is
   still simulated.
 - **Interpolation off** (`--no-interpolation`): no difference to the overlay, which never shows the
@@ -197,9 +204,9 @@ with edge cases (Principle II); nothing visible depends on this story.
 - **FR-002**: The ship lines MUST read:
   - `pos     x` *x* ` y` *y* — the ship's position, in world units.
   - `vel     x` *x* ` y` *y* — its velocity, in world units per second.
-  - `speed   ` *s* ` u/s` — the length of that velocity.
+  - `speed   ` *s* ` u/s` — the length of that velocity, computed from the exact velocity, then rounded.
   - `heading ` *h* ` deg` — its heading, in degrees, in (−180, 180], 0 along +x, counter-clockwise
-    positive as in the simulation.
+    positive as in the simulation. A heading that rounds to −180.00 is written `180.00`.
   - `turn    ` *t* ` deg/s` — its angular velocity, in degrees per second, counter-clockwise positive.
 - **FR-003**: With an order, the order lines MUST read:
   - `order   ` followed by the autopilot's phase in lower case: `aligning`, `burning`, `flipping`,
@@ -213,7 +220,8 @@ with edge cases (Principle II); nothing visible depends on this story.
 - **FR-005**: The ship and order values MUST be the simulation's own, as of its latest completed tick at
   the moment of the overlay's refresh — the same snapshot moment as the frame statistics (003 FR-006) —
   and never the interpolated pose the ship is drawn at (013). Between refreshes, the last snapshot's
-  values are drawn every frame.
+  values are drawn every frame. The `ticks` line keeps its 003 meaning (the tick count as of the last
+  drawn frame), so after a skipped frame it may trail the ship values by that frame's ticks.
 
 **Formatting**
 
@@ -259,7 +267,7 @@ with edge cases (Principle II); nothing visible depends on this story.
   destination matches the order log line's `world=` value to two decimals, and the phase reaches
   `arrived` with a distance of at most 1.00.
 - **SC-003**: With `--debug-ship-spin`, the turn line reads `180.00 deg/s` once the ship is at its top
-  rate, and the heading line never reads outside −180.00 to 180.00.
+  rate, and the heading line only ever reads values from −179.99 to 180.00.
 - **SC-004**: Zero heap allocations per frame with the overlay showing and an order in flight, over a
   sustained run of at least 60 seconds, measured as in 011's check 25.
 - **SC-005**: A Release build contains none of the new labels, units or phase texts, confirmed with
