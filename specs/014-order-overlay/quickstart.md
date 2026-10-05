@@ -58,3 +58,20 @@ the simulator panel; screenshots with `simctl io screenshot`; order and arrival 
 - **6**: the frames after the `arrived` line show only the ship; nothing of the overlay.
 - **7**: a second order 2.3 s into a flight replaced the marker and line at once; from a moving ship
   the new line curves (turn-back) and ends at the new marker.
+
+**Check 12 — PASS on iOS, with a note (2026-10-05, T015).** Optimised instrumented build (Release with
+`SWIFTSKY_INSTRUMENTATION`, CLAUDE.md), iPhone 17 Pro simulator, 7 orders by tap over 75 s, summaries
+from `log stream`. Every summary with the overlay drawn in flight reports `allocs=0 allocframes=0`; the
+order frames report `eventallocs=28`, the event queue's, counted apart as 011 defines.
+
+Six summaries report `allocs=23 allocframes=1`, and each is the summary covering an `arrived` line:
+one frame per arrival. An lldb breakpoint on `sky_alloc_app_allocation`, armed once
+`Instrumentation.recordArrival` had been hit, stopped in `UnsafeMutablePointer.allocate()` called from
+`Instrumentation.recordArrival` at `Instrumentation.swift:267`: the arrival `os_log` line of 008, which
+exists only in instrumented builds. It predates this feature and is not the overlay's (the overlay draws
+nothing on that frame). Release builds compile it away. Recorded as a separate finding.
+
+**Check 10 — PASS on iOS.** A plain Release build draws the same overlay after a tap.
+
+**Check 11 — PASS on iOS.** Debug with `--no-interpolation`: mid-flight, the highlight rings the
+sprite, which is drawn at the tick pose, and the line starts at it.

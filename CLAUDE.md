@@ -33,7 +33,8 @@ logic layer; nothing draws it yet) and `specs/011-draw-allocation-counter` (001 
 allocation counts in the frame summary; check 25, zero allocations per frame, PASS on iOS and, by SKY-4, on macOS) and `specs/012-main-thread-stall-probe` (the main thread's worst busy
 stretch in the frame summary; check 29's continuous resize: no races, no stall mid-drag) and
 `specs/013-render-interpolation` (the ship drawn between its last two ticks, so it moves smoothly on
-120 Hz displays). Layer libraries and
+120 Hz displays) and `specs/014-order-overlay` (while an order is flown: a marker at the destination, a
+ring around the ship and the remaining planned path, in every build). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
@@ -136,6 +137,16 @@ artifacts, keep them consistent with these templates.
   argument, never `state.ship`, so it never drifts from the sprite. `--no-interpolation` draws the tick
   pose instead; like every debug argument it needs `SWIFTSKY_INSTRUMENTATION` in the package, so Debug
   or the instrumented Release build, not Profiling (011 R1).
+- `Sources/SwiftSkyRendering/OrderOverlay.swift` and `OrderOverlayPipelines.swift` (014) — the order
+  overlay. `OrderOverlay` is the tested placement (like `ShipSpritePlacement`): `nil` with no order, when
+  `arrived`, or with no camera; otherwise up to 258 line points in pixels (drawn ship, the planned-path
+  points after `poseTick`, the destination), the marker centre and the highlight centre (the sprite's
+  whole-pixel centre). `poseTick` is a `render` argument from `FrameLoop`: `tickCount − 1` when
+  interpolating, `tickCount` under `--no-interpolation`; `PlannedPath.tick(ofPoint:)` gives each point's
+  tick. Two pipelines share one distance-field fragment shader and blend with `max`, which is right only
+  over the black background. Sizes and colour are `OrderOverlayStyle` (no design yet). Drawn between the
+  background and the ship. In instrumented builds the arrival `os_log` line allocates once per arrival
+  (`allocs=23 allocframes=1` in that summary); it is not the overlay's.
 - `Sources/SwiftSkyRendering/Camera.swift` and `GameSpace.swift` — the camera (world → view points,
   view points → world, world → clip; `init?(surface:)` is `nil` for a zero-area surface or an
   unusable backing scale) and
