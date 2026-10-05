@@ -44,11 +44,11 @@ composition get headless Swift Testing tests. The drawing itself is 002's and un
 
 **Independent Test**: quickstart checks 2, 4 and 5 on the simulator; check 6 on macOS.
 
-- [ ] T009 [US2] Write the `order` line (`none`, or the phase as a lower-case `StaticString` from a `switch` over `AutopilotPhase`) and, with an order, the `dest` and `dist` lines per contract C3 in Sources/SwiftSkyRendering/Debug/DebugOverlay.swift
-- [ ] T010 [US2] Add order-line tests to Tests/SwiftSkyRenderingTests/DebugOverlayTests.swift: `order   none` as the last line with no `dest`/`dist`; the in-flight example of C3 in full; each phase's text; `arrived` keeps `dest` and `dist`; `DebugOverlayShip(state)` from a `SimulationState` with and without an order (fields copied, distance equals `state.distanceRemaining`), and a phase of `nil` with an order treated as no order (data-model.md)
-- [ ] T011 [US2] Add the capacity and width test to Tests/SwiftSkyRenderingTests/DebugOverlayTests.swift: at the normal-range maxima (positions and destination ±99,999.99, speed components giving < 100,000, an order) every line is ≤ 33 characters, the buffer holds fewer than 384 characters, and nothing overflows; a value beyond the column is written in full
-- [ ] T012 [US2] Run quickstart checks 4, 5 and 7 on the iPhone 17 Pro simulator (taps with the simulator control tool, screenshots, log stream for `order … world=`) and record the results in specs/015-debug-overlay-ship-order/quickstart.md
-- [ ] T013 [US2] Leave quickstart check 6 (macOS, clicks by hand) for the user: mark it as pending in specs/015-debug-overlay-ship-order/quickstart.md
+- [X] T009 [US2] Write the `order` line (`none`, or the phase as a lower-case `StaticString` from a `switch` over `AutopilotPhase`) and, with an order, the `dest` and `dist` lines per contract C3 in Sources/SwiftSkyRendering/Debug/DebugOverlay.swift
+- [X] T010 [US2] Add order-line tests to Tests/SwiftSkyRenderingTests/DebugOverlayTests.swift: `order   none` as the last line with no `dest`/`dist`; the in-flight example of C3 in full; each phase's text; `arrived` keeps `dest` and `dist`; `DebugOverlayShip(state)` from a `SimulationState` with and without an order (fields copied, distance equals `state.distanceRemaining`), and a phase of `nil` with an order treated as no order (data-model.md)
+- [X] T011 [US2] Add the capacity and width test to Tests/SwiftSkyRenderingTests/DebugOverlayTests.swift: at the normal-range maxima (positions and destination ±99,999.99, speed components giving < 100,000, an order) every line is ≤ 33 characters, the buffer holds fewer than 384 characters, and nothing overflows; a value beyond the column is written in full
+- [X] T012 [US2] Run quickstart checks 4, 5 and 7 on the iPhone 17 Pro simulator (taps with the simulator control tool, screenshots, log stream for `order … world=`) and record the results in specs/015-debug-overlay-ship-order/quickstart.md
+- [X] T013 [US2] Leave quickstart check 6 (macOS, clicks by hand) for the user: mark it as pending in specs/015-debug-overlay-ship-order/quickstart.md
 
 **Checkpoint**: both line groups are correct; tests pass.
 

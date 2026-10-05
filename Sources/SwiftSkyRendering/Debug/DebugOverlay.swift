@@ -149,6 +149,22 @@ public final class DebugOverlay {
     static let speedUnit: StaticString = " u/s"
     static let degreesUnit: StaticString = " deg"
     static let degreesPerSecondUnit: StaticString = " deg/s"
+    static let orderLabel: StaticString = "order   "
+    static let noOrder: StaticString = "none"
+    static let destinationLabel: StaticString = "dest    x"
+    static let distanceLabel: StaticString = "dist    "
+    static let distanceUnit: StaticString = " u"
+
+    /// The phase as the order line writes it: lower case, as named (015 FR-003).
+    static func phaseText(_ phase: AutopilotPhase) -> StaticString {
+        switch phase {
+        case .aligning: "aligning"
+        case .burning: "burning"
+        case .flipping: "flipping"
+        case .braking: "braking"
+        case .arrived: "arrived"
+        }
+    }
 
     /// Ship and order values are signed and right-aligned in nine columns, which holds `-99999.99`.
     static let valueWidth = 9
@@ -192,7 +208,7 @@ public final class DebugOverlay {
         }
     }
 
-    /// The ship lines, each on a new line after the frame statistics (015 FR-002).
+    /// The ship lines, each on a new line after the frame statistics, then the order (015 FR-002–FR-004).
     private func writeShip(_ ship: DebugOverlayShip, into buffer: TextBuffer) {
         buffer.newline()
         writeVector(Self.positionLabel, ship.position, into: buffer)
@@ -205,6 +221,22 @@ public final class DebugOverlay {
         writeValue(Self.headingLabel, Self.headingDegrees(ship.heading), unit: Self.degreesUnit, into: buffer)
         buffer.newline()
         writeValue(Self.turnLabel, ship.angularVelocity * 180 / .pi, unit: Self.degreesPerSecondUnit, into: buffer)
+        buffer.newline()
+        writeOrder(ship.order, into: buffer)
+    }
+
+    /// `order   none`, or the phase followed by the destination and distance lines (015 FR-003, FR-004).
+    private func writeOrder(_ order: DebugOverlayShip.Order?, into buffer: TextBuffer) {
+        buffer.write(Self.orderLabel, limit: buffer.remainingCapacity)
+        guard let order else {
+            buffer.write(Self.noOrder, limit: buffer.remainingCapacity)
+            return
+        }
+        buffer.write(Self.phaseText(order.phase), limit: buffer.remainingCapacity)
+        buffer.newline()
+        writeVector(Self.destinationLabel, order.destination, into: buffer)
+        buffer.newline()
+        writeValue(Self.distanceLabel, order.distance, unit: Self.distanceUnit, into: buffer)
     }
 
     private func writeVector(_ label: StaticString, _ vector: Vector2, into buffer: TextBuffer) {

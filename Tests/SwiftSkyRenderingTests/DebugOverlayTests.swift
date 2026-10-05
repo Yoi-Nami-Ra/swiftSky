@@ -1,8 +1,8 @@
 import Foundation
-import SwiftSkySimulation
 import Testing
 
 @testable import SwiftSkyRendering
+@testable import SwiftSkySimulation
 
 @Suite("Debug overlay")
 struct DebugOverlayTests {
@@ -208,5 +208,117 @@ struct DebugOverlayTests {
         #expect(lines(in: written(example, ship: ship))[9] == "heading    180.00 deg")
         ship.heading = .pi
         #expect(lines(in: written(example, ship: ship))[9] == "heading    180.00 deg")
+    }
+
+    // MARK: Order lines (015)
+
+    @Test("Without an order the last line is `order   none`, with no destination or distance line")
+    func noOrder() {
+        let text = lines(in: written(example, ship: atRest))
+        #expect(text.count == 12)
+        #expect(text[11] == "order   none")
+    }
+
+    @Test("An order in flight: phase, destination and distance (contract C3, second example)")
+    func orderInFlight() {
+        let text = lines(in: written(example, ship: inFlight))
+        #expect(text.count == 14)
+        #expect(Array(text[11...13]) == [
+            "order   burning",
+            "dest    x   300.00 y  -200.00",
+            "dist       394.03 u",
+        ])
+    }
+
+    @Test(
+        "Each phase is written in lower case, as named; arrived keeps the destination and distance",
+        arguments: [
+            (AutopilotPhase.aligning, "order   aligning"),
+            (.burning, "order   burning"),
+            (.flipping, "order   flipping"),
+            (.braking, "order   braking"),
+            (.arrived, "order   arrived"),
+        ]
+    )
+    func phases(phase: AutopilotPhase, expected: String) {
+        var ship = inFlight
+        ship.order?.phase = phase
+        let text = lines(in: written(example, ship: ship))
+        #expect(text[11] == expected)
+        #expect(text.count == 14)
+    }
+
+    @Test("The snapshot copies the ship from the state, with no order before one is given")
+    func snapshotWithoutOrder() {
+        let ship = Ship(
+            position: Vector2(x: 3, y: -4), velocity: Vector2(x: 1, y: 2), heading: 1, angularVelocity: -0.5
+        )
+        let snapshot = DebugOverlayShip(SimulationState(tickCount: 7, ship: ship))
+        #expect(snapshot == DebugOverlayShip(
+            position: Vector2(x: 3, y: -4), velocity: Vector2(x: 1, y: 2), heading: 1, angularVelocity: -0.5,
+            order: nil
+        ))
+    }
+
+    @Test("The snapshot carries the order's phase, destination and the state's own distance remaining")
+    func snapshotWithOrder() throws {
+        var state = SimulationState()
+        let ordered = state.setOrder(to: Vector2(x: 300, y: -400))
+        #expect(ordered)
+        state = Simulation.advance(state, ticks: 30)
+        let snapshot = DebugOverlayShip(state)
+        let order = try #require(snapshot.order)
+        #expect(order.destination == Vector2(x: 300, y: -400))
+        #expect(order.phase == state.autopilot.phase)
+        #expect(order.distance == state.distanceRemaining)
+        #expect(snapshot.position == state.ship.position)
+        #expect(snapshot.velocity == state.ship.velocity)
+    }
+
+    @Test("An order without a phase, which the autopilot never produces, is treated as no order")
+    func orderWithoutPhase() {
+        var state = SimulationState()
+        let ordered = state.setOrder(to: Vector2(x: 10, y: 10))
+        #expect(ordered)
+        state.autopilot.phase = nil
+        #expect(DebugOverlayShip(state).order == nil)
+    }
+
+    // MARK: Width and capacity (015 FR-007)
+
+    @Test("At the normal-range maxima with an order, every line fits in 33 characters and nothing overflows")
+    func fitsNarrowestSurfaceWithShip() {
+        let statistics = DebugOverlayStatistics(
+            meanFrameSeconds: 0.999_99,
+            worstFrameSeconds: 0.999_99,
+            budgetSeconds: 0.999_99,
+            droppedFrames: 9_999_999,
+            skippedFrames: 9_999_999,
+            tickCount: 9_999_999
+        )
+        let ship = DebugOverlayShip(
+            position: Vector2(x: -99_999.99, y: -99_999.99),
+            velocity: Vector2(x: -70_000, y: -70_000),
+            heading: -.pi / 2 - 0.001,
+            angularVelocity: -.pi,
+            order: DebugOverlayShip.Order(
+                phase: .aligning,
+                destination: Vector2(x: -99_999.99, y: -99_999.99),
+                distance: 99_999.99
+            )
+        )
+        let buffer = written(statistics, ship: ship)
+        let text = lines(in: buffer)
+        #expect(text.count == 14)
+        #expect(text.allSatisfy { $0.count <= 33 })
+        #expect(buffer.count < 384)
+        #expect(!buffer.didOverflow)
+    }
+
+    @Test("A value beyond the column is written in full, never cut short")
+    func wideValueInFull() {
+        var ship = atRest
+        ship.position = Vector2(x: -1_234_567.891, y: 0)
+        #expect(lines(in: written(example, ship: ship))[6] == "pos     x-1234567.89 y     0.00")
     }
 }

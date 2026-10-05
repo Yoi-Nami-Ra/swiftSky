@@ -48,5 +48,9 @@ unless noted.
 
 | # | Result | Evidence |
 |---|--------|----------|
-| 2 | **PASS (ship lines)** | Debug, no arguments: `pos`/`vel` `x 0.00 y 0.00`, `speed 0.00 u/s`, `heading 0.00 deg`, `turn 0.00 deg/s` under `ticks`, inside the safe area. (The `order   none` line is phase 4's, recorded below.) |
+| 2 | **PASS** | Debug, no arguments: `pos`/`vel` `x 0.00 y 0.00`, `speed 0.00 u/s`, `heading 0.00 deg`, `turn 0.00 deg/s` under `ticks`, then `order   none` and no `dest`/`dist`, all inside the safe area. |
 | 3 | **PASS** | `--debug-ship-spin`: shots at ticks 167 and 258 read `heading 97.50 deg` and `10.50 deg`, `turn 180.00 deg/s`, position `0.00`. 91 ticks × 3°/tick = 273°, and 97.50 + 273 − 360 = 10.50: the screen agrees with the simulation exactly. |
+| 4 | **PASS** | Taps with the simulator control tool. Order `world=(213, -81)`: after arrival the overlay read `order   arrived`, `dest x 213.00 y -81.00`, `dist 0.04 u`, `vel 0.00`. Order `world=(-317, 129)`: one shot read `burning`, `dist 540.81`, `speed 106.67` (= ‖(−99.16, 39.29)‖), the next `flipping`, `dist 244.86`, `turn 180.00 deg/s`. `dest` equalled the log's `world=` to two decimals each time. |
+| 5 | **PASS** | Two taps 20 ms apart: the log shows order `(343, 129)` then `(-317, -121)`; the next refresh showed `dest x -317.00 y -121.00`, and the first order never reached the screen. A re-order from rest read `flipping` straight away, with `vel 0.00`: the autopilot's own phase, probably from a station-keeping velocity under 0.005 u/s pointing away from the new target. That is logic-layer behaviour (006), not the overlay's, and is reported as is. |
+| 6 | **LEFT FOR THE USER** | macOS: needs clicks by hand. |
+| 7 | **PASS** | `--no-ship --no-interpolation`: no sprite drawn; after a tap the overlay read `order   aligning`, `turn 156.00 deg/s`, `dest x -317.00 y 129.00`, `dist 342.24 u`. |
