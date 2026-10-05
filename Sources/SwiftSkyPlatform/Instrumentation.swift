@@ -221,20 +221,21 @@ struct Instrumentation {
     }
 
     /// Logs one applied move order request: where it was given and where it sent the ship, or why it was
-    /// dropped (008 FR-015, research R6). Called only on a frame that applies one, so nothing is
-    /// formatted per frame; `Logger` defers the formatting and builds no `String` here (FR-011).
+    /// dropped (008 FR-015, research R6). Called by the frame loop after the counted stretch of the frame
+    /// that applied it, so the allocations of writing the line are not counted as the event's (011 FR-004).
+    /// `Logger` defers the formatting and builds no `String` here (FR-011).
     ///
     /// An applied order also reports its planned path (010 FR-014): the predicted end point and tick,
     /// interpolated exactly as `recordArrival` writes the arrival, so the two lines can be compared as
     /// text (010 SC-009); the number of points; and whether the prediction arrives.
-    func recordOrder(_ outcome: MoveOrderOutcome, viewPoint: Vector2, path: PlannedPath) {
-        switch outcome {
+    func recordOrder(_ line: OrderLogLine) {
+        let viewPoint = line.viewPoint
+        switch line.outcome {
         case .ordered(let destination):
-            // Scalars first, so the message's closures capture a few words, never the 4 KB path.
-            let end = path.last ?? destination
-            let endTick = path.endTick
-            let points = path.count
-            let arrives = path.reachesArrival ? "yes" : "no"
+            let end = line.predictedEnd ?? destination
+            let endTick = line.predictedTicks
+            let points = line.points
+            let arrives = line.arrives ? "yes" : "no"
             Self.log.notice(
                 """
                 order view=(\(viewPoint.x, privacy: .public), \(viewPoint.y, privacy: .public)) \
@@ -262,7 +263,8 @@ struct Instrumentation {
     }
 
     /// Logs one arrival: where the ship came to rest, and when (008 FR-015, SC-007b). Called once per
-    /// arrival, by the frame loop.
+    /// arrival, by the frame loop, after the frame's counted stretch has closed: writing a log line
+    /// allocates, and an arrival frame applies no event, so inside the stretch it broke check 25.
     func recordArrival(position: Vector2, tickCount: UInt64) {
         Self.log.notice(
             """
@@ -283,8 +285,6 @@ struct Instrumentation {
     @inline(__always) mutating func markAllocationCounter(ready: Bool) {}
     @inline(__always) mutating func updateBudget(seconds: Double) {}
     @inline(__always) mutating func summary() {}
-    @inline(__always) func recordOrder(_ outcome: MoveOrderOutcome, viewPoint: Vector2, path: PlannedPath) {}
-    @inline(__always) func recordArrival(position: Vector2, tickCount: UInt64) {}
 
     #endif
 }

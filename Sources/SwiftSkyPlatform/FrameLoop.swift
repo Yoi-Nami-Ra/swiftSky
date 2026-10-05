@@ -82,6 +82,20 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     /// because `setOrder` evaluates the phase at once (006): an order to the ship's own position is
     /// already arrived before the advance, and would otherwise never be logged (research R6).
     private var arrivalLogged = true
+
+    /// An arrival found in step 4a, written in step 6. Writing a log line allocates (the `Logger` argument
+    /// buffer, and the system's encoding of the message), so the line waits until the counted stretch has
+    /// closed, like the summary (011 FR-006). A plain optional value: holding it allocates nothing.
+    private var pendingArrival: (position: Vector2, tickCount: UInt64)?
+
+    /// The order lines of the requests applied in step 1, written in step 6 for the same reason. Capacity
+    /// for several is reserved up front, so noting one allocates nothing; more requests than that in one
+    /// drain grow the array, counted as the event's (011 FR-004).
+    private var pendingOrderLines: [OrderLogLine] = {
+        var lines: [OrderLogLine] = []
+        lines.reserveCapacity(8)
+        return lines
+    }()
     #endif
 
     // MARK: - Cross-thread
@@ -187,6 +201,9 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
             // paused no frame is in flight, so this turn is itself a frame boundary (FR-031).
             if link.isPaused {
                 _ = applyPendingEvents()
+                #if SWIFTSKY_INSTRUMENTATION
+                writePendingLogLines()
+                #endif
             }
         }
 
@@ -304,11 +321,14 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
                 if isVisible { instrumentation.restartOverlayWindow() }
                 #endif
             case .moveOrderRequested(let request):
-                let outcome = request.apply(to: &state, on: surface)
-                // The order's planned path rides along for the Debug log line (010 FR-014).
-                instrumentation.recordOrder(outcome, viewPoint: request.viewPoint, path: state.plannedPath)
                 #if SWIFTSKY_INSTRUMENTATION
+                let outcome = request.apply(to: &state, on: surface)
+                // The order's planned path rides along for the Debug log line (010 FR-014), noted now and
+                // written after the counted stretch.
+                pendingOrderLines.append(OrderLogLine(outcome, viewPoint: request.viewPoint, path: state.plannedPath))
                 if case .ordered = outcome { arrivalLogged = false }
+                #else
+                _ = request.apply(to: &state, on: surface)
                 #endif
             case .willTerminate:
                 // Handled on the main thread by `post`, which routes it to `stopAndDrain`.
@@ -317,6 +337,24 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
         }
         return true
     }
+
+    #if SWIFTSKY_INSTRUMENTATION
+    /// Writes the order and arrival lines noted inside a counted stretch, in the order they happened:
+    /// orders (step 1), then the arrival (step 4a). Called once the stretch has closed, and after the
+    /// paused loop's own event drain.
+    private func writePendingLogLines() {
+        if !pendingOrderLines.isEmpty {
+            for line in pendingOrderLines {
+                instrumentation.recordOrder(line)
+            }
+            pendingOrderLines.removeAll(keepingCapacity: true)
+        }
+        if let arrival = pendingArrival {
+            pendingArrival = nil
+            instrumentation.recordArrival(position: arrival.position, tickCount: arrival.tickCount)
+        }
+    }
+    #endif
 
     /// Sizes the layer's drawables to the surface, on the loop thread (012 T016). Releasing the old
     /// drawables is synchronous GPU-resource teardown; done here it costs the loop an event frame, where on
@@ -358,6 +396,7 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
             graphics: allocations.graphics,
             appliedEvent: appliedEvent
         )
+        writePendingLogLines()
         #else
         let (outcome, _) = drawFrame(update)
         #endif
@@ -438,11 +477,11 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
             : tickPose
 
         // 4a. Each arrival is logged once (008 FR-015, SC-007b): one comparison and one flag test, in
-        //     debug and profiling builds only.
+        //     debug and profiling builds only. Noted here, written after the counted stretch.
         #if SWIFTSKY_INSTRUMENTATION
         if state.autopilot.phase == .arrived {
             if !arrivalLogged {
-                instrumentation.recordArrival(position: state.ship.position, tickCount: state.tickCount)
+                pendingArrival = (state.ship.position, state.tickCount)
                 arrivalLogged = true
             }
         } else {
