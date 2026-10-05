@@ -40,7 +40,8 @@ abcdefghijklmnopqrstuvwxyz{|}~
 fps 120               ← frames drawn in the past second, updated once a second
 ```
 
-Without either argument the surface is uniformly black, exactly as in 001.
+Without either argument no text is drawn. Since 003 a Debug build shows the debug overlay instead, and
+since 007 the ship is drawn too; with `--no-ship --no-debug-overlay` the surface is uniformly black, as in 001.
 
 ## One-command verification
 
@@ -59,6 +60,13 @@ The script is unchanged in how it is used. It now also:
 > **Since 003-debug-overlay**: a Debug build shows the live debug overlay by default. Check 12's
 > black-surface run therefore takes `--no-debug-overlay`. `--debug-text` and `--debug-text-fill`
 > replace the overlay, so checks 5 to 11 are unchanged.
+>
+> **Since 007-ship-sprite-rendering**: the ship is drawn at the surface centre. Debug runs that expect
+> a uniformly black surface take `--no-ship --no-debug-overlay`, and the text checks (5 to 11) add
+> `--no-ship`. `--no-ship` is a debug argument, so a Release build always draws the ship (check 13).
+>
+> **Since 011-draw-allocation-counter**: checks 15 and 16 use 011's "The method"
+> ([quickstart](../011-draw-allocation-counter/quickstart.md)), not Instruments.
 
 ### Automated (headless)
 
@@ -80,22 +88,22 @@ The script is unchanged in how it is used. It now also:
 | 9 | macOS: resize the window, then enter and leave full screen (on a display with a camera housing, if available) | Text keeps its size, and its anchor moves with the safe area | FR-008, FR-006a |
 | 10 | Watch the FPS line, and compare it with the `frames=` count per second in the instrumentation log | `fps --` for the first second, then the display's rate (for example 120 on a 120 Hz display, 60 on 60 Hz), matching the log to within 1. It is updated once a second. | FR-014 |
 | 11 | Launch with both `--debug-text` and `--debug-text-fill` | The fill pattern appears | FR-015a |
-| 12 | Launch Debug with **no** argument, and re-run 001 checks 1 to 6 | Uniformly black, and 001 checks 1 to 6 pass unchanged | SC-006, FR-015, FR-017 |
+| 12 | Launch Debug with `--no-ship --no-debug-overlay` and neither text argument, and screenshot or capture the surface | Uniformly black: no text is drawn. (001's own checks are tracked in the 001 quickstart; its GPU-capture checks are SKY-18 and SKY-19.) | SC-006, FR-015, FR-017 |
 | 21 | With `--debug-text`, inspect the surface with Accessibility Inspector (macOS) and VoiceOver (iOS) | Only the 001 label "swiftSky game surface" is exposed. None of the test string's text is announced or listed as an element. | FR-020, 001 FR-009 |
 
 ### Release
 
 | # | Check | Expected | Criterion |
 |---|-------|----------|-----------|
-| 13 | Build Release and launch it with `--debug-text-fill` | Uniformly black, with no text | SC-006, FR-016 |
+| 13 | Build Release and launch it with `--debug-text-fill` | Black, with only the ship drawn, centred and facing right (007 FR-014): every non-black pixel lies inside the ship's 40-pt square at the centre. No text. | SC-006, FR-016 |
 | 14 | Inspect the Release binary with `nm` and `strings` | No `DebugTextPattern` or `debug-text` symbols or strings, while `TextBuffer` **is** present | FR-016, SC-006 |
 
 ### Performance and memory (Principle III)
 
 | # | Check | Expected | Criterion |
 |---|-------|----------|-----------|
-| 15 | Instruments → Allocations, a 60 s run with `--debug-text`, filtered to the frame-loop thread's draw path, using the same method as SKY-3 and SKY-4 | Zero allocations on our side in the draw path. This also settles research R5's stored-block question. | SC-003, FR-012 |
-| 16 | The same with `--debug-text-fill` | Zero, and the instrumentation log shows `skipped=0` | SC-003, SC-004 |
+| 15 | 011's "The method": an optimised instrumented build (Release plus `SWIFTSKY_INSTRUMENTATION`), a 60 s run with `--debug-text`, read from the frame summaries | `allocation counter ready`, and `allocs=0 allocframes=0` in every summary after the first. Research R5's stored-block question is settled by 011 research R13: a completion handler is re-bridged into a heap block on every call, so the instance ring has none. | SC-003, FR-012 |
+| 16 | The same with `--debug-text-fill` | As check 15, and every summary shows `skipped=0` | SC-003, SC-004 |
 | 17 | Frame time three ways on one device: no argument, `--debug-text`, `--debug-text-fill` (60 s each, instrumentation log) | Mean and worst stay within budget in all three. Record the before/after numbers here. | SC-004 |
 | 18 | Idle footprint without text, then with `--debug-text-fill`, on the same device and build | Delta ≤ 2 MB, and the first frame is still visible within 1 s | SC-005 |
 
