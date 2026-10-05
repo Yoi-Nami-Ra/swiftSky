@@ -52,6 +52,17 @@ how orders are issued (008, 009), flown (006) or predicted (010).
   input; 013's interpolation, whose drawn pose this feature reads; 003's debug overlay, still drawn on
   top of everything.
 
+## Clarifications
+
+### Session 2026-10-05
+
+- Q: Which predicted points count as reached when the ship is drawn between two ticks? → A: Those at
+  or before the earlier of the two ticks blended (the tick before the latest); under
+  `--no-interpolation`, those at or before the latest tick (FR-007).
+- Q: Is the ship highlight centred on the sprite's whole-pixel centre or on the exact drawn position?
+  → A: On the sprite's whole-pixel centre (007 FR-006a), so ring and sprite never misalign; the marker
+  and the line are not rounded (FR-005).
+
 ## User Scenarios & Testing *(mandatory)*
 
 The users are the player, who orders the ship around and needs to see where it is going, and the
@@ -102,7 +113,7 @@ GPU.
 1. **Given** a state with no order, or with the autopilot reporting arrived, **When** the overlay is
    prepared, **Then** nothing is drawn (SC-003, SC-004).
 2. **Given** a state flying an order, **When** the overlay is prepared, **Then** the marker's centre is
-   the order's destination exactly, the ring's centre is the drawn ship position exactly, the line's
+   the order's destination exactly, the ring's centre is the sprite's whole-pixel centre, the line's
    first point is the drawn ship position, and its last point is the destination (SC-001, SC-002).
 3. **Given** a planned path and a tick partway through the flight, **When** the remaining path is
    taken, **Then** it holds exactly the predicted points the ship has not reached yet, in order (SC-002).
@@ -170,15 +181,18 @@ on both platforms with orders being flown.
 
 - **FR-004**: The **destination marker** MUST be a ring centred exactly on the order's destination,
   with an outer radius of 8 points and a stroke of 2 points.
-- **FR-005**: The **ship highlight** MUST be a ring centred exactly on the drawn ship position (the
-  pose the sprite is drawn at, 013), with a radius of 28 points, clear of the 40-point ship sprite
-  (007), and a stroke of 1.5 points. It MUST NOT rotate with the ship.
+- **FR-005**: The **ship highlight** MUST be a ring centred on the sprite's centre: the drawn ship
+  position (013) rounded to whole pixels exactly as the sprite is (007 FR-006a), so ring and sprite
+  never misalign. It MUST have a radius of 28 points, clear of the 40-point ship sprite (007), and a
+  stroke of 1.5 points, and MUST NOT rotate with the ship. The marker and the line are not rounded.
 - **FR-006**: The **planned path** MUST be a line 1.5 points wide that starts at the drawn ship
   position, then passes through, in order, every predicted path point the ship has not reached yet,
   and ends at the destination. When the prediction stopped before arrival, the line MUST run straight
   from the last predicted point to the destination.
-- **FR-007**: A predicted point counts as reached once its tick is at or before the tick the ship is
-  drawn from; such points MUST NOT be drawn, so the line never doubles back behind the ship.
+- **FR-007**: A predicted point counts as reached once its tick is at or before the earlier of the two
+  ticks the drawn pose blends (the tick before the latest, 013); under `--no-interpolation`, at or
+  before the latest tick. Reached points MUST NOT be drawn, so the line never doubles back behind the
+  ship.
 - **FR-008**: All three parts MUST use one accent colour, the same in every build, chosen for contrast
   against the black background, and partly transparent so the ship and the background stay readable
   through it. The marker and the ring MUST differ by shape and size, not by colour alone
