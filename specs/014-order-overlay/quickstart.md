@@ -41,3 +41,20 @@ Runs every headless suite, including the new `PlannedPath.tick(ofPoint:)` and `O
   them (see 001 quickstart, check 2); ⌘⇧5 works without it.
 - The overlay colour is the cyan-green of `OrderOverlayStyle`; the marker is the small ring, the ship's
   highlight the large one.
+
+## Results
+
+**Checks 2, 3, 5, 6, 7 — PASS on iOS (2026-10-05, T010).** iPhone 17 Pro simulator, iOS 27.0, Debug
+build with `--no-debug-overlay`, the simulator in landscape (874 × 402 pt, 3×). Orders by tap through
+the simulator panel; screenshots with `simctl io screenshot`; order and arrival lines from `log stream`.
+
+- **2**: relaunched with `--no-ship --no-debug-overlay` and no order: 3,162,132 pixels, all exactly
+  (0, 0, 0).
+- **3 (and 4 for this order)**: tap at view (700, 302) pt. The marker ring's centre, fitted to its
+  pixels with the line's wedge left out, is (2100.00, 906.00) px: exactly (700, 302) × 3. The highlight
+  rings the ship and the line joins them.
+- **5**: six frames 0.6 s apart through a 377-unit flight: the line shortens behind the ship, the ring
+  stays on it, and the line always ends at the marker.
+- **6**: the frames after the `arrived` line show only the ship; nothing of the overlay.
+- **7**: a second order 2.3 s into a flight replaced the marker and line at once; from a moving ship
+  the new line curves (turn-back) and ends at the new marker.
