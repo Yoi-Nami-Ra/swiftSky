@@ -1,7 +1,7 @@
 // swiftSky shaders.
 //
-// Three draws per frame, in one pass and in this order (007 FR-009): the black background, the ship,
-// then any text.
+// Draws per frame, in one pass and in this order (007 FR-009, 014 FR-009): the black background, the
+// order overlay while an order is flown, the ship, then any text.
 //
 // The background is a full-screen quad rendered as a triangle strip, filled black. It is trivial by
 // design: the point of 001 FR-002a is that a real draw path exists and is exercised. A pass that merely
@@ -159,4 +159,112 @@ fragment float4 swiftsky_sprite_fragment(
 {
     constexpr sampler trilinear(filter::linear, mip_filter::linear, address::clamp_to_zero);
     return image.sample(trilinear, in.uv);
+}
+
+// MARK: - Order overlay (014-order-overlay)
+//
+// Two instanced draws while an order is flown: the planned path's line, one quad per segment, then two
+// rings (the destination marker and the ship highlight), one quad each. One fragment shader covers
+// both from a distance field (research R4): the distance d from the pixel centre to the segment
+// p0 → p1, and coverage halfWidth + 0.5 − |d − radius|, clamped to 0…1 — a one-pixel anti-aliased edge.
+// A line segment has radius 0, which makes it a capsule with round ends; a ring has p0 = p1. Everything
+// arrives in surface pixels from `OrderOverlay`, +y down, which is also what `[[position]]` gives the
+// fragment shader, so the shape is drawn where the tests put it.
+//
+// Blending is `max`, not "over" (research R5): consecutive capsules overlap at every joint, and "over"
+// would brighten each overlap. The overlay is drawn on the black background only, where `max` and
+// "over" agree.
+
+namespace swiftsky {
+
+/// Mirrors `OrderOverlayUniforms` on the Swift side — 32 bytes.
+struct OverlayUniforms {
+    float2 surfacePixels;
+    float lineHalfWidth;
+    float unused;
+    float4 colour;  // linear, premultiplied
+};
+
+/// Mirrors `OrderOverlayRing` on the Swift side — 16 bytes.
+struct OverlayRing {
+    float2 centre;
+    float radius;
+    float halfWidth;
+};
+
+struct OverlayRasterizerData {
+    float4 position [[position]];
+    float2 p0 [[flat]];
+    float2 p1 [[flat]];
+    float radius [[flat]];
+    float halfWidth [[flat]];
+};
+
+/// Surface pixels (+y down) → clip space (edges at ±1, +y up).
+inline float4 overlayClip(float2 pixel, float2 surface) {
+    return float4(pixel.x / surface.x * 2.0 - 1.0, 1.0 - pixel.y / surface.y * 2.0, 0.0, 1.0);
+}
+
+}  // namespace swiftsky
+
+/// Instance i is the segment points[i] → points[i + 1], as a quad grown by the half width plus one
+/// pixel on every side. Vertex order for the strip: start −n, start +n, end −n, end +n.
+vertex swiftsky::OverlayRasterizerData swiftsky_overlay_line_vertex(
+    uint vertexID [[vertex_id]],
+    uint instanceID [[instance_id]],
+    constant float2 *points [[buffer(0)]],
+    constant swiftsky::OverlayUniforms &uniforms [[buffer(1)]])
+{
+    const float2 a = points[instanceID];
+    const float2 b = points[instanceID + 1];
+    const float2 delta = b - a;
+    const float len = length(delta);
+    const float2 along = len > 0.0 ? delta / len : float2(1.0, 0.0);
+    const float2 across = float2(-along.y, along.x);
+    const float reach = uniforms.lineHalfWidth + 1.0;
+
+    const float2 end = (vertexID & 2) ? b + along * reach : a - along * reach;
+    const float2 corner = end + across * ((vertexID & 1) ? reach : -reach);
+
+    swiftsky::OverlayRasterizerData out;
+    out.position = swiftsky::overlayClip(corner, uniforms.surfacePixels);
+    out.p0 = a;
+    out.p1 = b;
+    out.radius = 0.0;
+    out.halfWidth = uniforms.lineHalfWidth;
+    return out;
+}
+
+/// Instance i is rings[i], as a square of half side radius + half width + one pixel.
+vertex swiftsky::OverlayRasterizerData swiftsky_overlay_ring_vertex(
+    uint vertexID [[vertex_id]],
+    uint instanceID [[instance_id]],
+    constant swiftsky::OverlayRing *rings [[buffer(0)]],
+    constant swiftsky::OverlayUniforms &uniforms [[buffer(1)]])
+{
+    const swiftsky::OverlayRing ring = rings[instanceID];
+    const float reach = ring.radius + ring.halfWidth + 1.0;
+    const float2 corner = ring.centre + float2((vertexID & 1) ? reach : -reach, (vertexID & 2) ? reach : -reach);
+
+    swiftsky::OverlayRasterizerData out;
+    out.position = swiftsky::overlayClip(corner, uniforms.surfacePixels);
+    out.p0 = ring.centre;
+    out.p1 = ring.centre;
+    out.radius = ring.radius;
+    out.halfWidth = ring.halfWidth;
+    return out;
+}
+
+/// The style colour times the shape's coverage of this pixel, premultiplied.
+fragment float4 swiftsky_overlay_fragment(
+    swiftsky::OverlayRasterizerData in [[stage_in]],
+    constant swiftsky::OverlayUniforms &uniforms [[buffer(0)]])
+{
+    const float2 p = in.position.xy;
+    const float2 segment = in.p1 - in.p0;
+    const float lengthSquared = dot(segment, segment);
+    const float t = lengthSquared > 0.0 ? clamp(dot(p - in.p0, segment) / lengthSquared, 0.0, 1.0) : 0.0;
+    const float d = distance(p, in.p0 + segment * t);
+    const float coverage = clamp(in.halfWidth + 0.5 - abs(d - in.radius), 0.0, 1.0);
+    return uniforms.colour * coverage;
 }
