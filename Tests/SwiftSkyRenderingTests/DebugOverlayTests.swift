@@ -1,3 +1,5 @@
+import Foundation
+import SwiftSkySimulation
 import Testing
 
 @testable import SwiftSkyRendering
@@ -28,9 +30,10 @@ struct DebugOverlayTests {
         return lines
     }
 
-    private func written(_ statistics: DebugOverlayStatistics?) -> TextBuffer {
+    private func written(_ statistics: DebugOverlayStatistics?, ship: DebugOverlayShip? = nil) -> TextBuffer {
         let overlay = DebugOverlay()
         overlay.statistics = statistics
+        overlay.ship = ship
         let buffer = TextBuffer(metrics: syntheticMetrics(scale: 2))
         buffer.clear()
         overlay.write(into: buffer, surface: surface)
@@ -124,5 +127,86 @@ struct DebugOverlayTests {
         let expectedY = TextMetrics.pixels(24 + 8, scale: 2) + metrics.ascentPixels + metrics.cellOriginOffsetY
         #expect(Int(first.x) == expectedX)
         #expect(Int(first.y) == expectedY)
+    }
+
+    // MARK: Ship lines (015)
+
+    private let atRest = DebugOverlayShip(
+        position: .zero, velocity: .zero, heading: 0, angularVelocity: 0, order: nil
+    )
+
+    private let inFlight = DebugOverlayShip(
+        position: Vector2(x: -12.5, y: 40),
+        velocity: Vector2(x: 30, y: -40),
+        heading: atan2(-40.0, 30.0),
+        angularVelocity: 0,
+        order: DebugOverlayShip.Order(
+            phase: .burning,
+            destination: Vector2(x: 300, y: -200),
+            distance: (312.5 * 312.5 + 240.0 * 240.0).squareRoot()
+        )
+    )
+
+    @Test("Without a ship snapshot only the six frame-statistic lines are written")
+    func noShipSixLines() {
+        #expect(lines(in: written(example)).count == 6)
+    }
+
+    @Test("A ship at rest reads zero on every ship line (contract C3, first example)")
+    func shipAtRest() {
+        let text = lines(in: written(example, ship: atRest))
+        #expect(Array(text[6...10]) == [
+            "pos     x     0.00 y     0.00",
+            "vel     x     0.00 y     0.00",
+            "speed        0.00 u/s",
+            "heading      0.00 deg",
+            "turn         0.00 deg/s",
+        ])
+    }
+
+    @Test("A ship in flight: signed position and velocity, speed from the exact velocity, heading in degrees")
+    func shipInFlight() {
+        let text = lines(in: written(example, ship: inFlight))
+        #expect(Array(text[6...10]) == [
+            "pos     x   -12.50 y    40.00",
+            "vel     x    30.00 y   -40.00",
+            "speed       50.00 u/s",
+            "heading    -53.13 deg",
+            "turn         0.00 deg/s",
+        ])
+    }
+
+    @Test("A turn of π rad/s reads 180.00 deg/s; clockwise turns are negative")
+    func turnInDegrees() {
+        var ship = atRest
+        ship.angularVelocity = .pi
+        #expect(lines(in: written(example, ship: ship))[10] == "turn       180.00 deg/s")
+        ship.angularVelocity = -.pi / 2
+        #expect(lines(in: written(example, ship: ship))[10] == "turn       -90.00 deg/s")
+    }
+
+    @Test(
+        "Heading degrees, with −180.00 after rounding written as 180 (FR-002)",
+        arguments: [
+            (0.0, 0.0),
+            (Double.pi, 180.0),
+            (-Double.pi / 2, -90.0),
+            (-Double.pi + 1e-9, 180.0),
+            (-179.996 * Double.pi / 180, 180.0),
+        ]
+    )
+    func headingDegrees(radians: Double, expected: Double) {
+        #expect(abs(DebugOverlay.headingDegrees(radians) - expected) < 1e-9)
+    }
+
+    @Test("A heading just inside the seam keeps its sign; one at the seam reads 180.00")
+    func headingSeamText() {
+        var ship = atRest
+        ship.heading = -179.994 * .pi / 180
+        #expect(lines(in: written(example, ship: ship))[9] == "heading   -179.99 deg")
+        ship.heading = -.pi + 1e-9
+        #expect(lines(in: written(example, ship: ship))[9] == "heading    180.00 deg")
+        ship.heading = .pi
+        #expect(lines(in: written(example, ship: ship))[9] == "heading    180.00 deg")
     }
 }

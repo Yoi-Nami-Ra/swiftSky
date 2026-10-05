@@ -43,4 +43,10 @@ C3), and builds both apps.
 
 ## Results
 
-To be filled in during implementation.
+Run on 2026-10-05, branch `015-debug-overlay-ship-order`, iPhone 17 Pro simulator (iOS 27, landscape)
+unless noted.
+
+| # | Result | Evidence |
+|---|--------|----------|
+| 2 | **PASS (ship lines)** | Debug, no arguments: `pos`/`vel` `x 0.00 y 0.00`, `speed 0.00 u/s`, `heading 0.00 deg`, `turn 0.00 deg/s` under `ticks`, inside the safe area. (The `order   none` line is phase 4's, recorded below.) |
+| 3 | **PASS** | `--debug-ship-spin`: shots at ticks 167 and 258 read `heading 97.50 deg` and `10.50 deg`, `turn 180.00 deg/s`, position `0.00`. 91 ticks × 3°/tick = 273°, and 97.50 + 273 − 360 = 10.50: the screen agrees with the simulation exactly. |

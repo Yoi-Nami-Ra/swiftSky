@@ -32,9 +32,9 @@ composition get headless Swift Testing tests. The drawing itself is 002's and un
 
 **Independent Test**: quickstart checks 2 and 3 on the iPhone 17 Pro simulator.
 
-- [ ] T006 [US1] Add `static func headingDegrees(_:)` (research R4: −180.00 after rounding → 180) and write the `pos`, `vel`, `speed`, `heading` and `turn` lines after the `ticks` line when `ship` is set, per contract C3 (eight-column `StaticString` labels, `writeSignedHundredths` width 9, units ` u/s`, ` deg`, ` deg/s`; speed from the exact velocity; turn = ω × 180/π), in Sources/SwiftSkyRendering/Debug/DebugOverlay.swift
-- [ ] T007 [US1] Add ship-line tests to Tests/SwiftSkyRenderingTests/DebugOverlayTests.swift: the at-rest example of C3 (lines 7–11), the in-flight example's ship lines, six lines only when `ship` is `nil`, `headingDegrees` at 0, π (180), −π + 1e-9 (180), −π/2 (−90) and the 179.995° boundary, and a turn of π rad/s → `180.00 deg/s`
-- [ ] T008 [US1] Run quickstart checks 2 and 3 on the iPhone 17 Pro simulator (launch, `simctl io screenshot`) and record the results in specs/015-debug-overlay-ship-order/quickstart.md
+- [X] T006 [US1] Add `static func headingDegrees(_:)` (research R4: −180.00 after rounding → 180) and write the `pos`, `vel`, `speed`, `heading` and `turn` lines after the `ticks` line when `ship` is set, per contract C3 (eight-column `StaticString` labels, `writeSignedHundredths` width 9, units ` u/s`, ` deg`, ` deg/s`; speed from the exact velocity; turn = ω × 180/π), in Sources/SwiftSkyRendering/Debug/DebugOverlay.swift
+- [X] T007 [US1] Add ship-line tests to Tests/SwiftSkyRenderingTests/DebugOverlayTests.swift: the at-rest example of C3 (lines 7–11), the in-flight example's ship lines, six lines only when `ship` is `nil`, `headingDegrees` at 0, π (180), −π + 1e-9 (180), −π/2 (−90) and the 179.995° boundary, and a turn of π rad/s → `180.00 deg/s`
+- [X] T008 [US1] Run quickstart checks 2 and 3 on the iPhone 17 Pro simulator (launch, `simctl io screenshot`) and record the results in specs/015-debug-overlay-ship-order/quickstart.md
 
 **Checkpoint**: the ship lines are on screen and correct.
 

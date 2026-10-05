@@ -108,7 +108,7 @@ public struct DebugOverlayShip: Sendable, Equatable {
 }
 
 /// The live debug overlay: six labelled lines of frame statistics in the safe area's top-left corner
-/// (003 FR-001–FR-005).
+/// (003 FR-001–FR-005), followed by the ship and its order (015).
 ///
 /// Debug and Profiling builds only, and compiled out of Release entirely, labels and all, so no build
 /// setting or launch argument can put it on screen there (FR-009, SC-005).
@@ -138,6 +138,28 @@ public final class DebugOverlay {
     /// Frame times are right-aligned in six columns, which holds `999.99`.
     static let millisecondsWidth = 6
 
+    /// The ship and order lines' labels (015 FR-002–FR-004): eight columns, like the frame statistics'.
+    /// The vector lines carry their `x` straight after the label.
+    static let positionLabel: StaticString = "pos     x"
+    static let velocityLabel: StaticString = "vel     x"
+    static let speedLabel: StaticString = "speed   "
+    static let headingLabel: StaticString = "heading "
+    static let turnLabel: StaticString = "turn    "
+    static let ySeparator: StaticString = " y"
+    static let speedUnit: StaticString = " u/s"
+    static let degreesUnit: StaticString = " deg"
+    static let degreesPerSecondUnit: StaticString = " deg/s"
+
+    /// Ship and order values are signed and right-aligned in nine columns, which holds `-99999.99`.
+    static let valueWidth = 9
+
+    /// The heading in degrees for the heading line: radians × 180/π, except that a value that rounds to
+    /// −180.00 is 180, so the seam always reads `180.00` (015 FR-002).
+    static func headingDegrees(_ radians: Double) -> Double {
+        let degrees = radians * 180 / .pi
+        return (degrees * 100).rounded(.toNearestOrAwayFromZero) <= -18_000 ? 180 : degrees
+    }
+
     public init() {}
 
     /// Writes this frame's overlay into `buffer`, 8 points in from the safe area's top-left. Allocates
@@ -164,6 +186,38 @@ public final class DebugOverlay {
         writeCount(Self.skippedLabel, statistics.skippedFrames, into: buffer)
         buffer.newline()
         writeCount(Self.ticksLabel, statistics.tickCount, into: buffer)
+
+        if let ship {
+            writeShip(ship, into: buffer)
+        }
+    }
+
+    /// The ship lines, each on a new line after the frame statistics (015 FR-002).
+    private func writeShip(_ ship: DebugOverlayShip, into buffer: TextBuffer) {
+        buffer.newline()
+        writeVector(Self.positionLabel, ship.position, into: buffer)
+        buffer.newline()
+        writeVector(Self.velocityLabel, ship.velocity, into: buffer)
+        buffer.newline()
+        let speed = (ship.velocity.x * ship.velocity.x + ship.velocity.y * ship.velocity.y).squareRoot()
+        writeValue(Self.speedLabel, speed, unit: Self.speedUnit, into: buffer)
+        buffer.newline()
+        writeValue(Self.headingLabel, Self.headingDegrees(ship.heading), unit: Self.degreesUnit, into: buffer)
+        buffer.newline()
+        writeValue(Self.turnLabel, ship.angularVelocity * 180 / .pi, unit: Self.degreesPerSecondUnit, into: buffer)
+    }
+
+    private func writeVector(_ label: StaticString, _ vector: Vector2, into buffer: TextBuffer) {
+        buffer.write(label, limit: buffer.remainingCapacity)
+        buffer.writeSignedHundredths(vector.x, width: Self.valueWidth, limit: buffer.remainingCapacity)
+        buffer.write(Self.ySeparator, limit: buffer.remainingCapacity)
+        buffer.writeSignedHundredths(vector.y, width: Self.valueWidth, limit: buffer.remainingCapacity)
+    }
+
+    private func writeValue(_ label: StaticString, _ value: Double, unit: StaticString, into buffer: TextBuffer) {
+        buffer.write(label, limit: buffer.remainingCapacity)
+        buffer.writeSignedHundredths(value, width: Self.valueWidth, limit: buffer.remainingCapacity)
+        buffer.write(unit, limit: buffer.remainingCapacity)
     }
 
     private func writeMilliseconds(_ label: StaticString, _ seconds: Double?, into buffer: TextBuffer) {
