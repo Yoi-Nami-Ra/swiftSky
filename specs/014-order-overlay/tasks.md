@@ -37,7 +37,7 @@ drawing is render code and exempt (Principle II); it is checked by the quickstar
 - [X] T008 [US1] Build the pipelines in `Renderer.init` (a failure is a `RendererError`, as for the ship) in Sources/SwiftSkyRendering/Renderer.swift
 - [X] T009 [US1] Add `encodeOrderOverlay(state:shipPose:poseTick:surface:encoder:)` to Sources/SwiftSkyRendering/Renderer.swift and call it after the background quad and before `encodeShip` (FR-009): build `OrderOverlay`, copy its points into a stack `InlineArray<258, SIMD2<Float>>`, set the uniforms, the points (`8 × lineCount` bytes) and the two ring records with `setVertexBytes`, draw `lineCount − 1` line instances and 2 ring instances as 4-vertex triangle strips; not gated by `drawsShip` or `SWIFTSKY_INSTRUMENTATION` (FR-003)
 - [X] T010 [US1] Run quickstart checks 2, 3, 5, 6 and 7 on the iPhone 17 Pro simulator (tap, `simctl io screenshot`, log stream) and record the results in specs/014-order-overlay/quickstart.md
-- [ ] T011 [US1] Run quickstart checks 2, 3, 5, 6 and 7 on macOS (clicks by hand) and record the results in specs/014-order-overlay/quickstart.md
+- [X] T011 [US1] Run quickstart checks 2, 3, 5, 6 and 7 on macOS (clicks by hand) and record the results in specs/014-order-overlay/quickstart.md
 
 **Checkpoint**: the overlay is visible and correct on both platforms (SC-001 to SC-004 by eye).
 
@@ -64,9 +64,9 @@ drawing is render code and exempt (Principle II); it is checked by the quickstar
 
 ## Phase 6: Polish & cross-cutting
 
-- [ ] T017 [P] Run the remaining quickstart checks 4 and 8–11 (marker within half a pixel, off-screen and capped orders, resize/rotation, Release build, `--no-interpolation`) and record them in specs/014-order-overlay/quickstart.md
+- [X] T017 [P] Run the remaining quickstart checks 4 and 8–11 (marker within half a pixel, off-screen and capped orders, resize/rotation, Release build, `--no-interpolation`) and record them in specs/014-order-overlay/quickstart.md
 - [X] T018 [P] Update CLAUDE.md: add spec 014 to the "Built so far" list and a key-locations entry for `OrderOverlay.swift` / `OrderOverlayPipelines.swift` (the `poseTick` rule, `max` blending over black only, the style constants)
-- [ ] T019 Run `./Scripts/verify.sh` and confirm all suites pass and both apps build with no warnings (quickstart check 1)
+- [X] T019 Run `./Scripts/verify.sh` and confirm all suites pass and both apps build with no warnings (quickstart check 1)
 
 ## Dependencies & Execution Order
 

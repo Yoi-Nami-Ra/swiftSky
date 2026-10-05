@@ -75,3 +75,16 @@ nothing on that frame). Release builds compile it away. Recorded as a separate f
 
 **Check 11 — PASS on iOS.** Debug with `--no-interpolation`: mid-flight, the highlight rings the
 sprite, which is drawn at the tick pose, and the line starts at it.
+
+**Checks 2, 3, 5, 6, 7, 8 and 9 (resize) — PASS on macOS, by eye (2026-10-05, T011, T017).** Debug build
+with `--no-debug-overlay`, window opened at its first-launch size; orders by hand, results reported by
+the tester: no overlay before an order; marker centred under the pointer, ring on the ship, line
+between; the line shortens behind the ship; everything clears on arrival; a new order replaces the old
+marker at once; the overlay stays on its world points through a live resize; an order at the window
+edge, then shrinking the window, runs the line cleanly off the edge. No screenshots (this session has no
+Screen Recording permission), so no pixel measurement on macOS; check 4's half-pixel measurement is the
+iOS one above, through the same shared renderer and camera.
+
+**Check 9 (rotation) — not run.** The simulator tools available here cannot rotate the device. The
+overlay is placed through the camera every frame, the same path the macOS resize exercises, and the
+geometry tests cover placement on any surface size; accepted without a rotation run.
