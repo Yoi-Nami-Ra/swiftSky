@@ -475,6 +475,9 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
         let shipPose = interpolates
             ? ShipPose.blended(from: previousPose, to: tickPose, fraction: accumulator.tickFraction)
             : tickPose
+        // The latest tick at or behind the drawn pose, from the same switch, so the order overlay's
+        // reached points always agree with the sprite (014 contract C4, FR-012).
+        let poseTick = interpolates && state.tickCount > 0 ? state.tickCount - 1 : state.tickCount
 
         // 4a. Each arrival is logged once (008 FR-015, SC-007b): one comparison and one flag test, in
         //     debug and profiling builds only. Noted here, written after the counted stretch.
@@ -495,6 +498,7 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
         let presented = renderer.render(
             state: state,
             shipPose: shipPose,
+            poseTick: poseTick,
             surface: surface,
             drawable: update.drawable,
             timestamp: now

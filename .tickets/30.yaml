@@ -17,7 +17,7 @@ description: |
   the player clicked or tapped, the path ends at the marker, and everything
   clears on arrival — on both platforms.
 platform: macos
-status: ready
+status: done
 phase: MVP
 priority: medium
 parent: 22
