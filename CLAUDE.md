@@ -34,7 +34,9 @@ allocation counts in the frame summary; check 25, zero allocations per frame, PA
 stretch in the frame summary; check 29's continuous resize: no races, no stall mid-drag) and
 `specs/013-render-interpolation` (the ship drawn between its last two ticks, so it moves smoothly on
 120 Hz displays) and `specs/014-order-overlay` (while an order is flown: a marker at the destination, a
-ring around the ship and the remaining planned path, in every build). Layer libraries and
+ring around the ship and the remaining planned path, in every build) and
+`specs/015-debug-overlay-ship-order` (the debug overlay's ship and order lines under its frame
+statistics). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
@@ -146,6 +148,13 @@ artifacts, keep them consistent with these templates.
   tick. Two pipelines share one distance-field fragment shader and blend with `max`, which is right only
   over the black background. Sizes and colour are `OrderOverlayStyle` (no design yet). Drawn between the
   background and the ship.
+- The debug overlay's ship and order lines (015), in `DebugOverlay.swift`: `pos`, `vel`, `speed`,
+  `heading`, `turn`, then `order   none` or the phase with `dest` and `dist`. `DebugOverlayShip` is taken
+  in `FrameLoop` step 3a, at the 4 Hz refresh, from `state` before that frame's advance — the latest tick,
+  never the drawn pose. Numbers use `TextBuffer.writeSignedHundredths` (nine columns, no `-0.00`); heading
+  and turn are in degrees, and a heading rounding to −180.00 is written `180.00`. The Release strings
+  check looks for the labels and units, not the phase names: `AutopilotPhase`'s case names stay in
+  reflection metadata in every build.
 - `Sources/SwiftSkyRendering/Camera.swift` and `GameSpace.swift` — the camera (world → view points,
   view points → world, world → clip; `init?(surface:)` is `nil` for a zero-area surface or an
   unusable backing scale) and

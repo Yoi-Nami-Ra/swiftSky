@@ -58,9 +58,9 @@ composition get headless Swift Testing tests. The drawing itself is 002's and un
 
 **Independent Test**: quickstart checks 9–11.
 
-- [ ] T014 [US3] Run quickstart check 9 (011 check 25, optimised instrumented build, iOS simulator, 60 s with orders tapped) on this branch and, for the before/after evidence Principle III requires, on `main` (d6f004e) with the same procedure; record `allocs=`/`allocframes=` and mean/worst frame time for both in specs/015-debug-overlay-ship-order/quickstart.md
-- [ ] T015 [US3] Run quickstart check 10 on macOS idle (optimised instrumented build launched with `open -n … --args --debug-ship-spin`, 60 s, no order, so the ship lines change every refresh) and record it; leave the run with clicked orders for the user, marked pending, in specs/015-debug-overlay-ship-order/quickstart.md
-- [ ] T016 [US3] Run quickstart check 11 (plain Release build for macOS; `nm` unstripped and after `strip -rSTx`, `strings`) and record the counts in specs/015-debug-overlay-ship-order/quickstart.md
+- [ ] T014 [US3] **(partial: "before" run done; "after" run blocked by a frozen simulator, left for the user)** Run quickstart check 9 (011 check 25, optimised instrumented build, iOS simulator, 60 s with orders tapped) on this branch and, for the before/after evidence Principle III requires, on `main` (d6f004e) with the same procedure; record `allocs=`/`allocframes=` and mean/worst frame time for both in specs/015-debug-overlay-ship-order/quickstart.md
+- [X] T015 [US3] Run quickstart check 10 on macOS idle (optimised instrumented build launched with `open -n … --args --debug-ship-spin`, 60 s, no order, so the ship lines change every refresh) and record it; leave the run with clicked orders for the user, marked pending, in specs/015-debug-overlay-ship-order/quickstart.md
+- [X] T016 [US3] Run quickstart check 11 (plain Release build for macOS; `nm` unstripped and after `strip -rSTx`, `strings`) and record the counts in specs/015-debug-overlay-ship-order/quickstart.md
 
 **Checkpoint**: SC-004 (iOS) and SC-005 confirmed.
 
@@ -70,13 +70,13 @@ composition get headless Swift Testing tests. The drawing itself is 002's and un
 
 **Independent Test**: `./Scripts/verify.sh`.
 
-- [ ] T017 [US4] Run `./Scripts/verify.sh` (quickstart check 1) and confirm the new suites run without a Metal device and the test count rose from T001's; confirm from the diff that the log lines and the six frame-statistic lines are unchanged (FR-012)
+- [X] T017 [US4] Run `./Scripts/verify.sh` (quickstart check 1) and confirm the new suites run without a Metal device and the test count rose from T001's; confirm from the diff that the log lines and the six frame-statistic lines are unchanged (FR-012)
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T018 [P] Add spec 015 to CLAUDE.md: the built-so-far list and a key-locations note (`DebugOverlayShip` taken at step 3a from the latest tick, never the drawn pose; `writeSignedHundredths`; the Release strings check skips phase names)
-- [ ] T019 [P] Run quickstart check 8 (`--no-debug-overlay`, `--debug-text`) on the simulator and record it in specs/015-debug-overlay-ship-order/quickstart.md
-- [ ] T020 Final `./Scripts/verify.sh` and fill in the Results section of specs/015-debug-overlay-ship-order/quickstart.md
+- [X] T018 [P] Add spec 015 to CLAUDE.md: the built-so-far list and a key-locations note (`DebugOverlayShip` taken at step 3a from the latest tick, never the drawn pose; `writeSignedHundredths`; the Release strings check skips phase names)
+- [ ] T019 [P] **(blocked: simulator frozen; left for the user)** Run quickstart check 8 (`--no-debug-overlay`, `--debug-text`) on the simulator and record it in specs/015-debug-overlay-ship-order/quickstart.md
+- [X] T020 Final `./Scripts/verify.sh` and fill in the Results section of specs/015-debug-overlay-ship-order/quickstart.md
 
 ## Dependencies & Execution Order
 
