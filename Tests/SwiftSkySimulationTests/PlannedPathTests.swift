@@ -104,6 +104,30 @@ struct PlannedPathTests {
     }
 
     @Test(
+        "Every point's tick is the tick it was recorded at, the last one included, and ticks increase (014 C1)",
+        arguments: [0, 1, 2, 255, 256, 257, 300, 511, 512, 513, 1_000, 3_600, 3_601]
+    )
+    func pointTicks(ticks: Int) {
+        // As above: the synthetic position's x is the tick it was recorded at, counted from the start.
+        func position(_ tick: Int) -> Vector2 { Vector2(x: Double(tick), y: -Double(tick)) }
+        var path = PlannedPath(start: position(0), tick: 1_000)
+        for tick in stride(from: 1, through: ticks, by: 1) {
+            path.append(position(tick))
+        }
+        path.finish(reachesArrival: ticks < 3_600)
+
+        var previous: UInt64?
+        for index in 0..<path.count {
+            let tick = path.tick(ofPoint: index)
+            #expect(tick == 1_000 + UInt64(path[index].x), "\(ticks) ticks: point \(index) is at tick \(tick)")
+            if let previous { #expect(tick > previous, "\(ticks) ticks: point \(index) does not follow \(index - 1)") }
+            previous = tick
+        }
+        #expect(path.tick(ofPoint: path.count - 1) == path.endTick)
+        #expect(path.tick(ofPoint: 0) == path.startTick)
+    }
+
+    @Test(
         "A flight that cannot complete stops at the cap, on the real position after 3,600 ticks (SC-004)",
         arguments: ["zero thrust", "zero angular acceleration, facing away"]
     )
@@ -137,6 +161,8 @@ struct PlannedPathTests {
         #expect(path.spacing == 16)
         let last = try #require(path.last)
         #expect(bits(last) == bits(real.ship.position))
+        #expect(path.tick(ofPoint: path.count - 1) == path.endTick)
+        #expect(path.tick(ofPoint: path.count - 2) == path.startTick + UInt64((path.count - 2) * path.spacing))
     }
 
     // MARK: - US3: planned once per order
