@@ -113,6 +113,34 @@ simulator (iOS 27.0): `1668x2420 pixels=4036560 nonBlackPixels=0 maxRGB=(0,0,0)`
 > `Instrumentation.swift` remains. Getting `FR-021d`'s log output visible is outstanding work — see
 > tasks.md T058.
 
+**Check 2 — PASS on iOS, simulator (2026-10-05, SKY-16).** iPhone 17 Pro simulator, iOS 27.0, Xcode
+27.0 (27A266a), Debug build launched with `--no-debug-overlay --no-ship`. Ten cold launches, five in
+light and five in dark system appearance (`xcrun simctl ui <udid> appearance`), each terminated first
+and recorded with `xcrun simctl io <udid> recordVideo`. That captures the simulator's framebuffer, so
+it needs no Screen Recording permission. Every recorded frame was measured with ffmpeg's
+`signalstats` (video luma, limited range: 16 is black):
+
+```
+run      transition  mean luma reaches 16  largest rise in mean luma after the transition starts
+light×5  1.6–3.8 s   after 0.33–0.42 s     0.0
+dark×5   1.7 s       after 0.24–0.26 s     0.0
+```
+
+Mean luma falls monotonically from the home screen to black in every run and never rises, so no
+frame is lighter than the one before it. Frame by frame, the app's window is black from the first
+frame it appears in the zoom-from-icon animation; the OS launch screen (`LaunchBackground`, FR-004a)
+shows no light background in either appearance. Two things in the recording are not the app's:
+
+- For about 35 ms before the window replaces it, the zoom expands the home-screen **icon**, which is
+  the platform's light placeholder. The spec accepts the placeholder icon (Assumptions); a real icon
+  would replace it.
+- For about 1.1 s after launch, the system draws dim grey **edge hints** on the left and right edges,
+  beside the hardware buttons (peak luma 59 of 235, a few points wide), then fades them out. They are
+  system chrome drawn over every app, not pixels from the rendering pipeline.
+
+This is the simulator. A run on a physical device (both test devices were disconnected) would confirm
+the same at panel timing; it is not needed to close the check. The macOS half of check 2 is SKY-17.
+
 ### Window and scene behaviour
 
 | # | Check | Expected | Criterion |
@@ -669,10 +697,11 @@ Since then, check 25 has passed on both platforms (iOS 2026-10-01 in 011, macOS 
 and is no longer open.
 Check 29's race half and its mid-drag stall half passed on 2026-10-01 (012); one system-side stall at
 the end of live resize keeps it open (SKY-37).
+Check 2's iOS half passed on 2026-10-05 (SKY-16), recorded in the simulator; its macOS half is SKY-17.
 
 | # | Check | Why it is still open |
 |---|-------|----------------------|
-| 2 | No flash on launch | Needs a human watching, or screen recording (permission not granted) |
+| 2 | No flash on launch | iOS: PASS on the simulator (SKY-16); macOS needs screen recording (SKY-17) |
 | 4 | GPU frame capture shows a draw call | Needs Xcode's GPU debugger, interactive |
 | 5 | Pipeline state built once | Same; structural evidence in `FullscreenQuad` |
 | 7, 8 | Resize range, minimum size | Needs interactive window dragging |
