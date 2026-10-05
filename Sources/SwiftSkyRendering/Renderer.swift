@@ -57,10 +57,12 @@ public final class Renderer {
     /// loop starts, by the platform layer; `nil` — `--no-debug-overlay` — draws nothing.
     public var debugOverlay: DebugOverlay?
 
-    /// Hands the overlay the frame loop's latest snapshot. Loop thread only, like `render`; called four
-    /// times a second, and the overlay redraws it every frame until the next one (003 FR-006, FR-015).
-    public func updateDebugOverlay(_ statistics: DebugOverlayStatistics) {
+    /// Hands the overlay the frame loop's latest snapshot: the frame statistics and the ship and order at
+    /// the same moment. Loop thread only, like `render`; called four times a second, and the overlay
+    /// redraws it every frame until the next one (003 FR-006, FR-015; 015 FR-005).
+    public func updateDebugOverlay(_ statistics: DebugOverlayStatistics, ship: DebugOverlayShip) {
         debugOverlay?.statistics = statistics
+        debugOverlay?.ship = ship
     }
 
     /// Whether to draw the ship. Set once, before the loop starts, by the platform layer: `false` for

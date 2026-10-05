@@ -444,10 +444,12 @@ extension FrameLoop: CAMetalDisplayLinkDelegate {
 
         // 3a. The debug overlay's statistics, four times a second, from this frame's one timestamp
         //     (003 FR-006, FR-008). A plain value handed across — the renderer never reads the
-        //     instrumentation (FR-015). Debug/profiling only.
+        //     instrumentation (FR-015). With them, the ship and its order as of the latest completed
+        //     tick: `state` before step 4 advances it, never the drawn pose (015 FR-005, 013).
+        //     Debug/profiling only.
         #if SWIFTSKY_INSTRUMENTATION
         if let statistics = instrumentation.overlayStatistics(at: now) {
-            renderer.updateDebugOverlay(statistics)
+            renderer.updateDebugOverlay(statistics, ship: DebugOverlayShip(state))
         }
         #endif
 

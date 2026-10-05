@@ -1,5 +1,7 @@
 #if SWIFTSKY_INSTRUMENTATION
 
+import SwiftSkySimulation
+
 /// The frame statistics the debug overlay shows, as of its last refresh (003 FR-004).
 ///
 /// Defined here, by its consumer, and filled in by the platform layer's instrumentation — the same
@@ -45,6 +47,66 @@ public struct DebugOverlayStatistics: Sendable, Equatable {
     }
 }
 
+/// What the ship and its order were at the overlay's last refresh (015 FR-005).
+///
+/// Taken by the frame loop from the simulation state at the refresh, before that frame advances it: the
+/// latest completed tick, never the interpolated pose the ship is drawn at (013). Plain values only, so
+/// the overlay never holds the state's planned path (015 FR-011).
+public struct DebugOverlayShip: Sendable, Equatable {
+    /// The order being flown, with the autopilot's phase and the distance still to go.
+    public struct Order: Sendable, Equatable {
+        public var phase: AutopilotPhase
+        public var destination: Vector2
+        public var distance: Double
+
+        public init(phase: AutopilotPhase, destination: Vector2, distance: Double) {
+            self.phase = phase
+            self.destination = destination
+            self.distance = distance
+        }
+    }
+
+    /// World units.
+    public var position: Vector2
+
+    /// World units per second.
+    public var velocity: Vector2
+
+    /// Radians, in (−π, π].
+    public var heading: Double
+
+    /// Radians per second, counter-clockwise positive.
+    public var angularVelocity: Double
+
+    /// `nil` without an order.
+    public var order: Order?
+
+    public init(position: Vector2, velocity: Vector2, heading: Double, angularVelocity: Double, order: Order?) {
+        self.position = position
+        self.velocity = velocity
+        self.heading = heading
+        self.angularVelocity = angularVelocity
+        self.order = order
+    }
+
+    /// The ship and order as `state` holds them. An order without a phase, which the autopilot never
+    /// produces, is treated as no order. Allocates nothing.
+    public init(_ state: SimulationState) {
+        let ship = state.ship
+        position = ship.position
+        velocity = ship.velocity
+        heading = ship.heading
+        angularVelocity = ship.angularVelocity
+        if let destination = state.autopilot.order?.destination,
+           let phase = state.autopilot.phase,
+           let distance = state.distanceRemaining {
+            order = Order(phase: phase, destination: destination, distance: distance)
+        } else {
+            order = nil
+        }
+    }
+}
+
 /// The live debug overlay: six labelled lines of frame statistics in the safe area's top-left corner
 /// (003 FR-001–FR-005).
 ///
@@ -58,6 +120,10 @@ public struct DebugOverlayStatistics: Sendable, Equatable {
 public final class DebugOverlay {
     /// The last snapshot, or `nil` before the first one arrives, in which case nothing is drawn.
     public var statistics: DebugOverlayStatistics?
+
+    /// The ship and order at the last snapshot, written under the frame statistics (015). `nil` writes
+    /// the six frame-statistic lines only.
+    public var ship: DebugOverlayShip?
 
     /// Each label is exactly eight columns, so every value starts in the same column.
     static let meanLabel: StaticString = "mean    "

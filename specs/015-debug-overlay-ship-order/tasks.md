@@ -13,16 +13,16 @@ composition get headless Swift Testing tests. The drawing itself is 002's and un
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirm the baseline: run `./Scripts/verify.sh` on `015-debug-overlay-ship-order` before any code change and note the test count
+- [X] T001 Confirm the baseline: run `./Scripts/verify.sh` on `015-debug-overlay-ship-order` before any code change and note the test count
 
 ## Phase 2: Foundational (blocking prerequisites)
 
 **Purpose**: the signed writer and the snapshot plumbing every story needs.
 
-- [ ] T002 [P] Add `writeSignedHundredths(_:width:limit:)` per contract C1 to Sources/SwiftSkyRendering/Text/TextBuffer.swift: factor the rounding and digit writing of `writeHundredths` into a private helper taking the rounded hundredths and a sign flag; the sign is written only for a negative value whose rounded hundredths are not zero; padding counts the sign; NaN → `0.00`; magnitudes clamped as in `writeHundredths`; `writeHundredths`' output unchanged
-- [ ] T003 [P] Add tests for C1 to Tests/SwiftSkyRenderingTests/DecimalWritingTests.swift: the contract table at width 9 (0, −0.004, −0.005, 12.345, −1234.5, ±99999.99, −123456.789, NaN), width 0, −infinity clamped with a sign, and the limit respected mid-number including after the sign
-- [ ] T004 Add `DebugOverlayShip` (with nested `Order`) and its memberwise and `init(_ state: SimulationState)` initialisers per contract C2 and data-model.md inside the `#if SWIFTSKY_INSTRUMENTATION` block of Sources/SwiftSkyRendering/Debug/DebugOverlay.swift (`import SwiftSkySimulation`), plus `public var ship: DebugOverlayShip?` on `DebugOverlay` (not yet written)
-- [ ] T005 Replace `Renderer.updateDebugOverlay(_:)` with `updateDebugOverlay(_:ship:)` per contract C4 in Sources/SwiftSkyRendering/Renderer.swift, and pass `DebugOverlayShip(state)` from step 3a in Sources/SwiftSkyPlatform/FrameLoop.swift (state before step 4's advance)
+- [X] T002 [P] Add `writeSignedHundredths(_:width:limit:)` per contract C1 to Sources/SwiftSkyRendering/Text/TextBuffer.swift: factor the rounding and digit writing of `writeHundredths` into a private helper taking the rounded hundredths and a sign flag; the sign is written only for a negative value whose rounded hundredths are not zero; padding counts the sign; NaN → `0.00`; magnitudes clamped as in `writeHundredths`; `writeHundredths`' output unchanged
+- [X] T003 [P] Add tests for C1 to Tests/SwiftSkyRenderingTests/DecimalWritingTests.swift: the contract table at width 9 (0, −0.004, −0.005, 12.345, −1234.5, ±99999.99, −123456.789, NaN), width 0, −infinity clamped with a sign, and the limit respected mid-number including after the sign
+- [X] T004 Add `DebugOverlayShip` (with nested `Order`) and its memberwise and `init(_ state: SimulationState)` initialisers per contract C2 and data-model.md inside the `#if SWIFTSKY_INSTRUMENTATION` block of Sources/SwiftSkyRendering/Debug/DebugOverlay.swift (`import SwiftSkySimulation`), plus `public var ship: DebugOverlayShip?` on `DebugOverlay` (not yet written)
+- [X] T005 Replace `Renderer.updateDebugOverlay(_:)` with `updateDebugOverlay(_:ship:)` per contract C4 in Sources/SwiftSkyRendering/Renderer.swift, and pass `DebugOverlayShip(state)` from step 3a in Sources/SwiftSkyPlatform/FrameLoop.swift (state before step 4's advance)
 
 **Checkpoint**: `verify.sh` passes; the overlay still shows its six lines.
 
