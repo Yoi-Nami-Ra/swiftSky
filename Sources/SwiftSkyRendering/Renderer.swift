@@ -144,10 +144,14 @@ public final class Renderer {
     /// - Parameter shipPose: where to draw the ship: the frame loop's blend of its last two ticks
     ///   (013 FR-006, FR-007). Everything else drawn from the ship's pose must use this one too, so it
     ///   never drifts from the sprite. Read only, never written back.
+    /// - Parameter poseTick: the latest tick at or behind `shipPose`: the tick before the latest when the
+    ///   pose is blended, the latest under `--no-interpolation` (014 contract C4). The order overlay draws
+    ///   only the planned-path points after it, so the line never runs behind the ship (014 FR-007).
     @discardableResult
     public func render(
         state: SimulationState,
         shipPose: ShipPose,
+        poseTick: UInt64,
         surface: RenderSurface,
         drawable: any CAMetalDrawable,
         timestamp: Double

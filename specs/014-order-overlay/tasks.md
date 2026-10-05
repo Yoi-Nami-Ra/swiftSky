@@ -13,15 +13,15 @@ drawing is render code and exempt (Principle II); it is checked by the quickstar
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirm the baseline: run `./Scripts/verify.sh` on `014-order-overlay` before any change and note the test count
+- [X] T001 Confirm the baseline: run `./Scripts/verify.sh` on `014-order-overlay` before any change and note the test count
 
 ## Phase 2: Foundational (blocking prerequisites)
 
 **Purpose**: the point-tick rule and the `poseTick` plumbing every story needs.
 
-- [ ] T002 [P] Add `PlannedPath.tick(ofPoint:)` per contract C1 (`startTick + index × spacing`, `endTick` for the last point, precondition `0..<count`) in Sources/SwiftSkySimulation/PlannedPath.swift
-- [ ] T003 [P] Add tests for C1 in Tests/SwiftSkySimulationTests/PlannedPathTests.swift: a one-point path, a short path (spacing 1), a thinned path (spacing 2+) whose last point is off the grid, a capped path, and strictly increasing ticks
-- [ ] T004 Add the `poseTick: UInt64` parameter to `Renderer.render(state:shipPose:poseTick:surface:drawable:timestamp:)` (contract C3; unused until T009) in Sources/SwiftSkyRendering/Renderer.swift, and compute it in Sources/SwiftSkyPlatform/FrameLoop.swift beside the drawn pose from the same `interpolates` flag: `tickCount − 1` (0 at tick 0) when interpolating, `tickCount` otherwise (contract C4)
+- [X] T002 [P] Add `PlannedPath.tick(ofPoint:)` per contract C1 (`startTick + index × spacing`, `endTick` for the last point, precondition `0..<count`) in Sources/SwiftSkySimulation/PlannedPath.swift
+- [X] T003 [P] Add tests for C1 in Tests/SwiftSkySimulationTests/PlannedPathTests.swift: a one-point path, a short path (spacing 1), a thinned path (spacing 2+) whose last point is off the grid, a capped path, and strictly increasing ticks
+- [X] T004 Add the `poseTick: UInt64` parameter to `Renderer.render(state:shipPose:poseTick:surface:drawable:timestamp:)` (contract C3; unused until T009) in Sources/SwiftSkyRendering/Renderer.swift, and compute it in Sources/SwiftSkyPlatform/FrameLoop.swift beside the drawn pose from the same `interpolates` flag: `tickCount − 1` (0 at tick 0) when interpolating, `tickCount` otherwise (contract C4)
 
 **Checkpoint**: `verify.sh` passes; the app draws exactly as before.
 
