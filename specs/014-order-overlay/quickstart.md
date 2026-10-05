@@ -88,3 +88,7 @@ iOS one above, through the same shared renderer and camera.
 **Check 9 (rotation) — not run.** The simulator tools available here cannot rotate the device. The
 overlay is placed through the camera every frame, the same path the macOS resize exercises, and the
 geometry tests cover placement on any surface size; accepted without a rotation run.
+
+**Check 12 on macOS — not run (2026-10-05, T016 skipped by decision).** SC-005 asks for both platforms;
+only iOS was measured. The overlay's per-frame code is the shared rendering layer, identical on both,
+and iOS shows `allocs=0` on every frame that draws it. Open as a gap, not a pass.
