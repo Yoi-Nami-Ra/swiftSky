@@ -59,13 +59,13 @@ drawing is render code and exempt (Principle II); it is checked by the quickstar
 
 **Independent Test**: 011 check 25 with orders flown for 60 s on each platform.
 
-- [ ] T015 [US3] Run 011's check 25 on the iOS simulator with the optimised instrumented build, flying orders for 60 s, and record `allocs=` from the frame summaries in specs/014-order-overlay/quickstart.md
+- [X] T015 [US3] Run 011's check 25 on the iOS simulator with the optimised instrumented build, flying orders for 60 s, and record `allocs=` from the frame summaries in specs/014-order-overlay/quickstart.md
 - [ ] T016 [US3] Run 011's check 25 on macOS the same way (orders by hand) and record the result in specs/014-order-overlay/quickstart.md
 
 ## Phase 6: Polish & cross-cutting
 
 - [ ] T017 [P] Run the remaining quickstart checks 4 and 8–11 (marker within half a pixel, off-screen and capped orders, resize/rotation, Release build, `--no-interpolation`) and record them in specs/014-order-overlay/quickstart.md
-- [ ] T018 [P] Update CLAUDE.md: add spec 014 to the "Built so far" list and a key-locations entry for `OrderOverlay.swift` / `OrderOverlayPipelines.swift` (the `poseTick` rule, `max` blending over black only, the style constants)
+- [X] T018 [P] Update CLAUDE.md: add spec 014 to the "Built so far" list and a key-locations entry for `OrderOverlay.swift` / `OrderOverlayPipelines.swift` (the `poseTick` rule, `max` blending over black only, the style constants)
 - [ ] T019 Run `./Scripts/verify.sh` and confirm all suites pass and both apps build with no warnings (quickstart check 1)
 
 ## Dependencies & Execution Order
