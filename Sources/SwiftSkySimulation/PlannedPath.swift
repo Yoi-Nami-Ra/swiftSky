@@ -70,6 +70,14 @@ public struct PlannedPath: Sendable, Equatable {
         return points[index]
     }
 
+    /// The tick of point `index`: `startTick + index × spacing`, except the last point, which is at
+    /// `endTick` — a flight can end between two due points, and `finish` keeps its final position anyway
+    /// (014 contract C1). Strictly increasing along the path.
+    public func tick(ofPoint index: Int) -> UInt64 {
+        precondition(index >= 0 && index < count, "point \(index) is outside the path's \(count) points")
+        return index == count - 1 ? endTick : startTick + UInt64(index * spacing)
+    }
+
     /// The final predicted position, or `nil` when the path is empty.
     public var last: Vector2? {
         count > 0 ? points[count - 1] : nil

@@ -4,7 +4,8 @@ import QuartzCore
 import SwiftSkySimulation
 import os
 
-/// Draws the visible surface: the black background, the ship at its pose (007), and any text. Owns
+/// Draws the visible surface: the black background, the order overlay (014), the ship at its pose
+/// (007), and any text. Owns
 /// Metal, the shaders, the black colour and the ship image.
 ///
 /// Knows nothing about windows, views, scenes, or app lifecycle — only a `CAMetalLayer` to present
@@ -22,6 +23,10 @@ public final class Renderer {
     /// The ship's pipeline and texture, built once (007 FR-011). The ship is part of the game, not an
     /// optional extra, so a failure here is a `RendererError` (007 FR-005), unlike text.
     private let ship: ShipSprite
+
+    /// The order overlay's pipelines, built once (014 FR-013). Gameplay UI, so a failure here is a
+    /// `RendererError`, as for the ship.
+    private let orderOverlay: OrderOverlayPipelines
 
     /// The GPU side of text, or `nil` if it could not be set up. Text is not essential: a failure is
     /// logged and the renderer carries on without it — it never becomes a `RendererError` (FR-018).
@@ -105,6 +110,7 @@ public final class Renderer {
             commandQueue: queue,
             image: Self.loadShipImage()
         )
+        self.orderOverlay = try OrderOverlayPipelines(device: device, library: library, pixelFormat: pixelFormat)
 
         do {
             self.text = try TextRenderer(device: device, library: library, pixelFormat: pixelFormat, font: textFont)
@@ -144,10 +150,14 @@ public final class Renderer {
     /// - Parameter shipPose: where to draw the ship: the frame loop's blend of its last two ticks
     ///   (013 FR-006, FR-007). Everything else drawn from the ship's pose must use this one too, so it
     ///   never drifts from the sprite. Read only, never written back.
+    /// - Parameter poseTick: the latest tick at or behind `shipPose`: the tick before the latest when the
+    ///   pose is blended, the latest under `--no-interpolation` (014 contract C4). The order overlay draws
+    ///   only the planned-path points after it, so the line never runs behind the ship (014 FR-007).
     @discardableResult
     public func render(
         state: SimulationState,
         shipPose: ShipPose,
+        poseTick: UInt64,
         surface: RenderSurface,
         drawable: any CAMetalDrawable,
         timestamp: Double
@@ -182,6 +192,9 @@ public final class Renderer {
         encoder.setRenderPipelineState(quad.pipelineState)
         encoder.setVertexBuffer(quad.vertexBuffer, offset: 0, index: 0)
         encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: FullscreenQuad.vertexCount)
+
+        // The order overlay over the background and under the ship, in every build (014 FR-003, FR-009).
+        encodeOrderOverlay(state: state, shipPose: shipPose, poseTick: poseTick, surface: surface, encoder: encoder)
 
         // The ship over the background, at this frame's drawn pose (007 FR-001, FR-009; 013 FR-006).
         // Nothing here writes back to the logic layer.
@@ -225,6 +238,77 @@ public final class Renderer {
         }
         encoder.setFragmentTexture(self.ship.texture, index: 0)
         encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: ShipSprite.vertexCount)
+    }
+
+    /// Draws the current order's marker, highlight and remaining path, or nothing when `OrderOverlay`
+    /// gives none (014 FR-001, FR-015).
+    ///
+    /// Allocation-free (014 FR-013): the overlay and the copies below are stack values, and all of it
+    /// goes to the GPU through `setVertexBytes` — at most 2,064 bytes of points, 32 of rings and 32 of
+    /// uniforms, each under the 4 KB limit (research R6).
+    private func encodeOrderOverlay(
+        state: SimulationState,
+        shipPose: ShipPose,
+        poseTick: UInt64,
+        surface: RenderSurface,
+        encoder: any MTLRenderCommandEncoder
+    ) {
+        guard let overlay = OrderOverlay(state: state, shipPose: shipPose, poseTick: poseTick, surface: surface)
+        else { return }
+
+        let scale = overlay.scale
+        var uniforms = OrderOverlayUniforms(
+            surfacePixels: SIMD2(Float(overlay.surfaceWidthPixels), Float(overlay.surfaceHeightPixels)),
+            lineHalfWidth: Float(OrderOverlayStyle.lineWidth / 2 * scale),
+            colour: OrderOverlayStyle.colour
+        )
+
+        var points = InlineArray<258, SIMD2<Float>>(repeating: .zero)
+        var index = 0
+        while index < overlay.lineCount {
+            let point = overlay.linePoints[index]
+            points[index] = SIMD2(Float(point.x), Float(point.y))
+            index += 1
+        }
+
+        let marker = overlay.markerCentre
+        let highlight = overlay.highlightCentre
+        var rings = (
+            OrderOverlayRing(
+                centre: SIMD2(Float(marker.x), Float(marker.y)),
+                radius: Float(OrderOverlayStyle.markerRadius * scale),
+                halfWidth: Float(OrderOverlayStyle.markerStroke / 2 * scale)
+            ),
+            OrderOverlayRing(
+                centre: SIMD2(Float(highlight.x), Float(highlight.y)),
+                radius: Float(OrderOverlayStyle.highlightRadius * scale),
+                halfWidth: Float(OrderOverlayStyle.highlightStroke / 2 * scale)
+            )
+        )
+
+        withUnsafeBytes(of: &uniforms) { bytes in
+            encoder.setVertexBytes(bytes.baseAddress!, length: bytes.count, index: 1)
+            encoder.setFragmentBytes(bytes.baseAddress!, length: bytes.count, index: 0)
+        }
+
+        encoder.setRenderPipelineState(orderOverlay.line)
+        withUnsafeBytes(of: &points) { bytes in
+            encoder.setVertexBytes(
+                bytes.baseAddress!, length: overlay.lineCount * MemoryLayout<SIMD2<Float>>.stride, index: 0
+            )
+        }
+        encoder.drawPrimitives(
+            type: .triangleStrip, vertexStart: 0, vertexCount: OrderOverlayPipelines.vertexCount,
+            instanceCount: overlay.lineCount - 1
+        )
+
+        encoder.setRenderPipelineState(orderOverlay.ring)
+        withUnsafeBytes(of: &rings) { bytes in
+            encoder.setVertexBytes(bytes.baseAddress!, length: bytes.count, index: 0)
+        }
+        encoder.drawPrimitives(
+            type: .triangleStrip, vertexStart: 0, vertexCount: OrderOverlayPipelines.vertexCount, instanceCount: 2
+        )
     }
 
     /// Decodes the bundled ship image, turning each way it can fail into the one renderer error
