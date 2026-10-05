@@ -145,8 +145,7 @@ artifacts, keep them consistent with these templates.
   interpolating, `tickCount` under `--no-interpolation`; `PlannedPath.tick(ofPoint:)` gives each point's
   tick. Two pipelines share one distance-field fragment shader and blend with `max`, which is right only
   over the black background. Sizes and colour are `OrderOverlayStyle` (no design yet). Drawn between the
-  background and the ship. In instrumented builds the arrival `os_log` line allocates once per arrival
-  (`allocs=23 allocframes=1` in that summary); it is not the overlay's.
+  background and the ship.
 - `Sources/SwiftSkyRendering/Camera.swift` and `GameSpace.swift` — the camera (world → view points,
   view points → world, world → clip; `init?(surface:)` is `nil` for a zero-area surface or an
   unusable backing scale) and
@@ -176,7 +175,9 @@ artifacts, keep them consistent with these templates.
   (otherwise the app's — it fails safe). `FrameLoop` installs it, self-tests it (`allocation counter
   ready`) and brackets steps 1–5 of every frame; `FrameAllocationCounts.swift` holds the four summary
   fields `allocs= allocframes= eventallocs= gfxallocs=`. To find an allocation, attach lldb to a running
-  app with a breakpoint on `sky_alloc_app_allocation`. Measure with an **optimised** build carrying the
+  app with a breakpoint on `sky_alloc_app_allocation`. Writing a log line allocates (~23 per `Logger`
+  call), so lines found inside the stretch are noted and written after `sky_alloc_frame_end`: the order
+  lines (`OrderLogLine`) and the arrival line (011 check 10). Measure with an **optimised** build carrying the
   counter: Release plus `SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) SWIFTSKY_INSTRUMENTATION'` and
   `GCC_PREPROCESSOR_DEFINITIONS='$(inherited) SWIFTSKY_INSTRUMENTATION=1'` on the `xcodebuild` command
   line — Debug allocates on every unspecialised `for`-loop iterator, and **the Profiling configuration
