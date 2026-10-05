@@ -70,6 +70,9 @@ one frame per arrival. An lldb breakpoint on `sky_alloc_app_allocation`, armed o
 `Instrumentation.recordArrival` at `Instrumentation.swift:267`: the arrival `os_log` line of 008, which
 exists only in instrumented builds. It predates this feature and is not the overlay's (the overlay draws
 nothing on that frame). Release builds compile it away. Recorded as a separate finding.
+*Since fixed (011 check 10, 2026-10-05):* both the arrival and the order lines are now written after the
+counted stretch, and every summary reads `allocs=0`. The order frames' `eventallocs=28` above was the
+order log line, not the event queue; it is now `eventallocs=1`.
 
 **Check 10 — PASS on iOS.** A plain Release build draws the same overlay after a tap.
 
