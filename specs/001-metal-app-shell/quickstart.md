@@ -141,6 +141,30 @@ shows no light background in either appearance. Two things in the recording are 
 This is the simulator. A run on a physical device (both test devices were disconnected) would confirm
 the same at panel timing; it is not needed to close the check. The macOS half of check 2 is SKY-17.
 
+**Check 2 — PASS on macOS (2026-10-05, SKY-17).** Apple M1 Pro, macOS 26.7, Debug build launched with
+`open -n swiftSky.app --args --no-debug-overlay --no-ship`. Ten cold launches, five in light and
+five in dark system appearance, each after `pkill -x swiftSky` and a 2 s gap. Recorded by hand with
+⌘⇧5 (whole screen, 1920×1080 at 60 fps on a 1080p display): this session's Screen Recording
+permission does not reach the embedded Claude Code process, so `screencapture` still fails. The
+window's content area was found in each launch as the black rectangle below the title bar, inset by
+6 px, and measured in every recorded frame from 1 s before the window appears:
+
+```
+run      frame before the window     first frame with the window     frames in between
+light×5  desktop, mean luma 243–249  content mean 0.1, 99.5th pct 0  none
+dark×5   desktop, mean luma 22–24    content mean 0.1, 99.5th pct 0  none
+```
+
+In all ten launches the window's first recorded frame already has a black content area: no frame
+shows the window empty, grey, white or fading in. The 99.5th percentile leaves out the mouse pointer,
+which sat inside the window. Only the title bar is light in light appearance, as the system draws it;
+check 1 counts only the content area. So `configureWindowBackground()` runs before the window is first
+shown, and FR-004a holds on macOS too.
+
+The window opened at 640×360, the minimum, because macOS restored a size saved in an earlier session
+(`NSWindow Frame main` in the app's defaults). Check 1's 1280×720 is the first-launch size and is not
+affected.
+
 ### Window and scene behaviour
 
 | # | Check | Expected | Criterion |
@@ -697,11 +721,11 @@ Since then, check 25 has passed on both platforms (iOS 2026-10-01 in 011, macOS 
 and is no longer open.
 Check 29's race half and its mid-drag stall half passed on 2026-10-01 (012); one system-side stall at
 the end of live resize keeps it open (SKY-37).
-Check 2's iOS half passed on 2026-10-05 (SKY-16), recorded in the simulator; its macOS half is SKY-17.
+Check 2 passed on 2026-10-05 and is no longer open: iOS in the simulator (SKY-16), macOS from a
+screen recording (SKY-17).
 
 | # | Check | Why it is still open |
 |---|-------|----------------------|
-| 2 | No flash on launch | iOS: PASS on the simulator (SKY-16); macOS needs screen recording (SKY-17) |
 | 4 | GPU frame capture shows a draw call | Needs Xcode's GPU debugger, interactive |
 | 5 | Pipeline state built once | Same; structural evidence in `FullscreenQuad` |
 | 7, 8 | Resize range, minimum size | Needs interactive window dragging |
