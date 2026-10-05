@@ -60,7 +60,7 @@ drawing is render code and exempt (Principle II); it is checked by the quickstar
 **Independent Test**: 011 check 25 with orders flown for 60 s on each platform.
 
 - [X] T015 [US3] Run 011's check 25 on the iOS simulator with the optimised instrumented build, flying orders for 60 s, and record `allocs=` from the frame summaries in specs/014-order-overlay/quickstart.md
-- [ ] T016 [US3] Run 011's check 25 on macOS the same way (orders by hand) and record the result in specs/014-order-overlay/quickstart.md
+- [ ] T016 [US3] Run 011's check 25 on macOS the same way (orders by hand) and record the result in specs/014-order-overlay/quickstart.md — **skipped 2026-10-05** by decision; recorded as a gap in quickstart.md
 
 ## Phase 6: Polish & cross-cutting
 
