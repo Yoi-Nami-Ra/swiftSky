@@ -51,4 +51,5 @@ phase: Backlog
 priority: medium
 parent: null
 blocked_by: [42, 43]
-designs: []
+designs:
+  - design/sprites/planet.png
