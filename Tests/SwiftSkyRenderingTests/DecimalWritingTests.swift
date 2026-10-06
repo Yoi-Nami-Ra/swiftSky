@@ -75,4 +75,63 @@ struct DecimalWritingTests {
         #expect(buffer.count == TextBuffer.capacity)
         #expect(buffer.didOverflow)
     }
+
+    // MARK: Signed (015 contract C1)
+
+    private func signed(_ value: Double, width: Int = 0, limit: Int = .max) -> String {
+        let buffer = newTextBuffer()
+        buffer.writeSignedHundredths(value, width: width, limit: limit)
+        return text(of: buffer)
+    }
+
+    @Test(
+        "Signed values are written with two decimals, right-aligned in nine columns (contract C1 table)",
+        arguments: [
+            (0.0, "     0.00"),
+            (-0.004, "     0.00"),
+            (-0.005, "    -0.01"),
+            (12.345, "    12.35"),
+            (-1234.5, " -1234.50"),
+            (99_999.99, " 99999.99"),
+            (-99_999.99, "-99999.99"),
+            (-123_456.789, "-123456.79"),
+            (Double.nan, "     0.00"),
+        ]
+    )
+    func signedContractTable(value: Double, expected: String) {
+        #expect(signed(value, width: 9) == expected)
+    }
+
+    @Test("A value that rounds to zero has no sign, even from below")
+    func noNegativeZero() {
+        #expect(signed(-0.0) == "0.00")
+        #expect(signed(-0.000_1) == "0.00")
+        #expect(signed(-0.0049) == "0.00")
+    }
+
+    @Test("Width 0 writes no padding, sign included")
+    func signedNoPadding() {
+        #expect(signed(-8.333) == "-8.33")
+        #expect(signed(8.333) == "8.33")
+    }
+
+    @Test("Negative infinity is clamped with its sign rather than trapping")
+    func signedClamped() {
+        let largest = "\(UInt64.max / 100).\(UInt64.max % 100)"
+        #expect(signed(-.infinity) == "-" + largest)
+        #expect(signed(.infinity) == largest)
+    }
+
+    @Test("The limit is respected around the sign and in the middle of a number")
+    func signedLimit() {
+        #expect(signed(-16.667, width: 9, limit: 3) == "   ")
+        #expect(signed(-16.667, width: 9, limit: 4) == "   -")
+        #expect(signed(-16.667, width: 9, limit: 6) == "   -16")
+        #expect(signed(-16.667, limit: 1) == "-")
+    }
+
+    @Test("The unsigned writer is unchanged: negative values still write as 0.00")
+    func unsignedUnchanged() {
+        #expect(hundredths(-12.5, width: 6) == "  0.00")
+    }
 }

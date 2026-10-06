@@ -1,5 +1,7 @@
 #if SWIFTSKY_INSTRUMENTATION
 
+import SwiftSkySimulation
+
 /// The frame statistics the debug overlay shows, as of its last refresh (003 FR-004).
 ///
 /// Defined here, by its consumer, and filled in by the platform layer's instrumentation — the same
@@ -45,8 +47,68 @@ public struct DebugOverlayStatistics: Sendable, Equatable {
     }
 }
 
+/// What the ship and its order were at the overlay's last refresh (015 FR-005).
+///
+/// Taken by the frame loop from the simulation state at the refresh, before that frame advances it: the
+/// latest completed tick, never the interpolated pose the ship is drawn at (013). Plain values only, so
+/// the overlay never holds the state's planned path (015 FR-011).
+public struct DebugOverlayShip: Sendable, Equatable {
+    /// The order being flown, with the autopilot's phase and the distance still to go.
+    public struct Order: Sendable, Equatable {
+        public var phase: AutopilotPhase
+        public var destination: Vector2
+        public var distance: Double
+
+        public init(phase: AutopilotPhase, destination: Vector2, distance: Double) {
+            self.phase = phase
+            self.destination = destination
+            self.distance = distance
+        }
+    }
+
+    /// World units.
+    public var position: Vector2
+
+    /// World units per second.
+    public var velocity: Vector2
+
+    /// Radians, in (−π, π].
+    public var heading: Double
+
+    /// Radians per second, counter-clockwise positive.
+    public var angularVelocity: Double
+
+    /// `nil` without an order.
+    public var order: Order?
+
+    public init(position: Vector2, velocity: Vector2, heading: Double, angularVelocity: Double, order: Order?) {
+        self.position = position
+        self.velocity = velocity
+        self.heading = heading
+        self.angularVelocity = angularVelocity
+        self.order = order
+    }
+
+    /// The ship and order as `state` holds them. An order without a phase, which the autopilot never
+    /// produces, is treated as no order. Allocates nothing.
+    public init(_ state: SimulationState) {
+        let ship = state.ship
+        position = ship.position
+        velocity = ship.velocity
+        heading = ship.heading
+        angularVelocity = ship.angularVelocity
+        if let destination = state.autopilot.order?.destination,
+           let phase = state.autopilot.phase,
+           let distance = state.distanceRemaining {
+            order = Order(phase: phase, destination: destination, distance: distance)
+        } else {
+            order = nil
+        }
+    }
+}
+
 /// The live debug overlay: six labelled lines of frame statistics in the safe area's top-left corner
-/// (003 FR-001–FR-005).
+/// (003 FR-001–FR-005), followed by the ship and its order (015).
 ///
 /// Debug and Profiling builds only, and compiled out of Release entirely, labels and all, so no build
 /// setting or launch argument can put it on screen there (FR-009, SC-005).
@@ -58,6 +120,10 @@ public struct DebugOverlayStatistics: Sendable, Equatable {
 public final class DebugOverlay {
     /// The last snapshot, or `nil` before the first one arrives, in which case nothing is drawn.
     public var statistics: DebugOverlayStatistics?
+
+    /// The ship and order at the last snapshot, written under the frame statistics (015). `nil` writes
+    /// the six frame-statistic lines only.
+    public var ship: DebugOverlayShip?
 
     /// Each label is exactly eight columns, so every value starts in the same column.
     static let meanLabel: StaticString = "mean    "
@@ -71,6 +137,44 @@ public final class DebugOverlay {
 
     /// Frame times are right-aligned in six columns, which holds `999.99`.
     static let millisecondsWidth = 6
+
+    /// The ship and order lines' labels (015 FR-002–FR-004): eight columns, like the frame statistics'.
+    /// The vector lines carry their `x` straight after the label.
+    static let positionLabel: StaticString = "pos     x"
+    static let velocityLabel: StaticString = "vel     x"
+    static let speedLabel: StaticString = "speed   "
+    static let headingLabel: StaticString = "heading "
+    static let turnLabel: StaticString = "turn    "
+    static let ySeparator: StaticString = " y"
+    static let speedUnit: StaticString = " u/s"
+    static let degreesUnit: StaticString = " deg"
+    static let degreesPerSecondUnit: StaticString = " deg/s"
+    static let orderLabel: StaticString = "order   "
+    static let noOrder: StaticString = "none"
+    static let destinationLabel: StaticString = "dest    x"
+    static let distanceLabel: StaticString = "dist    "
+    static let distanceUnit: StaticString = " u"
+
+    /// The phase as the order line writes it: lower case, as named (015 FR-003).
+    static func phaseText(_ phase: AutopilotPhase) -> StaticString {
+        switch phase {
+        case .aligning: "aligning"
+        case .burning: "burning"
+        case .flipping: "flipping"
+        case .braking: "braking"
+        case .arrived: "arrived"
+        }
+    }
+
+    /// Ship and order values are signed and right-aligned in nine columns, which holds `-99999.99`.
+    static let valueWidth = 9
+
+    /// The heading in degrees for the heading line: radians × 180/π, except that a value that rounds to
+    /// −180.00 is 180, so the seam always reads `180.00` (015 FR-002).
+    static func headingDegrees(_ radians: Double) -> Double {
+        let degrees = radians * 180 / .pi
+        return (degrees * 100).rounded(.toNearestOrAwayFromZero) <= -18_000 ? 180 : degrees
+    }
 
     public init() {}
 
@@ -98,6 +202,54 @@ public final class DebugOverlay {
         writeCount(Self.skippedLabel, statistics.skippedFrames, into: buffer)
         buffer.newline()
         writeCount(Self.ticksLabel, statistics.tickCount, into: buffer)
+
+        if let ship {
+            writeShip(ship, into: buffer)
+        }
+    }
+
+    /// The ship lines, each on a new line after the frame statistics, then the order (015 FR-002–FR-004).
+    private func writeShip(_ ship: DebugOverlayShip, into buffer: TextBuffer) {
+        buffer.newline()
+        writeVector(Self.positionLabel, ship.position, into: buffer)
+        buffer.newline()
+        writeVector(Self.velocityLabel, ship.velocity, into: buffer)
+        buffer.newline()
+        let speed = (ship.velocity.x * ship.velocity.x + ship.velocity.y * ship.velocity.y).squareRoot()
+        writeValue(Self.speedLabel, speed, unit: Self.speedUnit, into: buffer)
+        buffer.newline()
+        writeValue(Self.headingLabel, Self.headingDegrees(ship.heading), unit: Self.degreesUnit, into: buffer)
+        buffer.newline()
+        writeValue(Self.turnLabel, ship.angularVelocity * 180 / .pi, unit: Self.degreesPerSecondUnit, into: buffer)
+        buffer.newline()
+        writeOrder(ship.order, into: buffer)
+    }
+
+    /// `order   none`, or the phase followed by the destination and distance lines (015 FR-003, FR-004).
+    private func writeOrder(_ order: DebugOverlayShip.Order?, into buffer: TextBuffer) {
+        buffer.write(Self.orderLabel, limit: buffer.remainingCapacity)
+        guard let order else {
+            buffer.write(Self.noOrder, limit: buffer.remainingCapacity)
+            return
+        }
+        buffer.write(Self.phaseText(order.phase), limit: buffer.remainingCapacity)
+        buffer.newline()
+        writeVector(Self.destinationLabel, order.destination, into: buffer)
+        buffer.newline()
+        writeValue(Self.distanceLabel, order.distance, unit: Self.distanceUnit, into: buffer)
+    }
+
+    private func writeVector(_ label: StaticString, _ vector: Vector2, into buffer: TextBuffer) {
+        buffer.write(label, limit: buffer.remainingCapacity)
+        buffer.writeSignedHundredths(vector.x, width: Self.valueWidth, limit: buffer.remainingCapacity)
+        buffer.write(Self.ySeparator, limit: buffer.remainingCapacity)
+        buffer.writeSignedHundredths(vector.y, width: Self.valueWidth, limit: buffer.remainingCapacity)
+    }
+
+    private func writeValue(_ label: StaticString, _ value: Double, unit: StaticString, into buffer: TextBuffer) {
+        buffer.write(label, limit: buffer.remainingCapacity)
+        buffer.writeSignedHundredths(value, width: Self.valueWidth, limit: buffer.remainingCapacity)
+        buffer.write(unit, limit: buffer.remainingCapacity)
     }
 
     private func writeMilliseconds(_ label: StaticString, _ seconds: Double?, into buffer: TextBuffer) {
