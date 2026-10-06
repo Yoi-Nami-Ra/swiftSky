@@ -95,3 +95,13 @@ geometry tests cover placement on any surface size; accepted without a rotation 
 **Check 12 on macOS — not run (2026-10-05, T016 skipped by decision).** SC-005 asks for both platforms;
 only iOS was measured. The overlay's per-frame code is the shared rendering layer, identical on both,
 and iOS shows `allocs=0` on every frame that draws it. Open as a gap, not a pass.
+
+**Check 12 on macOS — PASS (2026-10-06).** 011's method: optimised instrumented build (Release plus
+`SWIFTSKY_INSTRUMENTATION`) of `main` at `e0c9fdd`, launched with `open -n`, no arguments, on the 1×
+external display (60 Hz), the frame log streamed. `allocation counter ready`, then 88 summaries from
+23:32:39 to 23:35:31. Ten orders were clicked over 60 s (23:34:31 to 23:35:25); nine flew to an `arrived`
+line, and one (23:35:09) was replaced by the next click before it arrived. Every summary, including each
+covering an order or an arrival, reads `allocs=0 allocframes=0`. `eventallocs=1` in the 10 summaries that
+carry an order click and 0 in the other 78. `gfxallocs ÷ frames` is 10.0 in every full summary (the same
+as SKY-4's macOS reference). Last summary: `frames=10463 skipped=0 dropped=0 mean=0.228788ms
+worst=6.055833ms budget=16.666625ms`. The gap above is closed.
