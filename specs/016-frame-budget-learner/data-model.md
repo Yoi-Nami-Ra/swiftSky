@@ -22,7 +22,8 @@ Constants: `tolerance = 0.05`, `fastestPlausible = 1/250`, `slowestPlausible = 1
 2. Candidate present and `|candidate − gap| ≤ candidate × tolerance` → adopt
    `max(min(candidate, gap), floor)`; clear candidate; `isLearned = true`; report it if it differs from
    `interval`.
-3. Otherwise clear candidate; if `!isLearned` or `gap < interval`, the gap becomes the candidate.
+3. Otherwise clear candidate; if `!isLearned` or `gap < interval × (1 − tolerance)`, the gap becomes the
+   candidate (a gap within the tolerance agrees with the budget).
 
 ### Transitions — `forget()`
 

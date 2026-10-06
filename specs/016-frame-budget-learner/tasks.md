@@ -13,13 +13,13 @@ contract C3. The wiring in the frame loop and the view is checked by the quickst
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirm the baseline: run `./Scripts/verify.sh` on `016-frame-budget-learner` before any code change and note the result and the test count
+- [X] T001 Confirm the baseline: run `./Scripts/verify.sh` on `016-frame-budget-learner` before any code change and note the result and the test count
 
 ## Phase 2: Foundational (blocking prerequisites)
 
 **Purpose**: the pure learner every story is built on.
 
-- [ ] T002 Create `struct DisplayIntervalLearner` in Sources/SwiftSkyPlatform/DisplayIntervalLearner.swift per contract C1 and data-model.md (fields `interval`, `isLearned`, `candidate`, `floor`; constants `tolerance = 0.05`, `fastestPlausible = 1/250`, `slowestPlausible = 1/20`, `defaultInterval = 1/60`; `observe(gap:) -> Double?`, `forget() -> Double`, `setMaximumFramesPerSecond(_:) -> Double?`), compiled in every build (no `#if`), no imports beyond Swift, no allocation, with a doc comment stating the consecutive-confirmation and floor rules and withdrawing the "whole number of intervals / never has a partner" premise (FR-009, research R6)
+- [X] T002 Create `struct DisplayIntervalLearner` in Sources/SwiftSkyPlatform/DisplayIntervalLearner.swift per contract C1 and data-model.md (fields `interval`, `isLearned`, `candidate`, `floor`; constants `tolerance = 0.05`, `fastestPlausible = 1/250`, `slowestPlausible = 1/20`, `defaultInterval = 1/60`; `observe(gap:) -> Double?`, `forget() -> Double`, `setMaximumFramesPerSecond(_:) -> Double?`), compiled in every build (no `#if`), no imports beyond Swift, no allocation, with a doc comment stating the consecutive-confirmation and floor rules and withdrawing the "whole number of intervals / never has a partner" premise (FR-009, research R6)
 
 **Checkpoint**: the package builds; nothing uses the learner yet.
 
