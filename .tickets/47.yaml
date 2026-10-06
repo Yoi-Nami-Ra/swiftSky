@@ -78,7 +78,7 @@ description: |
   - A 10-minute Debug run on the iOS simulator under load keeps
     `budget=16.666667ms` in every summary.
 platform: ios
-status: in-progress
+status: qa
 phase: MVP
 priority: high
 parent: 22
