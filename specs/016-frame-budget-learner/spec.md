@@ -52,6 +52,20 @@ are untouched.
   formats (003), the restart of all counters when the budget changes, and the forgetting of the learned
   interval when the surface's backing scale changes.
 
+## Clarifications
+
+### Session 2026-10-07
+
+- Q: How is "learn only gaps the display can really produce" met: a floor at the display's fastest
+  interval, a settling period after a backing-scale change or resize, or both? → A: A floor only
+  (FR-005); no settling period.
+- Q: A plausible gap shorter than the budget that disagrees with the waiting candidate: does it replace
+  the candidate or only clear it? → A: It replaces it (FR-001).
+- Q: A confirmed interval that lies just below the floor, within the 5% tolerance: is it adopted as
+  measured or clamped? → A: Clamped to the floor (FR-003).
+- Q: A surface change reports a floor above the current budget (the surface is now on a slower
+  display): keep the budget or relearn? → A: Forget and relearn, as on a backing-scale change (FR-004).
+
 ## User Scenarios & Testing *(mandatory)*
 
 The users of this feature are the developers building swiftSky, who read the summaries and the debug
@@ -131,6 +145,8 @@ running app, which is how the defect survived.
 - **Gap that agrees with the current budget's display but is slightly under its floor through rounding**
   (e.g. 8.3332 ms on a 120 Hz display): treated as at the floor, within the same 5% tolerance, so a real
   120 Hz display still settles on its interval.
+- **Surface reported on a slower display without a backing-scale change** (a resize after the move): the
+  new floor is above the budget, so the budget is forgotten and relearned (FR-004).
 - **Display's fastest rate unknown** (no screen yet, or the platform reports none): no floor beyond the
   plausible range; the consecutive-agreement rule still applies.
 - **Low Power Mode or a capped variable-refresh display**: the floor is the display's fastest rate, not
@@ -147,14 +163,16 @@ running app, which is how the defect survived.
 - **FR-001**: The budget learner MUST keep at most one candidate interval, and a candidate MUST be
   confirmed only by the **very next** plausible gap. Any plausible gap that does not agree with the
   candidate (within 5%) MUST clear it, including a gap equal to or longer than the current budget.
-  A gap that does not agree but is itself shorter than the budget MAY become the new candidate.
+  A plausible gap that does not agree but is itself shorter than the budget MUST become the new
+  candidate.
 - **FR-002**: Gaps outside the plausible range (shorter than 1/250 s or longer than 1/20 s) MUST be
   ignored: they neither confirm, clear nor become a candidate.
 - **FR-003**: On confirmation, the budget MUST become the smaller of the candidate and the confirming
   gap, but never less than the floor of FR-005, and the frame loop MUST restart its counters exactly as
   it does today on a budget change. A confirmation that does not change the budget MUST NOT restart them.
 - **FR-004**: Within one display, the learned budget MUST only shrink, as today; it is forgotten (reset
-  to 1/60 s with the candidate cleared) when the surface's backing scale changes, as today.
+  to 1/60 s with the candidate cleared) when the surface's backing scale changes, as today, and also
+  when a surface change reports a floor (FR-005) longer than the current budget.
 - **FR-005**: The learner MUST NOT adopt an interval shorter than the current display's fastest refresh
   interval (1 / its maximum frames per second), allowing the same 5% tolerance. A gap below that floor
   MUST be treated as not plausible for learning (FR-002 behaviour). The floor MUST follow the display the
