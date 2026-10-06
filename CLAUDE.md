@@ -36,7 +36,9 @@ stretch in the frame summary; check 29's continuous resize: no races, no stall m
 120 Hz displays) and `specs/014-order-overlay` (while an order is flown: a marker at the destination, a
 ring around the ship and the remaining planned path, in every build) and
 `specs/015-debug-overlay-ship-order` (the debug overlay's ship and order lines under its frame
-statistics). Layer libraries and
+statistics) and `specs/016-frame-budget-learner` (the frame budget learned only from adjacent agreeing
+gaps, never below the display's fastest interval) and `specs/018-ci-verify-workflow` (CI: `verify.sh`
+run on every push to `main` and every pull request, on a self-hosted runner on this Mac). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
@@ -44,7 +46,7 @@ The project constitution (`.specify/memory/constitution.md`, v1.1.0) is ratified
 five principles: **Architecture Discipline** (logic / Metal rendering / platform-UI layers kept
 separate, unidirectional data flow), **Test Coverage Discipline** (tests required for non-trivial
 logic; test-first recommended but not mandated; visual/render code exempt; tests must be runnable by
-a single checked-in command, and wired into CI once a remote exists), **Performance &
+a single checked-in command, wired into CI that gates merges), **Performance &
 Resource Efficiency** (frame budget, no hot-path allocations, memory budgets), **Accessibility &
 Platform UX** (Dynamic Type/VoiceOver/HIG, reduced-motion), and **Simplicity & YAGNI**.
 
@@ -194,6 +196,13 @@ artifacts, keep them consistent with these templates.
   the simulator `log show` returns nothing; use `xcrun simctl spawn <udid> log stream`. Inside a counted
   stretch in tests, loop with `while`, not `for _ in 0..<n`. The procedure is "The method" in
   `specs/011-draw-allocation-counter/quickstart.md`.
+- `Sources/SwiftSkyPlatform/DisplayIntervalLearner.swift` (016) — the frame budget: a pure value the loop
+  feeds one gap per frame (`observe(gap:)`), which reports a new budget for `Instrumentation.updateBudget`.
+  A shorter interval needs the very next plausible gap to agree (5%), and is never below the floor
+  `1 / maximumFramesPerSecond` of the surface's screen, which `MetalSurfaceView` posts as
+  `SurfaceEvent.displayRateChanged` before a geometry event when it changes. A backing-scale change, or a
+  floor above the learned interval, forgets it (back to 1/60 s). Gaps are not always whole display
+  intervals: a live resize and a display move both produce sustained runs of shorter ones.
 - `Sources/SwiftSkyPlatform/MainThreadStallProbe.swift` and `MainThreadStallFigures.swift` (012) — two
   run-loop observers on the main run loop, in the common modes so live resize and menus count, measure each
   busy stretch between two waits; one packed `Atomic<UInt64>` hands the worst (µs) and the count over the
@@ -222,4 +231,14 @@ artifacts, keep them consistent with these templates.
   draws the ship at its latest tick instead of between ticks (013). `--debug-main-stall`
   stalls the main thread once (012). `--debug-text` draws the test string with live FPS, and
   `--debug-text-fill` fills the 1,024-character text capacity. Either one replaces the overlay.
+- `.github/workflows/verify.yml` and `.github/RUNNER.md` (018) — CI. On every push to `main` and every
+  pull request against `main`, the `verify` job checks out the commit and runs `./Scripts/verify.sh`,
+  nothing else, on a self-hosted runner on this Mac (labels `self-hosted`, `macOS`, `xcode-27`; 30-minute
+  limit; a newer push cancels an older pull-request run, never a `main` one). It runs only while the Mac
+  is on and the runner service is running; queued jobs wait. **Merge rule**: merge a pull request only
+  when `verify / verify` passed for its current head (branch protection is not set up). Installing,
+  starting or stopping the runner, pushing, and any GitHub setting are the developer's to do, by hand,
+  following `RUNNER.md`. `actionlint .github/workflows/verify.yml` checks the workflow locally;
+  `.github/actionlint.yaml` declares the `xcode-27` label. When Xcode changes, change the runner label
+  and `runs-on` together.
 - `.claude/skills/speckit-*/` — the skill definitions backing each `/speckit.*` command.
