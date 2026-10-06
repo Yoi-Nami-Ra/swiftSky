@@ -191,9 +191,9 @@ public struct GameSurfaceView: View {
 /// Which debug text to draw, from the launch arguments (002 FR-015, FR-015a, research.md R9; 003
 /// FR-001, FR-011, FR-012, research.md R7).
 ///
-/// Debug and Profiling builds only. In Release this type and the parsing do not exist, so no launch
-/// argument can put text on screen (002 SC-006, 003 SC-005). Double-dash arguments, so AppKit's
-/// `-Key value` argument domain never reads them and nothing persists between launches.
+/// Debug and instrumented Release builds only. In plain Release this type and the parsing do not exist,
+/// so no launch argument can put text on screen (002 SC-006, 003 SC-005). Double-dash arguments, so
+/// AppKit's `-Key value` argument domain never reads them and nothing persists between launches.
 ///
 /// The live overlay is the default. `--no-debug-overlay` turns it off, leaving the black surface with
 /// the ship on it. Add `--no-ship` (`DebugShipOptions`) for the uniformly black surface that 001's and
@@ -237,9 +237,9 @@ enum DebugTextMode: Equatable {
 
 /// The ship switches, from the launch arguments (007 FR-013–FR-015, research R9).
 ///
-/// Debug and Profiling builds only, like `DebugTextMode`: in Release this type, its parsing and both
-/// strings do not exist, so a Release build always draws the ship, interpolated, and never spins it. The
-/// switches are independent of each other and of the text arguments.
+/// Debug and instrumented Release builds only, like `DebugTextMode`: in plain Release this type, its
+/// parsing and both strings do not exist, so a Release build always draws the ship, interpolated, and
+/// never spins it. The switches are independent of each other and of the text arguments.
 struct DebugShipOptions: Equatable {
     /// `--debug-ship-spin`: every tick gets a full counter-clockwise turn and no thrust, so the ship turns
     /// in place at its top rate — the only way to see it rotate before orders exist.
@@ -267,8 +267,8 @@ struct DebugShipOptions: Equatable {
 /// `--debug-main-stall` (012 research R8, contract C5): once, 5 seconds after setup, the main thread spins
 /// for 50 ms, so the main-thread stall figures can be seen to catch a known stall (012 SC-002).
 ///
-/// A spin on the clock, not a sleep, so the thread is unambiguously busy. Debug and Profiling builds only,
-/// like the other `--debug-*` arguments.
+/// A spin on the clock, not a sleep, so the thread is unambiguously busy. Debug and instrumented Release
+/// builds only, like the other `--debug-*` arguments.
 struct DebugMainStall: Equatable {
     static let argument = "--debug-main-stall"
     static let delaySeconds = 5.0

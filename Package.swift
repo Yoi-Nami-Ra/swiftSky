@@ -41,9 +41,11 @@ let layerSettings: [SwiftSetting] = [
     .swiftLanguageMode(.v6),
 
     // FR-021e: instrumentation is compiled into debug builds and must be provably absent from
-    // release. SwiftPM has only debug and release configurations, so the third "Profiling"
-    // configuration named in research.md R12 lives in the Xcode project and passes this define
-    // through to the package (task T007).
+    // release. SwiftPM has only debug and release configurations, so there is no package-side
+    // condition for an optimised build with the instrumentation. That build is Release with this
+    // define (and the C one below) added on the xcodebuild command line, which reaches every package
+    // target: Scripts/build-instrumented.sh (011 research R12, 019). It replaced an Xcode "Profiling"
+    // configuration, which reached the app module only and carried none of it (011 research R1).
     .define("SWIFTSKY_INSTRUMENTATION", .when(configuration: .debug)),
 ]
 
@@ -82,8 +84,7 @@ let package = Package(
         // app's and the graphics framework's. C, not Swift, because the hook runs inside the allocator
         // and must not allocate, retain or lazily initialise anything (011 research R5). Its body
         // compiles only under the same condition as `layerSettings`, so a release build contains none
-        // of it. Note that Xcode's Profiling configuration builds package targets with their Release
-        // settings, so Profiling carries none of the instrumentation either (011 research R1).
+        // of it. The optimised build with the counter is Scripts/build-instrumented.sh (019).
         // Depended on by the platform layer only.
         .target(
             name: "SwiftSkyAllocationCounter",

@@ -110,8 +110,9 @@ public struct DebugOverlayShip: Sendable, Equatable {
 /// The live debug overlay: six labelled lines of frame statistics in the safe area's top-left corner
 /// (003 FR-001–FR-005), followed by the ship and its order (015).
 ///
-/// Debug and Profiling builds only, and compiled out of Release entirely, labels and all, so no build
-/// setting or launch argument can put it on screen there (FR-009, SC-005).
+/// Debug and instrumented Release builds only (`Scripts/build-instrumented.sh`), and compiled out of
+/// plain Release entirely, labels and all, so no launch argument can put it on screen there (FR-009,
+/// SC-005).
 ///
 /// The values change only when the frame loop hands over a new snapshot, four times a second, but the
 /// text is rewritten every frame from the last one — as 002's test string is, and as it must be: a
