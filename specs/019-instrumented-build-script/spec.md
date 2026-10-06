@@ -46,6 +46,22 @@ record of what was believed when they were written.
 
 ## Clarifications
 
+### Session 2026-10-07
+
+- Q: Where does the script build? → A: `.build/instrumented/` (repository root, already git-ignored), one
+  folder for both platforms; the apps land under its `Build/Products/Release/` and
+  `Build/Products/Release-iphonesimulator/` (FR-005).
+- Q: Where does `verify.sh` build the plain Release app for the negative check? → A: In a separate fixed
+  folder, `.build/release-check/`, so the two Release builds with different settings never overwrite each
+  other and each stays incremental (FR-008).
+- Q: What does the positive check look for? → A: `dropped=` in the executable only. A build with the
+  Swift condition but not the C one does not link (the counter's functions exist only under the C
+  define), so the C override is guarded by the build itself (FR-008).
+- Q: What does the script write where? → A: Only the app paths on standard output, one per line; the
+  build's own output goes to standard error, kept quiet, so a caller can capture the paths (FR-006).
+- Q: Does `verify.sh`'s zero-warning gate apply to the two new builds? → A: Yes; they run as ordinary
+  stages, so a compiler warning in either fails the run, as for every other build (FR-008, SC-015 of 001).
+
 ## User Scenarios & Testing *(mandatory)*
 
 The users of this feature are the developers building swiftSky. Players see no change.
@@ -166,10 +182,12 @@ but it can only point to the script once the script exists.
 - **FR-004**: It MUST take the platform as its only argument — `ios`, `macos` or `both` — and default to
   `both` when none is given. Any other argument, or more than one, MUST print usage and exit non-zero
   without building.
-- **FR-005**: It MUST build into one fixed build folder inside the repository's ignored build output, the
-  same on every run, so that the path of each built app is predictable.
-- **FR-006**: On success it MUST print the absolute path of each built app, one per line, and exit 0. On
-  any build failure it MUST exit non-zero.
+- **FR-005**: It MUST build into one fixed build folder, `.build/instrumented/` at the repository root
+  (ignored by git), for both platforms and on every run, so that the path of each built app is
+  predictable.
+- **FR-006**: On success it MUST print the absolute path of each built app, one per line, on standard
+  output and nothing else there, and exit 0. The build's own output MUST go to standard error, kept
+  quiet. On any build failure it MUST exit non-zero.
 - **FR-007**: The iOS build MUST target the iOS Simulator (generic destination, no booted simulator
   needed); the macOS build MUST target the host Mac. Neither needs a signing identity.
 
@@ -178,8 +196,12 @@ but it can only point to the script once the script exists.
 - **FR-008**: `Scripts/verify.sh` MUST, as two stages that each fail the run:
   (a) build the instrumented macOS app with the script and pass only if its executable contains the
   frame-summary text `dropped=`; and
-  (b) build the plain Release macOS app and pass only if its executable contains none of 001 check 27's
-  probes (`skipped=`, `dropped=`, `worst=`, `SWIFTSKY_INSTRUMENTATION`).
+  (b) build the plain Release macOS app, in its own fixed folder `.build/release-check/`, and pass only if
+  its executable contains none of 001 check 27's probes (`skipped=`, `dropped=`, `worst=`,
+  `SWIFTSKY_INSTRUMENTATION`).
+  Both stages are ordinary stages: exit status and the zero-warning gate apply. The positive check needs
+  no probe for the C override: without it the counter's functions do not exist and the app does not
+  link.
 - **FR-009**: The verification script MUST NOT launch either app, boot a simulator or read the system
   log; both checks inspect the built executable only.
 
