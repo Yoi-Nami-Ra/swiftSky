@@ -29,7 +29,7 @@ contract C3. The wiring in the frame loop and the view is checked by the quickst
 
 **Independent Test**: contract C3 series 1–5 headlessly; quickstart check 2 by hand.
 
-- [ ] T003 [P] [US1] Add Tests/SwiftSkyPlatformTests/DisplayIntervalLearnerTests.swift with C3 series 1–5 (steady 120 Hz → 1/120; 60 Hz with one doubled gap stays 1/60; two 14.84 ms gaps separated by normal ones not adopted; late/catch-up jitter (22.0, 11.3) does not lower; single 5.0 ms startup outlier ignored), plus: implausible gaps (3 ms, 60 ms) neither confirm nor clear; `observe` returns `nil` when the adopted value equals `interval`; a disagreeing shorter gap replaces the candidate
+- [ ] T003 [P] [US1] Add Tests/SwiftSkyPlatformTests/DisplayIntervalLearnerTests.swift with C3 series 1–5 (steady 120 Hz → 1/120; 60 Hz with one doubled gap stays 1/60; two 14.84 ms gaps separated by normal ones not adopted; late/catch-up jitter `(h60, h60, 22.0, 11.3) × 25` does not lower; single 5.0 ms startup outlier ignored), plus: implausible gaps (3 ms, 60 ms) neither confirm nor clear; `observe` returns `nil` when the adopted value equals `interval`; a disagreeing shorter gap replaces the candidate
 - [ ] T004 [US1] Replace `displayInterval`, `candidateInterval`, `learnDisplayInterval(from:)`, `forgetDisplayInterval()` and their constants in Sources/SwiftSkyPlatform/FrameLoop.swift with a stored `DisplayIntervalLearner`: step 3 calls `if let budget = learner.observe(gap: elapsed) { instrumentation.updateBudget(seconds: budget) }`; `.backingScaleChanged` calls `instrumentation.updateBudget(seconds: learner.forget())`; move the SC-003 rationale comment to the learner
 
 **Checkpoint**: `verify.sh` passes; series 1–5 pass.
@@ -53,13 +53,13 @@ contract C3. The wiring in the frame loop and the view is checked by the quickst
 
 **Independent Test**: `verify.sh`; quickstart check 6.
 
-- [ ] T009 [US3] Run `./Scripts/verify.sh` and confirm the new suite runs headlessly (no Metal device) and everything passes; record the result in specs/016-frame-budget-learner/quickstart.md
+- [ ] T009 [US3] Run `./Scripts/verify.sh` and confirm the new suite runs headlessly (no Metal device), the Release builds and their strings/symbol checks still pass (FR-010: the learner adds no instrumentation output; `updateBudget` stays a no-op there), and everything passes; record the result in specs/016-frame-budget-learner/quickstart.md
 - [ ] T010 [US3] Quickstart check 6 (011 check 25 on the optimised instrumented build, 60 s): left for the user; mark it so in specs/016-frame-budget-learner/quickstart.md
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 - [ ] T011 [P] Add a `specs/016-frame-budget-learner` entry and a key-locations line for `DisplayIntervalLearner.swift` and `.displayRateChanged` to CLAUDE.md
-- [ ] T012 Grep Sources/ for comments that still state the old premise ("whole number of display intervals", "never does", "only ever shrink") and update them (FR-009)
+- [ ] T012 Grep Sources/ for comments that still state the old premise ("whole number of", "never does", "spurious one never", "a genuine interval always has a partner") and update them (FR-009)
 - [ ] T013 Quickstart checks 2–5 (10-minute loaded iOS simulator run; macOS live resize; idle 120 Hz; move to a 60 Hz display): left for the user; record them as open in specs/016-frame-budget-learner/quickstart.md
 
 ## Dependencies & Execution Order

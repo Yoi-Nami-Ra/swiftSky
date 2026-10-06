@@ -141,7 +141,8 @@ running app, which is how the defect survived.
 - **First frame, paused-then-resumed loop, stalled display**: gaps outside the plausible range (faster
   than 250 Hz or slower than 20 Hz) teach nothing and do not clear or confirm a candidate.
 - **Gap equal to or longer than the current budget**: it clears any waiting candidate (it is the "very
-  next plausible gap" and does not agree) and leaves the budget unchanged.
+  next plausible gap" and does not agree) and leaves the budget unchanged. Before anything is learned it
+  becomes the candidate instead (FR-001).
 - **Gap that agrees with the current budget's display but is slightly under its floor through rounding**
   (e.g. 8.3332 ms on a 120 Hz display): treated as at the floor, within the same 5% tolerance, so a real
   120 Hz display still settles on its interval.
@@ -164,7 +165,8 @@ running app, which is how the defect survived.
   confirmed only by the **very next** plausible gap. Any plausible gap that does not agree with the
   candidate (within 5%) MUST clear it, including a gap equal to or longer than the current budget.
   A plausible gap that does not agree but is itself shorter than the budget MUST become the new
-  candidate.
+  candidate; so MUST any plausible gap while no interval has been learned yet (since start or since the
+  last forget), so the default 1/60 s can be confirmed, or replaced on a display slower than 60 Hz.
 - **FR-002**: Gaps outside the plausible range (shorter than 1/250 s or longer than 1/20 s) MUST be
   ignored: they neither confirm, clear nor become a candidate.
 - **FR-003**: On confirmation, the budget MUST become the smaller of the candidate and the confirming
