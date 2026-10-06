@@ -29,12 +29,15 @@ URL `git@github.com:Yoi-Nami-Ra/swiftSky.git`; after `git fetch --prune`, `main`
 ### L2 — The workflow is well formed and matches the contract (FR-002–FR-007a, SC-005)
 
 ```sh
-actionlint .github/workflows/verify.yml
+actionlint .github/workflows/verify.yml   # reads .github/actionlint.yaml for the xcode-27 label
 ```
 
 Expected: no output, exit 0. Then read the file against the contract: two triggers, `contents: read`,
 the concurrency group, `runs-on: [self-hosted, macOS, xcode-27]`, `timeout-minutes: 30`, and exactly two
 steps — checkout with `persist-credentials: false`, and `./Scripts/verify.sh`.
+
+**Result 2026-10-07 (T005)**: PASS. `actionlint` exit 0, no output (after adding `.github/actionlint.yaml`
+for the `xcode-27` label); the workflow, comments and blank lines aside, is line-for-line the contract.
 
 ### L3 — The verification script is unchanged in behaviour (FR-005, SC-008)
 

@@ -48,8 +48,8 @@ implementing agent leaves them unchecked.
 
 **Independent Test**: With the runner running, push to `main`; one `verify` run appears on the runner and passes (quickstart D3).
 
-- [ ] T004 [US1] Create .github/workflows/verify.yml exactly as specs/018-ci-verify-workflow/contracts/verify-workflow.md: `name: verify`; triggers push to `main` and pull_request against `main`; `permissions: contents: read`; the concurrency block of research R4; job `verify` with `runs-on: [self-hosted, macOS, xcode-27]`, `timeout-minutes: 30`, steps `actions/checkout@v7` with `persist-credentials: false` and `run: ./Scripts/verify.sh` (FR-002–FR-007a)
-- [ ] T005 [US1] Run quickstart L2: `actionlint .github/workflows/verify.yml` exits 0 with no output, and the file matches the contract step for step (SC-005)
+- [X] T004 [US1] Create .github/workflows/verify.yml exactly as specs/018-ci-verify-workflow/contracts/verify-workflow.md: `name: verify`; triggers push to `main` and pull_request against `main`; `permissions: contents: read`; the concurrency block of research R4; job `verify` with `runs-on: [self-hosted, macOS, xcode-27]`, `timeout-minutes: 30`, steps `actions/checkout@v7` with `persist-credentials: false` and `run: ./Scripts/verify.sh` (FR-002–FR-007a)
+- [X] T005 [US1] Run quickstart L2: `actionlint .github/workflows/verify.yml` exits 0 with no output, and the file matches the contract step for step (SC-005); declare the custom `xcode-27` label in .github/actionlint.yaml so actionlint accepts it
 - [ ] T006 [US1] **DEVELOPER** Quickstart D3: after US2's pull request is green, merge it; confirm the push to `main` starts exactly one `verify` run on the runner, it passes, and it finishes within the 30-minute limit (SC-001, SC-002); record the run URL and duration in specs/018-ci-verify-workflow/quickstart.md
 
 **Checkpoint**: Pushes to `main` are verified.

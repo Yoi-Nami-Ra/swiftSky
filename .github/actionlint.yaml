@@ -1,0 +1,5 @@
+# actionlint configuration (018 research R9). Declares the self-hosted runner's custom label so that
+# `actionlint .github/workflows/verify.yml` accepts runs-on. Keep in step with .github/RUNNER.md.
+self-hosted-runner:
+  labels:
+    - xcode-27

@@ -55,7 +55,8 @@ is recorded beside a local `verify.sh` run's for comparison.
 **Constraints**: Exactly two steps (FR-004); `verify.sh` behaviour unchanged (FR-005); no agent action
 on GitHub or on this Mac's services (FR-012); repository stays private (spec Assumptions).
 
-**Scale/Scope**: 2 new files (`.github/workflows/verify.yml`, `.github/RUNNER.md`); 3 edited
+**Scale/Scope**: 3 new files (`.github/workflows/verify.yml`, `.github/RUNNER.md`,
+`.github/actionlint.yaml`); 3 edited
 (`specs/001-metal-app-shell/plan.md`, `CLAUDE.md`, `Scripts/verify.sh` comment only). No change to
 `Package.swift`, sources, tests or the Xcode project.
 
@@ -99,7 +100,8 @@ specs/018-ci-verify-workflow/
 .github/
 ├── workflows/
 │   └── verify.yml       # NEW — the CI workflow (contract: contracts/verify-workflow.md)
-└── RUNNER.md            # NEW — install, start, stop, check, remove the runner; merge rule
+├── RUNNER.md            # NEW — install, start, stop, check, remove the runner; merge rule
+└── actionlint.yaml      # NEW — declares the `xcode-27` runner label for actionlint (R9)
 Scripts/
 └── verify.sh            # header comment only: it is now the CI job body
 specs/001-metal-app-shell/
