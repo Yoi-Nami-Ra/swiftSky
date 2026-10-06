@@ -18,7 +18,7 @@ the rule set again.
 Built so far: `specs/001-metal-app-shell` (a black Metal surface on both platforms, three layers,
 an off-main frame loop, instrumentation), `specs/002-metal-text-rendering` (Metal-drawn text from
 a glyph atlas), `specs/003-debug-overlay` (live frame statistics drawn on screen in Debug and
-Profiling builds), `specs/004-ship-newtonian-motion` (one ship with frictionless Newtonian motion
+instrumented Release builds), `specs/004-ship-newtonian-motion` (one ship with frictionless Newtonian motion
 in the logic layer, driven by a per-tick control input; not drawn yet) and
 `specs/005-game-space-camera` (one world unit = one point, an unbounded world, and a fixed camera
 with the origin at the centre of the whole surface; nothing wired in yet) and
@@ -38,9 +38,22 @@ ring around the ship and the remaining planned path, in every build) and
 `specs/015-debug-overlay-ship-order` (the debug overlay's ship and order lines under its frame
 statistics) and `specs/016-frame-budget-learner` (the frame budget learned only from adjacent agreeing
 gaps, never below the display's fastest interval) and `specs/018-ci-verify-workflow` (CI: `verify.sh`
-run on every push to `main` and every pull request, on a self-hosted runner on this Mac). Layer libraries and
-tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
+run on every push to `main` and every pull request, on a self-hosted runner on this Mac) and
+`specs/019-instrumented-build-script` (the Profiling configuration removed; `Scripts/build-instrumented.sh`
+makes the optimised build with the instrumentation, and `verify.sh` checks it has it and Release has not).
+Layer libraries and tests live in the root `Package.swift`, and the two app targets live in
+`swiftSky.xcodeproj`, which has two build configurations, Debug and Release.
 `./Scripts/verify.sh` is the single checked-in verification command.
+
+**The instrumented build** (019): `./Scripts/build-instrumented.sh [ios|macos|both]` builds Release with
+`SWIFTSKY_INSTRUMENTATION` added for Swift and C on the `xcodebuild` command line, which reaches every
+package target, into `.build/instrumented/`, and prints each app's path (the iOS one for the simulator).
+It is optimised and carries the frame summaries, the allocation counter, the debug overlay and the debug
+launch arguments: take every frame-time and allocation measurement with it. There is no Profiling build
+any more: SwiftPM knows only debug and release, so an Xcode configuration of that name reached the app
+module only and carried none of the instrumentation (011 R1). Plain Release carries none of it either;
+`verify.sh` checks both (`dropped=` in the instrumented macOS executable, none of 001 check 27's strings in
+Release).
 
 The project constitution (`.specify/memory/constitution.md`, v1.1.0) is ratified and enforces
 five principles: **Architecture Discipline** (logic / Metal rendering / platform-UI layers kept
@@ -113,7 +126,7 @@ artifacts, keep them consistent with these templates.
 - `.specify/workflows/` — workflow definitions and registry.
 - `specs/NNN-*/` — per-feature spec/plan/tasks and quickstart validation evidence.
 - `Sources/SwiftSky{Simulation,Rendering,Platform}/` — the three layers. Text rendering is in
-  `Sources/SwiftSkyRendering/Text/`, and the Debug/Profiling-only test pattern and debug overlay
+  `Sources/SwiftSkyRendering/Text/`, and the test pattern and debug overlay (Debug and instrumented Release only)
   are in `Sources/SwiftSkyRendering/Debug/`. The overlay's measurement (one-second frame-time
   window, 4 Hz refresh) sits beside `Instrumentation.swift` in the platform layer.
 - `Sources/SwiftSkySimulation/Ship.swift` and `ShipMotion.swift` — the ship, its limits, the control
@@ -130,7 +143,7 @@ artifacts, keep them consistent with these templates.
   `InlineArray` (no heap, so the state is ~4.2 KB), the tick of every point (`startTick`, `spacing`,
   `endTick`), thinned by halving when full, capped at 3,600 ticks. The prediction flies copies of the ship
   and autopilot with `Simulation.tick`, the one tick `advance(_:ticks:)` also uses, and stops on the first
-  state that reports arrived. Debug and Profiling builds add `predicted=… ticks=… points=… arrives=…` to
+  state that reports arrived. Debug and instrumented Release builds add `predicted=… ticks=… points=… arrives=…` to
   the order log line; the arrival line, written once per frame, can come a tick or two later on
   multi-tick frames.
 - `Sources/SwiftSkySimulation/ShipPose.swift` (013) — position and heading, and the blend between two
@@ -140,7 +153,7 @@ artifacts, keep them consistent with these templates.
   `Renderer.render(state:shipPose:…)`: anything drawn from the ship's pose (SKY-30, SKY-42) uses that
   argument, never `state.ship`, so it never drifts from the sprite. `--no-interpolation` draws the tick
   pose instead; like every debug argument it needs `SWIFTSKY_INSTRUMENTATION` in the package, so Debug
-  or the instrumented Release build, not Profiling (011 R1).
+  or the instrumented Release build (`Scripts/build-instrumented.sh`).
 - `Sources/SwiftSkyRendering/OrderOverlay.swift` and `OrderOverlayPipelines.swift` (014) — the order
   overlay. `OrderOverlay` is the tested placement (like `ShipSpritePlacement`): `nil` with no order, when
   `arrived`, or with no camera; otherwise up to 258 line points in pixels (drawn ship, the planned-path
@@ -172,14 +185,14 @@ artifacts, keep them consistent with these templates.
   view position": pure and platform-neutral, posted as `SurfaceEvent.moveOrderRequested` through the frame
   loop's one event queue, and converted in the loop against the surface it has applied up to that event.
   The iOS tap recogniser (one tap, one finger) and the VoiceOver `.allowsDirectInteraction` trait are in
-  `MetalSurfaceView.swift`. Debug and Profiling builds log `order view=… world=…` and `arrived world=…`
+  `MetalSurfaceView.swift`. Debug and instrumented Release builds log `order view=… world=…` and `arrived world=…`
   lines under subsystem `com.swiftsky.app` (category `frame`). Read them with `/usr/bin/log`: in zsh a
   bare `log` is a shell builtin.
 - `Sources/SwiftSkyPlatform/ClickPosition.swift` — the Mac click's bottom-left → top-left flip,
   (x, h − y) against the view's `bounds.height`; pure and tested. The macOS click recogniser is in
   `MetalSurfaceView.swift`: primary button only, Control-click ignored (a secondary click by convention),
   and `acceptsFirstMouse` returns `false`, so the first click on an inactive window only activates it.
-- `Sources/SwiftSkyAllocationCounter/` — a C target, Debug-only (its body is under
+- `Sources/SwiftSkyAllocationCounter/` — a C target, Debug and instrumented Release only (its body is under
   `SWIFTSKY_INSTRUMENTATION`): a libmalloc `malloc_logger` hook that counts the frame-loop thread's heap
   allocations inside each frame, and calls one the graphics framework's when a return address between the
   hook and the frame callback lies in Metal, QuartzCore, IOGPU, IOSurface, MTLSimDriver or an AGX image
@@ -188,11 +201,9 @@ artifacts, keep them consistent with these templates.
   fields `allocs= allocframes= eventallocs= gfxallocs=`. To find an allocation, attach lldb to a running
   app with a breakpoint on `sky_alloc_app_allocation`. Writing a log line allocates (~23 per `Logger`
   call), so lines found inside the stretch are noted and written after `sky_alloc_frame_end`: the order
-  lines (`OrderLogLine`) and the arrival line (011 check 10). Measure with an **optimised** build carrying the
-  counter: Release plus `SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) SWIFTSKY_INSTRUMENTATION'` and
-  `GCC_PREPROCESSOR_DEFINITIONS='$(inherited) SWIFTSKY_INSTRUMENTATION=1'` on the `xcodebuild` command
-  line — Debug allocates on every unspecialised `for`-loop iterator, and **the Profiling configuration
-  builds the package with Release settings, so it carries no instrumentation at all** (011 R1, R12). In
+  lines (`OrderLogLine`) and the arrival line (011 check 10). Measure with the **instrumented Release build**,
+  `./Scripts/build-instrumented.sh` (optimised, with the counter; 011 R12, 019) — Debug allocates on every
+  unspecialised `for`-loop iterator. In
   the simulator `log show` returns nothing; use `xcrun simctl spawn <udid> log stream`. Inside a counted
   stretch in tests, loop with `while`, not `for _ in 0..<n`. The procedure is "The method" in
   `specs/011-draw-allocation-counter/quickstart.md`.
@@ -224,7 +235,7 @@ artifacts, keep them consistent with these templates.
   order request) and the allocation counter through its C API (a `.serialized` suite: the hook is
   process-wide), and depend on the counter, the rendering and the logic layers to name `RenderSurface`, `Vector2` and
   `SimulationState`. They must never create a Metal device; `verify.sh` enforces this.
-- Debug launch arguments (Debug/Profiling builds only): the live debug overlay is shown by default,
+- Debug launch arguments (Debug and instrumented Release builds only): the live debug overlay is shown by default,
   and `--no-debug-overlay` hides it. `--no-ship` stops the ship being drawn; together with
   `--no-debug-overlay` it leaves the uniformly black surface that 001's and 002's visible-output checks
   expect. `--debug-ship-spin` turns the ship counter-clockwise in place at its top rate. `--no-interpolation`

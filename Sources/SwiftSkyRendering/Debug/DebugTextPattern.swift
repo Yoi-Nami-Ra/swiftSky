@@ -1,10 +1,10 @@
 #if SWIFTSKY_INSTRUMENTATION
 
-/// The text that proves the text path works: Debug and Profiling builds only, and only when the
-/// developer opts in at launch (FR-014, FR-015, FR-015a).
+/// The text that proves the text path works: Debug and instrumented Release builds only, and only when
+/// the developer opts in at launch (FR-014, FR-015, FR-015a).
 ///
-/// Compiled out of Release entirely, like 001's instrumentation, so Release cannot show it whatever
-/// arguments it is launched with (FR-016, SC-006). The text capability itself — `TextBuffer`, the
+/// Compiled out of plain Release entirely, like 001's instrumentation, so Release cannot show it
+/// whatever arguments it is launched with (FR-016, SC-006). The text capability itself — `TextBuffer`, the
 /// atlas, the pipeline — is not behind this condition; only this pattern and the opt-in that picks
 /// it are.
 public final class DebugTextPattern {
