@@ -35,3 +35,9 @@ Validation guide for [spec.md](./spec.md). The script's interface is in
 |---|------|--------|----------|
 | 1 | 2026-10-07 | **PASS** | `xcodebuild -list`: Build Configurations Debug, Release |
 | 2 | 2026-10-07 | **PASS** | `git diff --stat`: `project.pbxproj` 58 deletions, 0 insertions — three Profiling blocks and their three list entries; no Debug or Release line touched |
+| 3 | 2026-10-07 | **PASS** | `./Scripts/build-instrumented.sh macos`: exit 0 in 35 s from an empty `.build/instrumented/`; standard output is the one line `<repo>/.build/instrumented/Build/Products/Release/swiftSky.app`; `strings -a … \| grep -c dropped=` → 2. The first run warned `No App Category is set for target 'swiftSky (macOS)'` (Release validates the product); fixed in `Apps/macOS/Info.plist` (research R9), no warning since |
+| 5 | 2026-10-07 | **PASS** | `./Scripts/build-instrumented.sh ios`: exit 0 in 34 s, no warning; one path, `…/Release-iphonesimulator/swiftSky.app`; `grep -c dropped=` → 4 |
+| 7 | 2026-10-07 | **PASS** | No argument: exit 0, two lines, macOS path first, then iOS |
+| 8 | 2026-10-07 | **PASS** | `tvos` and `macos ios`: usage on standard error, exit 64, nothing built |
+| 9 | 2026-10-07 | **PASS** | Run from a directory outside the repository with standard error discarded: standard output holds the absolute app path only |
+| 13 | 2026-10-07 | **PASS** | C override line removed: `Undefined symbols for architecture arm64` … `linker command failed`, exit 65, no path printed; line restored, build passes again |

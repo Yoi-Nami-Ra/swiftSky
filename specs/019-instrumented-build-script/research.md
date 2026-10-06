@@ -101,3 +101,16 @@ contract files are left alone (FR-013).
 **Decision**: Measured on the finished branch, warm and cold, and recorded in the quickstart (SC-005).
 Expected: two optimised macOS builds; the first run after a clean checkout costs most, later runs are
 incremental.
+
+## R9. The macOS app needs an application category (found in T005)
+
+**Finding**: The first Release build of the macOS app warned `No App Category is set for target
+'swiftSky (macOS)'`. Release validates the product (`VALIDATE_PRODUCT`), Debug does not, which is why the
+Debug builds in `verify.sh` never showed it. `verify.sh` fails a stage on any `warning:` line, so both new
+stages would fail on it.
+
+**Decision**: Add `LSApplicationCategoryType = public.app-category.games` to `Apps/macOS/Info.plist`.
+
+**Rationale**: It is the correct value for this app and the warning's own remedy; no build setting
+changes (FR-002). **Alternative rejected**: a second exemption in `verify.sh`'s warning filter — it would
+hide a real, one-line product defect behind tooling.

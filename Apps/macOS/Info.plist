@@ -18,6 +18,10 @@
 	<string>0.1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<!-- 019 research R9: a Release build validates the product and warns without a category, and
+	     Scripts/verify.sh fails on any build warning. -->
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.games</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>26.0</string>
 	<key>NSHighResolutionCapable</key>

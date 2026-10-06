@@ -33,9 +33,9 @@ quickstart.md
 
 **Independent Test**: quickstart checks 3, 5, 7, 8, 9 (and 4, 6 by hand).
 
-- [ ] T004 [US1] Create Scripts/build-instrumented.sh (POSIX `sh`, `set -eu`, executable, header comment in `verify.sh`'s style citing 011 R1/R12 and this spec) implementing contracts/build-instrumented.md: argument parsing (`ios`, `macos`, `both`, default `both`; anything else or more than one → usage on stderr, exit 64), `cd` to the repository root, one `build()` function running research R1's `xcodebuild` command with `-derivedDataPath .build/instrumented` and output to stderr, then printing the absolute app path on stdout; macOS before iOS
-- [ ] T005 [US1] Run quickstart checks 3, 5, 7, 8, 9 against Scripts/build-instrumented.sh and fix any failure; record results in specs/019-instrumented-build-script/quickstart.md
-- [ ] T006 [US1] Run quickstart check 13 (C override removed → link fails), restore the script, and record the result in specs/019-instrumented-build-script/quickstart.md
+- [X] T004 [US1] Create Scripts/build-instrumented.sh (POSIX `sh`, `set -eu`, executable, header comment in `verify.sh`'s style citing 011 R1/R12 and this spec) implementing contracts/build-instrumented.md: argument parsing (`ios`, `macos`, `both`, default `both`; anything else or more than one → usage on stderr, exit 64), `cd` to the repository root, one `build()` function running research R1's `xcodebuild` command with `-derivedDataPath .build/instrumented` and output to stderr, then printing the absolute app path on stdout; macOS before iOS
+- [X] T005 [US1] Run quickstart checks 3, 5, 7, 8, 9 against Scripts/build-instrumented.sh and fix any failure; record results in specs/019-instrumented-build-script/quickstart.md
+- [X] T006 [US1] Run quickstart check 13 (C override removed → link fails), restore the script, and record the result in specs/019-instrumented-build-script/quickstart.md
 
 **Checkpoint**: The instrumented build is one command.
 
