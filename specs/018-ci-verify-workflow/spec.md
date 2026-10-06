@@ -53,7 +53,24 @@ shows by default.
 
 ### Session 2026-10-07
 
-(Filled in by `/speckit-clarify`.)
+- Q: What time limit should a verification job have? → A: 30 minutes. A local run on this Mac takes a few
+  minutes; 30 leaves room for a cold build and a busy machine while making sure a hung job frees the only
+  runner well before the host's 6-hour default.
+- Q: When a newer commit arrives while an older job for the same branch or pull request is still running,
+  what happens to the older one? → A: On pull requests (and any branch other than `main`) the older run is
+  cancelled; on `main` every pushed commit runs to completion, so each commit on `main` keeps its own
+  result.
+- Q: How does the runner run on this Mac? → A: As a background service under the developer's own user,
+  installed with the runner's own service script, so it starts at login and keeps running without a
+  terminal window; starting it by hand in a terminal is documented as the fallback.
+- Q: Where does the runner's documentation live? → A: In a standing file next to the workflow,
+  `.github/RUNNER.md`, which CLAUDE.md points to; this spec's quickstart holds the one-time setup and the
+  acceptance checks, and links to it.
+- Q: Without branch protection (out of scope), how is Principle II's "CI MUST gate merges" met? → A: By
+  rule, not by setting: a pull request is not merged while its verification job is red or has not run.
+  The rule is written in `.github/RUNNER.md` and CLAUDE.md, and the plan's Complexity Tracking records
+  that the gate is procedural rather than enforced, with branch protection named as the enforced
+  alternative left out by the ticket.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -141,8 +158,9 @@ it, and confirm it shows online again.
 
 - **This Mac is off or asleep, or the runner is stopped**: the job queues and runs later. The host may
   cancel a job that has waited too long (it does so after 24 hours); the steps say to re-run it.
-- **Two pushes in quick succession**: there is one runner, so jobs run one after another. A newer push to
-  the same branch or pull request makes the older, still-running job pointless (see Clarifications).
+- **Two pushes in quick succession**: there is one runner, so jobs run one after another. On a pull
+  request or any branch other than `main`, a newer push cancels the older, still-running job for the same
+  branch; on `main`, every commit's job runs to completion.
 - **The Mac's Xcode changes** (an update, or a different selected Xcode): the job runs whatever Xcode is
   selected on the Mac. The `xcode-27` label is a promise the developer keeps; the steps say to change the
   label and the workflow together when Xcode changes.
@@ -150,7 +168,7 @@ it, and confirm it shows online again.
   data folder; the job may take longer. Neither must break the other's result.
 - **The Metal toolchain is missing on the Mac**: `verify.sh`'s own preflight fails the job with its own
   message; nothing extra is added.
-- **A job hangs**: it must not hold the only runner indefinitely (see Clarifications).
+- **A job hangs**: it is stopped and marked failed after 30 minutes, which frees the runner.
 - **Pull requests from forks**: the repository is private, so no outside fork can run code on this Mac.
   This is the reason a self-hosted runner is acceptable here; it must not be reused for a public
   repository.
@@ -170,12 +188,15 @@ it, and confirm it shows online again.
 - **FR-005**: `Scripts/verify.sh`'s behaviour MUST NOT change. (Its header comment, which speaks of CI as
   future, may be brought up to date.)
 - **FR-006**: The workflow MUST grant the job no more repository access than reading its contents.
-- **FR-007**: A job MUST NOT hold the runner indefinitely: it MUST have a time limit (see
-  Clarifications).
-- **FR-008**: The repository MUST document the runner: where it is installed on this Mac, how it was
+- **FR-007**: A job MUST be stopped and marked failed when it runs longer than 30 minutes.
+- **FR-007a**: A newer run for the same pull request or non-`main` branch MUST cancel the older one still
+  in progress; runs for pushes to `main` MUST NOT be cancelled by later pushes.
+- **FR-008**: The repository MUST document the runner in `.github/RUNNER.md`: where it is installed on this Mac, how it was
   registered (to this repository only, with the three labels), how to start, stop and check it, that it
-  runs only while this Mac is on, that queued jobs wait, and that the labels and workflow change together
-  when Xcode changes.
+  runs only while this Mac is on, that queued jobs wait, that the labels and workflow change together
+  when Xcode changes, and the merge rule (FR-014).
+- **FR-008a**: The runner MUST run as a background service under the developer's own macOS user, started
+  at login; running it by hand in a terminal MUST be documented as the fallback.
 - **FR-009**: The runner MUST be registered to this repository only, not to an account or organisation.
 - **FR-010**: The "No CI pipeline" entry MUST be removed from `specs/001-metal-app-shell/plan.md`'s
   Complexity Tracking, its note above the table, and its two Principle II rows MUST cite the CI job
@@ -188,6 +209,8 @@ it, and confirm it shows online again.
   performs them.
 - **FR-013**: The broken-change demonstration MUST happen on a throwaway pull request that is closed
   unmerged; `main` MUST never contain the deliberately broken commit.
+- **FR-014**: A pull request MUST NOT be merged while its verification job is red or has not run. This is
+  a written rule (branch protection is out of scope), stated in `.github/RUNNER.md` and CLAUDE.md.
 
 ### Key Entities
 
@@ -203,6 +226,8 @@ it, and confirm it shows online again.
 
 - **SC-001**: `git remote -v` shows the private repository and `origin/main` equals local `main` after
   the feature's commits are pushed.
+- **SC-001a**: A job that runs past 30 minutes ends as failed; a second push to a pull request's branch
+  cancels the first push's job if it is still running.
 - **SC-002**: A push to `main` produces exactly one verification job, which runs on this Mac's runner and
   passes; its duration is within a few minutes of a local `./Scripts/verify.sh` run on the same Mac.
 - **SC-003**: Opening a pull request produces a verification job whose result shows on the pull request.
@@ -223,8 +248,7 @@ it, and confirm it shows online again.
 - Xcode 27.0 (27A266a) is the selected Xcode on this Mac.
 - The repository stays private. A self-hosted runner on a public repository would let anyone's pull
   request run code on this Mac, and is not acceptable.
-- Branch protection is out of scope (ticket). "CI gates merges" (Principle II) is met by the result shown
-  on every pull request and the review rule that a pull request is not merged while its job is red; the
-  plan records how this relates to the constitution.
+- Branch protection is out of scope (ticket). "CI gates merges" (Principle II) is met by the written rule
+  of FR-014 and the result shown on every pull request; the plan records that this gate is procedural.
 - The agent preparing this feature writes files and runs local checks only. Everything that changes
   GitHub's state or installs a service is a written step for the developer (FR-012).
