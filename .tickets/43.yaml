@@ -34,9 +34,10 @@ description: |
   files are deleted, this ticket's `designs` and SKY-40's `designs` point at
   it, and the disc measures 1024 px across (checked on the file).
 platform: macos
-status: ready
+status: done
 phase: Backlog
 priority: medium
 parent: 40
 blocked_by: []
-designs: []
+designs:
+  - design/sprites/planet.png
