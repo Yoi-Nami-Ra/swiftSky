@@ -68,7 +68,7 @@ quickstart.md
 - [ ] T014 [P] [US3] Add the research R7 note to check 12's result in specs/008-tap-to-order-ios/quickstart.md and to check 9's result in specs/009-click-to-order-macos/quickstart.md, and reword their "Reading the order log (Debug and Profiling)" headings and check-definition rows to the instrumented build (results otherwise unchanged)
 - [ ] T015 [P] [US3] In specs/011-draw-allocation-counter/quickstart.md, "The method" step 1: replace the hand-written `xcodebuild` command with `Scripts/build-instrumented.sh ios|macos` and the printed path, and replace "A Profiling build carries no instrumentation at all" with the history note (removed by 019); point step 2's app paths at `.build/instrumented/`
 - [ ] T016 [P] [US3] In specs/001-metal-app-shell/quickstart.md, specs/002-metal-text-rendering/quickstart.md, specs/003-debug-overlay/quickstart.md, specs/004-ship-newtonian-motion/quickstart.md, specs/006-ship-autopilot/quickstart.md, specs/007-ship-sprite-rendering/quickstart.md and specs/010-ship-path-prediction/quickstart.md: reword each Profiling mention per FR-012 (results that say a check was or was not run on a Profiling build get the R7 note; "Method since 011 … a Profiling build carries no instrumentation" points to the script; headings say Debug and instrumented Release)
-- [ ] T017 [US3] Run quickstart checks 14, 15, 16 and record the results in specs/019-instrumented-build-script/quickstart.md
+- [ ] T017 [US3] Run quickstart checks 14, 15, 16, confirm with `git diff --stat main` that no file outside FR-010–FR-012's list was reworded (FR-013), and record the results in specs/019-instrumented-build-script/quickstart.md
 
 **Checkpoint**: The documentation sends every measurement to the script.
 
