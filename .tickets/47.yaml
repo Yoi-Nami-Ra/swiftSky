@@ -22,6 +22,13 @@ description: |
   but it was relearned at 8.33 ms, most likely from gaps the display link
   still produced at 120 Hz during the move, and it never rose again.
 
+  And a third time the same day (003 check 7, macOS Debug, 120 Hz built-in
+  display): right after a live resize the budget dropped to 4.174125 ms
+  (240 Hz), half the real interval, so the resize produced two agreeing
+  half-interval gaps. From then on any frame over 4.17 ms counted as
+  dropped; one 5.13 ms frame did. A window resize is enough to trigger it,
+  so it affects ordinary macOS sessions, not only loaded simulators.
+
   Cause:
   - The candidate never expires. A gap no shorter than the known interval
     returns early without clearing `candidateInterval`, so a stray short gap
@@ -47,11 +54,12 @@ description: |
      platform layer (like `FrameTimeWindow`), so it can be tested without a
      Metal device. `FrameLoop` keeps calling it once per frame and calls
      `updateBudget` when it reports a new interval. Allocation-free.
-  3. After a display change, learn only from the new display's gaps. Item 1
-     does not cover this: two back-to-back 120 Hz gaps during the move still
-     agree. Options: skip a short settling period after the backing-scale
-     change, or never let the interval go below the current screen's
-     `maximumFramesPerSecond`. Choose in the plan.
+  3. Learn only gaps the display can really produce. Item 1 does not cover
+     this: two back-to-back 120 Hz gaps during a display move, or two 4.17 ms
+     gaps during a live resize, still agree. Options: never let the interval
+     go below the current screen's `maximumFramesPerSecond` (covers both), or
+     skip a settling period after a backing-scale change or resize. Choose
+     in the plan.
   4. Update the comments that state the old premise.
 
   Out of scope: changing how dropped frames are defined or counted, and the
@@ -64,14 +72,15 @@ description: |
     adopted; simulator-like jitter (a late gap followed by a catch-up gap)
     does not lower the budget; a single startup outlier is ignored; after a
     display change, a few 120 Hz gaps followed by steady 60 Hz gaps end on
-    16.67 ms.
+    16.67 ms; on a steady 120 Hz series, a burst of 4.17 ms gaps (a live
+    resize) does not lower the budget.
   - `./Scripts/verify.sh` passes.
   - A 10-minute Debug run on the iOS simulator under load keeps
     `budget=16.666667ms` in every summary.
 platform: ios
 status: ready
 phase: MVP
-priority: medium
+priority: high
 parent: 22
 blocked_by: []
 designs: []

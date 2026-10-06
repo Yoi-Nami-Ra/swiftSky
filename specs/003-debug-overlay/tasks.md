@@ -106,7 +106,7 @@ safe-area top-left, refreshing four times a second and agreeing with the log.
   - **`init(arguments:)`**: returns `.fill` > `.testString` > `.none` (when `--no-debug-overlay` is given) > `.overlay`.
   - **Wiring**: add `var overlay: DebugOverlay?`, which is `DebugOverlay()` only for `.overlay`, and set `renderer.debugOverlay` beside `renderer.debugTextPattern` in `buildSetup()`.
   - **Documentation**: update the type's doc comment.
-- [ ] T011 [US1] **Open (2026-09-30)**: window capture is refused in this session, so the checks that need eyes on the overlay wait for a person. The log side of check 6 is recorded. Build and run the macOS Debug app. Perform quickstart checks 6, 7, 8, 10, 11 and 17 on macOS, and record the date, device, result and numbers under "Evidence to record" in `specs/003-debug-overlay/quickstart.md`. Mark any check that cannot be run here (for example check 7 without a second display) as open, with the reason.
+- [ ] T011 [US1] **Partly done (2026-10-06)**: 6, 8, 11 and 17 PASS on macOS; 7 FAILS, the budget sticking after a display move or dropping to 4.17 ms after a live resize (SKY-47); 10 is still open for re-running 001's checks 1 to 6 with `--no-debug-overlay` (002 check 12 and the `--debug-text` half pass). Build and run the macOS Debug app. Perform quickstart checks 6, 7, 8, 10, 11 and 17 on macOS, and record the date, device, result and numbers under "Evidence to record" in `specs/003-debug-overlay/quickstart.md`. Mark any check that cannot be run here (for example check 7 without a second display) as open, with the reason.
 
 **Checkpoint**: US1 is fully working. The overlay is the MVP.
 
@@ -118,8 +118,8 @@ safe-area top-left, refreshing four times a second and agreeing with the log.
 
 **Independent Test**: quickstart check 9, checks 11 and 12 on iOS, and check 18.
 
-- [ ] T012 [US2] **Open (2026-09-30)**: the iOS Simulator hung on `simctl install`. The iOS app builds. Build the iOS Debug app for the simulator (`xcodebuild … -scheme 'swiftSky (iOS)'`), launch it, and perform quickstart check 9 (both landscape orientations; Slide Over if an iPad simulator is available) and check 11 (background for 5 s, then return). Record the evidence in `specs/003-debug-overlay/quickstart.md`. No iOS-specific code is expected, because the safe-area insets come from 002. If a defect appears, fix it in the platform layer and record it.
-- [ ] T013 [P] [US2] **Partly done (2026-09-30)**: check 18 passed except for the frame-log continuation. Check 12 needs Accessibility Inspector. Perform quickstart check 12 (Accessibility Inspector on macOS, and the accessibility hierarchy on iOS: only the 001 surface label is exposed, FR-010) and check 18 (002's forced atlas failure with no argument: the app runs without text and keeps logging). Record both in `specs/003-debug-overlay/quickstart.md`
+- [X] T012 [US2] **Done (2026-10-06)**: 9 PASS in both landscape orientations and 11 PASS (partly) on the iPhone 17 Pro simulator; iPad Slide Over is SKY-6. Build the iOS Debug app for the simulator (`xcodebuild … -scheme 'swiftSky (iOS)'`), launch it, and perform quickstart check 9 (both landscape orientations; Slide Over if an iPad simulator is available) and check 11 (background for 5 s, then return). Record the evidence in `specs/003-debug-overlay/quickstart.md`. No iOS-specific code is expected, because the safe-area insets come from 002. If a defect appears, fix it in the platform layer and record it.
+- [ ] T013 [P] [US2] **Partly done (2026-10-06)**: 18 now PASS in full (the frame lines carry on after a text failure, from 002 check 20's run); 12 is PASS on macOS (SKY-8), and its iOS half is SKY-39. Perform quickstart check 12 (Accessibility Inspector on macOS, and the accessibility hierarchy on iOS: only the 001 surface label is exposed, FR-010) and check 18 (002's forced atlas failure with no argument: the app runs without text and keeps logging). Record both in `specs/003-debug-overlay/quickstart.md`
 
 **Checkpoint**: US1 and US2 both work.
 
@@ -131,7 +131,7 @@ safe-area top-left, refreshing four times a second and agreeing with the log.
 
 **Independent Test**: quickstart checks 13 and 14.
 
-- [ ] T014 [US3] **Open (2026-09-30)**: `xctrace` never finished, as in 002, so this needs Instruments by hand. Perform quickstart check 13: an Allocations run of 60 s with the overlay showing, filtered to the frame-loop thread's draw path, using the method of 002 check 15. Record the result in `specs/003-debug-overlay/quickstart.md`. If an allocation of ours shows up, fix it at its source and re-run (FR-014).
+- [X] T014 [US3] **Done (2026-10-06)**: 13 PASS by 011's check 25 runs, which had the overlay showing (iOS and macOS, zero app allocations). Perform quickstart check 13: an Allocations run of 60 s with the overlay showing, filtered to the frame-loop thread's draw path, using the method of 002 check 15. Record the result in `specs/003-debug-overlay/quickstart.md`. If an allocation of ours shows up, fix it at its source and re-run (FR-014).
 - [X] T015 [US3] Perform quickstart check 14 on one device: 60 s each with `--no-debug-overlay` and with no argument, reading the instrumentation log's `mean=`, `worst=` and `dropped=`. Record both runs as the before/after pair in `specs/003-debug-overlay/quickstart.md` (SC-004, Principle III)
 
 **Checkpoint**: Principle III evidence is recorded.
@@ -144,7 +144,7 @@ safe-area top-left, refreshing four times a second and agreeing with the log.
 
 **Independent Test**: quickstart checks 15 and 16.
 
-- [ ] T016 [US4] **Partly done (2026-09-30)**: Release was built and inspected (check 16), but not launched and looked at. Build macOS Release (`xcodebuild … -configuration Release`), launch it with no argument, then with `--no-debug-overlay` and with `--debug-text`, and confirm a uniformly black surface each time (quickstart check 15). Record the result in `specs/003-debug-overlay/quickstart.md`.
+- [X] T016 [US4] **Done (2026-10-06)**: 15 PASS, three Release windows black apart from the ship. Build macOS Release (`xcodebuild … -configuration Release`), launch it with no argument, then with `--no-debug-overlay` and with `--debug-text`, and confirm a uniformly black surface each time (quickstart check 15). Record the result in `specs/003-debug-overlay/quickstart.md`.
 - [X] T017 [US4] Perform quickstart check 16 on the same Release binary: `nm` after `strip -rSTx` for `DebugOverlay|FrameTimeWindow|OverlayRefreshSchedule`, and `strings` for `no-debug-overlay`, `dropped ` and `skipped `. Record the counts in a table in the style of 001 check 27, in `specs/003-debug-overlay/quickstart.md` (SC-005, FR-009).
 
 **Checkpoint**: the Release gate is proven.
