@@ -34,7 +34,7 @@ Gaps in ms; `h120 = 1000/120`, `h60 = 1000/60`. Floor set to the display's rate 
 | 1 | floor 120 | 20 × h120 | h120 |
 | 2 | floor 60 | 10 × h60, 33.33, 10 × h60 | h60 |
 | 3 | floor 120, display at 60 Hz | h60 ×5, 14.84, h60 ×5, 14.84, h60 ×5 | h60 |
-| 4 | floor 120, display at 60 Hz | (22.0, 11.3) × 50, interleaved with h60 | h60 |
+| 4 | floor 120, display at 60 Hz | 10 × h60, then (h60, h60, 22.0, 11.3) × 25 | h60 |
 | 5 | floor 120, display at 60 Hz | 5.0, then 20 × h60 | h60 |
 | 6 | floor 120, learned h120; then `setMaximumFramesPerSecond(60)` and `forget()` | h120 ×3, 20 × h60 | h60 |
 | 7 | floor 120, learned h120 | 10 × 4.17, 10 × h120 | h120 |
