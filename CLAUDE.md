@@ -36,7 +36,8 @@ stretch in the frame summary; check 29's continuous resize: no races, no stall m
 120 Hz displays) and `specs/014-order-overlay` (while an order is flown: a marker at the destination, a
 ring around the ship and the remaining planned path, in every build) and
 `specs/015-debug-overlay-ship-order` (the debug overlay's ship and order lines under its frame
-statistics). Layer libraries and
+statistics) and `specs/016-frame-budget-learner` (the frame budget learned only from adjacent agreeing
+gaps, never below the display's fastest interval). Layer libraries and
 tests live in the root `Package.swift`, and the two app targets live in `swiftSky.xcodeproj`.
 `./Scripts/verify.sh` is the single checked-in verification command.
 
@@ -194,6 +195,13 @@ artifacts, keep them consistent with these templates.
   the simulator `log show` returns nothing; use `xcrun simctl spawn <udid> log stream`. Inside a counted
   stretch in tests, loop with `while`, not `for _ in 0..<n`. The procedure is "The method" in
   `specs/011-draw-allocation-counter/quickstart.md`.
+- `Sources/SwiftSkyPlatform/DisplayIntervalLearner.swift` (016) — the frame budget: a pure value the loop
+  feeds one gap per frame (`observe(gap:)`), which reports a new budget for `Instrumentation.updateBudget`.
+  A shorter interval needs the very next plausible gap to agree (5%), and is never below the floor
+  `1 / maximumFramesPerSecond` of the surface's screen, which `MetalSurfaceView` posts as
+  `SurfaceEvent.displayRateChanged` before a geometry event when it changes. A backing-scale change, or a
+  floor above the learned interval, forgets it (back to 1/60 s). Gaps are not always whole display
+  intervals: a live resize and a display move both produce sustained runs of shorter ones.
 - `Sources/SwiftSkyPlatform/MainThreadStallProbe.swift` and `MainThreadStallFigures.swift` (012) — two
   run-loop observers on the main run loop, in the common modes so live resize and menus count, measure each
   busy stretch between two waits; one packed `Atomic<UInt64>` hands the worst (µs) and the count over the
