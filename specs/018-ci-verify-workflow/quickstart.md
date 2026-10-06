@@ -22,6 +22,10 @@ git fetch --prune && git rev-parse main origin/main
 
 Expected: both URLs as shown; before this feature, `main` and `origin/main` name the same commit.
 
+**Result 2026-10-07 (T001)**: PASS. `origin` → `git@yoinamira-github:Yoi-Nami-Ra/swiftSky.git`, stored
+URL `git@github.com:Yoi-Nami-Ra/swiftSky.git`; after `git fetch --prune`, `main` = `origin/main` =
+`e4a3040` (`main` had moved on from this branch's base `cd2b055` through other merged work).
+
 ### L2 — The workflow is well formed and matches the contract (FR-002–FR-007a, SC-005)
 
 ```sh
