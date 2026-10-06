@@ -187,7 +187,8 @@ but it can only point to the script once the script exists.
   predictable.
 - **FR-006**: On success it MUST print the absolute path of each built app, one per line, on standard
   output and nothing else there, and exit 0. The build's own output MUST go to standard error, kept
-  quiet. On any build failure it MUST exit non-zero.
+  quiet. On a build failure it MUST stop at once — printing no path for that platform and building no
+  later one — and exit non-zero.
 - **FR-007**: The iOS build MUST target the iOS Simulator (generic destination, no booted simulator
   needed); the macOS build MUST target the host Mac. Neither needs a signing identity.
 
@@ -242,8 +243,8 @@ but it can only point to the script once the script exists.
   restored.
 - **SC-004**: No document named in FR-010 still describes a Profiling build as existing or as carrying
   instrumentation, and both annotated checks carry the note.
-- **SC-005**: The verification command's added time is recorded; it stays a single command a developer
-  can run before every commit.
+- **SC-005**: The verification command's run time, before and after this feature, is measured and
+  recorded for a cold run (empty build folders) and a warm run (nothing changed since the last run).
 
 ## Assumptions
 
