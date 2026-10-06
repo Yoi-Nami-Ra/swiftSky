@@ -57,9 +57,9 @@ shows by default.
   minutes; 30 leaves room for a cold build and a busy machine while making sure a hung job frees the only
   runner well before the host's 6-hour default.
 - Q: When a newer commit arrives while an older job for the same branch or pull request is still running,
-  what happens to the older one? → A: On pull requests (and any branch other than `main`) the older run is
-  cancelled; on `main` every pushed commit runs to completion, so each commit on `main` keeps its own
-  result.
+  what happens to the older one? → A: On pull requests the older run is cancelled; on `main` every pushed
+  commit runs to completion, so each commit on `main` keeps its own result. (Pushes to other branches do
+  not start runs of their own; they are verified through their pull request.)
 - Q: How does the runner run on this Mac? → A: As a background service under the developer's own user,
   installed with the runner's own service script, so it starts at login and keeps running without a
   terminal window; starting it by hand in a terminal is documented as the fallback.
@@ -67,7 +67,7 @@ shows by default.
   `.github/RUNNER.md`, which CLAUDE.md points to; this spec's quickstart holds the one-time setup and the
   acceptance checks, and links to it.
 - Q: Without branch protection (out of scope), how is Principle II's "CI MUST gate merges" met? → A: By
-  rule, not by setting: a pull request is not merged while its verification job is red or has not run.
+  rule, not by setting: a pull request is not merged unless its verification job passed for its head.
   The rule is written in `.github/RUNNER.md` and CLAUDE.md, and the plan's Complexity Tracking records
   that the gate is procedural rather than enforced, with branch protection named as the enforced
   alternative left out by the ticket.
@@ -93,7 +93,8 @@ one verification job appears, runs on this Mac's runner, and ends green.
 2. **Given** the job runs, **When** its log is opened, **Then** it shows the checkout and the
    verification script's own output, stage by stage, and nothing else runs.
 3. **Given** the runner is stopped, **When** the developer pushes to `main`, **Then** the job waits in
-   the queue and runs once the runner starts again; it does not fail for lack of a runner.
+   the queue and runs once the runner starts again (within 24 hours); it does not fail for lack of a
+   runner.
 
 ---
 
@@ -159,8 +160,8 @@ it, and confirm it shows online again.
 - **This Mac is off or asleep, or the runner is stopped**: the job queues and runs later. The host may
   cancel a job that has waited too long (it does so after 24 hours); the steps say to re-run it.
 - **Two pushes in quick succession**: there is one runner, so jobs run one after another. On a pull
-  request or any branch other than `main`, a newer push cancels the older, still-running job for the same
-  branch; on `main`, every commit's job runs to completion.
+  request, a newer push cancels the older, still-running job for the same pull request; on `main`, every
+  commit's job runs to completion.
 - **The Mac's Xcode changes** (an update, or a different selected Xcode): the job runs whatever Xcode is
   selected on the Mac. The `xcode-27` label is a promise the developer keeps; the steps say to change the
   label and the workflow together when Xcode changes.
@@ -182,17 +183,17 @@ it, and confirm it shows online again.
 - **FR-002**: The repository MUST contain one workflow that runs on every push to `main` and on every
   pull request against `main`.
 - **FR-003**: The workflow MUST run its job only on a self-hosted runner carrying the labels
-  `self-hosted`, `macOS` and `xcode-27`.
+  `self-hosted`, `macOS` and `xcode-27` (the runner also carries the automatic `ARM64` label, which the
+  workflow does not require).
 - **FR-004**: The job's steps MUST be exactly two: check out the commit under test, then run
   `./Scripts/verify.sh` with no arguments. The job passes if and only if the script exits 0.
 - **FR-005**: `Scripts/verify.sh`'s behaviour MUST NOT change. (Its header comment, which speaks of CI as
   future, may be brought up to date.)
 - **FR-006**: The workflow MUST grant the job no more repository access than reading its contents.
 - **FR-007**: A job MUST be stopped and marked failed when it runs longer than 30 minutes.
-- **FR-007a**: A newer run for the same pull request or non-`main` branch MUST cancel the older one still
-  in progress; runs for pushes to `main` MUST NOT be cancelled by later pushes.
+- **FR-007a**: A newer run for the same pull request MUST cancel the older one still in progress; runs for pushes to `main` MUST NOT be cancelled by later pushes.
 - **FR-008**: The repository MUST document the runner in `.github/RUNNER.md`: where it is installed on this Mac, how it was
-  registered (to this repository only, with the three labels), how to start, stop and check it, that it
+  registered (to this repository only, with the FR-003 labels), how to start, stop and check it, that it
   runs only while this Mac is on, that queued jobs wait, that the labels and workflow change together
   when Xcode changes, and the merge rule (FR-014).
 - **FR-008a**: The runner MUST run as a background service under the developer's own macOS user, started
@@ -209,7 +210,8 @@ it, and confirm it shows online again.
   performs them.
 - **FR-013**: The broken-change demonstration MUST happen on a throwaway pull request that is closed
   unmerged; `main` MUST never contain the deliberately broken commit.
-- **FR-014**: A pull request MUST NOT be merged while its verification job is red or has not run. This is
+- **FR-014**: A pull request MUST NOT be merged unless its verification job passed for its current head
+  (not while it is red, cancelled, queued or missing). This is
   a written rule (branch protection is out of scope), stated in `.github/RUNNER.md` and CLAUDE.md.
 
 ### Key Entities
@@ -217,7 +219,7 @@ it, and confirm it shows online again.
 - **Verification workflow**: the checked-in definition of when the job runs (push to `main`, pull
   requests), where (the labelled self-hosted runner) and what it does (checkout, verify script).
 - **Self-hosted runner**: the agent installed on this Mac, registered to this repository, carrying the
-  three labels, running jobs as the developer's own user with the Mac's own Xcode.
+  FR-003 labels, running jobs as the developer's own user with the Mac's own Xcode.
 - **Verification job result**: pass or fail on a commit or pull request, with the script's log.
 
 ## Success Criteria *(mandatory)*
@@ -230,7 +232,8 @@ it, and confirm it shows online again.
   running. The 30-minute job limit is checked in the workflow file rather than by letting a job hang for
   30 minutes on the only runner.
 - **SC-002**: A push to `main` produces exactly one verification job, which runs on this Mac's runner and
-  passes; its duration is within a few minutes of a local `./Scripts/verify.sh` run on the same Mac.
+  passes within the 30-minute limit; its duration is recorded next to a local `./Scripts/verify.sh` run's
+  on the same Mac, for comparison.
 - **SC-003**: Opening a pull request produces a verification job whose result shows on the pull request.
 - **SC-004**: A throwaway pull request with a deliberately failing test produces a failed job whose log
   names the failing stage; the pull request is closed unmerged and `main` never contains that commit.
