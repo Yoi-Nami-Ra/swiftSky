@@ -263,6 +263,11 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
                 // display (FR-031), which may refresh at a different rate. Relearn it rather than
                 // keeping a budget belonging to the display we left.
                 instrumentation.updateBudget(seconds: displayInterval.forget())
+            case .displayRateChanged(let framesPerSecond):
+                // The floor of the learned budget (016 FR-005); a slower display forgets it (FR-004).
+                if let budget = displayInterval.setMaximumFramesPerSecond(framesPerSecond) {
+                    instrumentation.updateBudget(seconds: budget)
+                }
             case .visibilityChanged(let isVisible):
                 displayLink?.isPaused = !isVisible
                 #if SWIFTSKY_INSTRUMENTATION

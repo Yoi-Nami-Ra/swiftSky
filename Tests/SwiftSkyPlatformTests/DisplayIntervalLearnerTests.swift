@@ -106,4 +106,66 @@ struct DisplayIntervalLearnerTests {
         #expect(feed(&learner, repeated(Self.hz60 - 0.0001, 10)).isEmpty)
         #expect(learner.interval == before)
     }
+
+    // MARK: - US2: the floor and display changes
+
+    @Test("6: after a move to a 60 Hz display, stray 120 Hz gaps then steady 60 Hz gaps end on 16.67 ms")
+    func displayChange() {
+        var learner = learner(maximumFramesPerSecond: 120)
+        feed(&learner, repeated(Self.hz120, 10))
+        #expect(learner.interval == 1.0 / 120.0)
+
+        // The view posts the new rate before the backing-scale change; the loop applies both.
+        _ = learner.setMaximumFramesPerSecond(60)
+        _ = learner.forget()
+        feed(&learner, repeated(Self.hz120, 3) + repeated(Self.hz60, 20))
+        #expect(isClose(learner.interval, Self.hz60))
+    }
+
+    @Test("7: on a steady 120 Hz series, a burst of 4.17 ms gaps (a live resize) does not lower the budget")
+    func liveResizeBurst() {
+        var learner = learner(maximumFramesPerSecond: 120)
+        feed(&learner, repeated(Self.hz120, 10))
+        feed(&learner, repeated(4.17, 10) + repeated(Self.hz120, 10))
+        #expect(learner.interval == 1.0 / 120.0)
+    }
+
+    @Test("A floor above the learned interval forgets it on its own")
+    func slowerFloorForgets() {
+        var learner = learner(maximumFramesPerSecond: 120)
+        feed(&learner, repeated(Self.hz120, 4))
+        #expect(learner.setMaximumFramesPerSecond(60) == DisplayIntervalLearner.defaultInterval)
+        #expect(learner.interval == DisplayIntervalLearner.defaultInterval)
+        #expect(!learner.isLearned)
+    }
+
+    @Test("A faster floor keeps the learned interval")
+    func fasterFloorKeeps() {
+        var learner = learner(maximumFramesPerSecond: 60)
+        feed(&learner, repeated(Self.hz60, 4))
+        let before = learner.interval
+        #expect(learner.setMaximumFramesPerSecond(120) == nil)
+        #expect(learner.interval == before)
+    }
+
+    @Test("Gaps rounding just under the floor adopt exactly the floor")
+    func clampedToFloor() {
+        var learner = learner(maximumFramesPerSecond: 120)
+        feed(&learner, repeated(8.3330, 2))
+        #expect(learner.interval == 1.0 / 120.0)
+    }
+
+    @Test("An unknown rate leaves only the 250 Hz bound")
+    func unknownRate() {
+        var learner = learner(maximumFramesPerSecond: 0)
+        feed(&learner, repeated(4.17, 2))
+        #expect(isClose(learner.interval, 4.17))
+    }
+
+    @Test("Two adjacent agreeing gaps above the floor are adopted (accepted residual risk)")
+    func adjacentAgreeingGapsAdopted() {
+        var learner = learner(maximumFramesPerSecond: 120)
+        feed(&learner, repeated(Self.hz60, 4) + [14.84, 14.84])
+        #expect(isClose(learner.interval, 14.84))
+    }
 }
