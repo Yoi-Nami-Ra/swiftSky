@@ -47,9 +47,9 @@ quickstart.md
 
 **Independent Test**: quickstart checks 10, 11, 12.
 
-- [ ] T007 [US2] Add a section "Instrumented and Release builds (macOS)" to Scripts/verify.sh after the app-target builds, inside the `if [ -d swiftSky.xcodeproj ]` branch: stage `instrumented macOS build carries the instrumentation` (runs `Scripts/build-instrumented.sh macos`, then `strings -a` on the executable must find `dropped=`), and stage `Release macOS build carries no instrumentation (001 check 27)` (Release build into `.build/release-check/` with `CODE_SIGNING_ALLOWED=NO -quiet`, then `strings -a` must find none of `skipped=`, `dropped=`, `worst=`, `SWIFTSKY_INSTRUMENTATION`; print any found); both through `run_stage`, no launch, no simulator, no log (FR-008, FR-009); update the file's header comment to mention the two stages
-- [ ] T008 [US2] Run quickstart check 10 (`./Scripts/verify.sh`, timed warm and cold) and record the before/after times in specs/019-instrumented-build-script/quickstart.md
-- [ ] T009 [US2] Run quickstart checks 11 and 12 (each deliberate breakage once, then restore with `git checkout --`), confirm each fails the run, and record the results in specs/019-instrumented-build-script/quickstart.md
+- [X] T007 [US2] Add a section "Instrumented and Release builds (macOS)" to Scripts/verify.sh after the app-target builds, inside the `if [ -d swiftSky.xcodeproj ]` branch: stage `instrumented macOS build carries the instrumentation` (runs `Scripts/build-instrumented.sh macos`, then `strings -a` on the executable must find `dropped=`), and stage `Release macOS build carries no instrumentation (001 check 27)` (Release build into `.build/release-check/` with `CODE_SIGNING_ALLOWED=NO -quiet`, then `strings -a` must find none of `skipped=`, `dropped=`, `worst=`, `SWIFTSKY_INSTRUMENTATION`; print any found); both through `run_stage`, no launch, no simulator, no log (FR-008, FR-009); update the file's header comment to mention the two stages
+- [X] T008 [US2] Run quickstart check 10 (`./Scripts/verify.sh`, timed warm and cold) and record the before/after times in specs/019-instrumented-build-script/quickstart.md
+- [X] T009 [US2] Run quickstart checks 11 and 12 (each deliberate breakage once, then restore with `git checkout --`), confirm each fails the run, and record the results in specs/019-instrumented-build-script/quickstart.md
 
 **Checkpoint**: The instrumented build cannot silently break again.
 
