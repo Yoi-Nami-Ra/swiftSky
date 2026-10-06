@@ -34,4 +34,5 @@
 - The feature is infrastructure: GitHub, GitHub Actions, the self-hosted runner and `Scripts/verify.sh`
   are named because the ticket names them and they are the subject, not a design choice. Nothing below
   that level (workflow syntax, action versions, runner commands) is in the spec; that is the plan's.
-- Job time limit and superseded-run handling are referred to Clarifications for `/speckit-clarify`.
+- Clarify session 2026-10-07 settled the job time limit, superseded runs, how the runner runs, where its
+  documentation lives, and how merges are gated without branch protection.
