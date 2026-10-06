@@ -76,8 +76,8 @@ quickstart.md
 
 ## Phase 6: Polish
 
-- [ ] T018 Run `./Scripts/verify.sh` on the finished branch and record the result in specs/019-instrumented-build-script/quickstart.md
-- [ ] T019 Leave quickstart checks 4 and 6 (launching the instrumented apps and reading the log) for the developer, recorded as open in specs/019-instrumented-build-script/quickstart.md; set the spec's Status line in specs/019-instrumented-build-script/spec.md
+- [X] T018 Run `./Scripts/verify.sh` on the finished branch and record the result in specs/019-instrumented-build-script/quickstart.md
+- [X] T019 Leave quickstart checks 4 and 6 (launching the instrumented apps and reading the log) for the developer, recorded as open in specs/019-instrumented-build-script/quickstart.md; set the spec's Status line in specs/019-instrumented-build-script/spec.md
 
 ---
 
