@@ -1,0 +1,63 @@
+id: 47
+title: "Stop the frame budget locking onto stray gaps"
+type: bug
+description: |
+  Part of SKY-22. The frame loop learns the display's frame budget from the
+  gaps between `CAMetalDisplayLink` target timestamps
+  (`FrameLoop.learnDisplayInterval`, Sources/SwiftSkyPlatform/FrameLoop.swift).
+  A gap shorter than the current budget becomes a candidate, and a later gap
+  within 5% of it confirms it; the budget becomes the smaller of the two and
+  only ever shrinks until the backing scale changes.
+
+  Observed 2026-10-06 on the iPhone 17 Pro simulator (Debug, Mac heavily
+  loaded, ~45 fps against a 60 Hz link): about 6 minutes into the run the
+  budget switched from 16.67 ms to 14.84 ms (~67 Hz). That restarted the
+  counters (`updateBudget`), and from then on every frame was judged against
+  a budget the display never had.
+
+  Cause:
+  - The candidate never expires. A gap no shorter than the known interval
+    returns early without clearing `candidateInterval`, so a stray short gap
+    early in a run waits indefinitely and can be confirmed by another stray
+    gap minutes later. The comment's premise, that a spurious gap "never"
+    has a partner, holds only when the two must be consecutive.
+  - The method assumes gaps are whole display intervals. That holds on a real
+    120 Hz panel (the comment's evidence), but not on a CPU-starved simulator,
+    where a late frame is followed by a short catch-up gap.
+  - The budget never rises again, so one false confirmation lasts the whole
+    run.
+
+  Effect: instrumentation only (`dropped`, the overlay's budget line, SC-003
+  readings) in Debug and Profiling builds. The simulation clock and drawing
+  are untouched. Real hardware is exposed too: two jitter gaps agreeing to
+  within 5% anywhere in a long session on a variable-refresh display would
+  trigger it.
+
+  Scope:
+  1. Accept a candidate only when the very next plausible gap agrees with it;
+     any other gap clears it.
+  2. Move the learner out of `FrameLoop` into a small pure struct in the
+     platform layer (like `FrameTimeWindow`), so it can be tested without a
+     Metal device. `FrameLoop` keeps calling it once per frame and calls
+     `updateBudget` when it reports a new interval. Allocation-free.
+  3. Update the comments that state the old premise.
+
+  Out of scope: changing how dropped frames are defined or counted, and the
+  main-thread stall at the end of live resize (SKY-37).
+
+  Done when:
+  - Headless tests in `Tests/SwiftSkyPlatformTests/` cover: a steady 120 Hz
+    series settles on 8.33 ms; a 60 Hz series with one doubled gap stays at
+    16.67 ms; two matching short gaps separated by normal ones are not
+    adopted; simulator-like jitter (a late gap followed by a catch-up gap)
+    does not lower the budget; a single startup outlier is ignored.
+  - `./Scripts/verify.sh` passes.
+  - A 10-minute Debug run on the iOS simulator under load keeps
+    `budget=16.666667ms` in every summary.
+platform: ios
+status: ready
+phase: MVP
+priority: medium
+parent: 22
+blocked_by: []
+designs: []
