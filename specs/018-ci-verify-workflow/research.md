@@ -123,7 +123,7 @@ run's page.
 ## R8 — Merge gate without branch protection
 
 **Decision**: A written rule (FR-014) in `.github/RUNNER.md` and CLAUDE.md: a pull request is not merged
-while its `verify` job is red, cancelled or has not run. Recorded in this plan's Complexity Tracking as a
+unless its `verify` job passed for its current head (not while red, cancelled, queued or missing). Recorded in this plan's Complexity Tracking as a
 procedural gate where Principle II asks for a gate.
 
 **Rationale**: The ticket puts branch protection out of scope. Branch protection and rulesets on a

@@ -49,8 +49,8 @@ still pass (L3).
 
 **Project Type**: Repository infrastructure for the existing cross-platform app.
 
-**Performance Goals**: A CI run takes about as long as a clean local `verify.sh` run (SC-002); 30-minute
-hard limit (FR-007).
+**Performance Goals**: A CI run finishes within the 30-minute hard limit (FR-007, SC-002); its duration
+is recorded beside a local `verify.sh` run's for comparison.
 
 **Constraints**: Exactly two steps (FR-004); `verify.sh` behaviour unchanged (FR-005); no agent action
 on GitHub or on this Mac's services (FR-012); repository stays private (spec Assumptions).
@@ -117,4 +117,4 @@ this spec; the quickstart links to them rather than repeating them.
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| **Merge gate is procedural, not enforced** — Principle II says CI "MUST gate merges"; here a written rule (FR-014: no merge while `verify / verify` is red, cancelled or missing) stands in for a host-enforced required check | The ticket puts branch protection out of scope, and protection rules on a private repository depend on the account's plan, which this feature does not change | **Branch protection / a ruleset requiring `verify / verify`** is the enforced gate and the obvious follow-up; it is a GitHub settings change for the developer, outside this ticket. Until then every pull request shows the result, and the rule is in `.github/RUNNER.md` and CLAUDE.md. |
+| **Merge gate is procedural, not enforced** — Principle II says CI "MUST gate merges"; here a written rule (FR-014: no merge unless `verify / verify` passed for the pull request's current head) stands in for a host-enforced required check | The ticket puts branch protection out of scope, and protection rules on a private repository depend on the account's plan, which this feature does not change | **Branch protection / a ruleset requiring `verify / verify`** is the enforced gate and the obvious follow-up; it is a GitHub settings change for the developer, outside this ticket. Until then every pull request shows the result, and the rule is in `.github/RUNNER.md` and CLAUDE.md. |

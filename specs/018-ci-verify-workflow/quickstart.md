@@ -65,7 +65,8 @@ Follow `.github/RUNNER.md` → *Install*. Expected: the repository's *Settings �
 
 ```sh
 git push -u origin 018-ci-verify-workflow
-gh pr create --base main --head 018-ci-verify-workflow   # as Yoi-Nami-Ra
+gh auth switch -u Yoi-Nami-Ra      # gh's active account cannot see the repository
+gh pr create --base main --head 018-ci-verify-workflow
 ```
 
 Expected: the pull request shows one `verify / verify` check; it runs on `swiftsky-<host>` (the run's
@@ -75,8 +76,8 @@ Expected: the pull request shows one `verify / verify` check; it runs on `swifts
 ### D3 — Merge and see `main` verified (US1, SC-001, SC-002)
 
 Merge the pull request once D2 is green (the merge rule, FR-014). Expected: the push to `main` starts one
-`verify` run on the runner, and it passes; its duration is within a few minutes of L3's local time (it
-starts from a clean checkout, R5). `git fetch && git rev-parse main origin/main` agree after pulling.
+`verify` run on the runner, and it passes; it finishes within the 30-minute limit. Record its duration next to L3's local time (the CI run
+starts from a clean checkout, R5, so it may be longer). `git fetch && git rev-parse main origin/main` agree after pulling.
 
 ### D4 — A broken change turns the job red, on a throwaway pull request (US3, SC-004, FR-013)
 

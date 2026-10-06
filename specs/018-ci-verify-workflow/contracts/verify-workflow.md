@@ -35,7 +35,7 @@ jobs:
 ## Guarantees
 
 - **G1**: A push to `main` and a pull request against `main` each start exactly one run.
-- **G2**: The run only ever lands on a runner carrying all three labels.
+- **G2**: The run only ever lands on a runner carrying all three required labels (`self-hosted`, `macOS`, `xcode-27`).
 - **G3**: The job's result is the exit status of `./Scripts/verify.sh`; nothing else can fail or pass it
   (other than checkout failing, or the time limit).
 - **G4**: A newer pull-request run cancels the older one for the same pull request; `main` runs are never
