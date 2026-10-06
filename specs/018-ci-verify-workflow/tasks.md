@@ -98,11 +98,11 @@ implementing agent leaves them unchecked.
 
 **Purpose**: Retire the records of the gap and prove nothing regressed.
 
-- [ ] T012 [P] Update the header comment of Scripts/verify.sh (comments only, research R10): it is the CI job body of .github/workflows/verify.yml rather than a future one; then run quickstart L3 (`git diff main -- Scripts/verify.sh` shows only `#` lines; `time ./Scripts/verify.sh` ends `VERIFICATION PASSED`) and record the time in specs/018-ci-verify-workflow/quickstart.md (FR-005, SC-008)
-- [ ] T013 [P] In specs/001-metal-app-shell/plan.md remove the "No CI pipeline" row from Complexity Tracking and the CI-absence clause of the note above the table, and rewrite the Principle II rows in the Constitution Check tables to cite the CI job (.github/workflows/verify.yml, spec 018) (FR-010)
-- [ ] T014 [P] In CLAUDE.md: add 018 to "Built so far"; replace "and wired into CI once a remote exists" with the CI as it now is; add a Key-locations entry for .github/workflows/verify.yml and .github/RUNNER.md naming the self-hosted runner, its labels, the merge rule (FR-014) and that pushing, runner and GitHub settings are the developer's (FR-011)
-- [ ] T015 Run quickstart L4 (`grep -n -i "no remote\|no CI\|CI absence\|CI-absence\|once a remote" specs/001-metal-app-shell/plan.md CLAUDE.md`) and confirm no line says there is no remote or no CI (SC-007)
-- [ ] T016 Run ./Scripts/verify.sh on the finished branch and confirm `VERIFICATION PASSED` (SC-008)
+- [X] T012 [P] Update the header comment of Scripts/verify.sh (comments only, research R10): it is the CI job body of .github/workflows/verify.yml rather than a future one; then run quickstart L3 (`git diff main -- Scripts/verify.sh` shows only `#` lines; `time ./Scripts/verify.sh` ends `VERIFICATION PASSED`) and record the time in specs/018-ci-verify-workflow/quickstart.md (FR-005, SC-008)
+- [X] T013 [P] In specs/001-metal-app-shell/plan.md remove the "No CI pipeline" row from Complexity Tracking and the CI-absence clause of the note above the table, and rewrite the Principle II rows in the Constitution Check tables to cite the CI job (.github/workflows/verify.yml, spec 018) (FR-010)
+- [X] T014 [P] In CLAUDE.md: add 018 to "Built so far"; replace "and wired into CI once a remote exists" with the CI as it now is; add a Key-locations entry for .github/workflows/verify.yml and .github/RUNNER.md naming the self-hosted runner, its labels, the merge rule (FR-014) and that pushing, runner and GitHub settings are the developer's (FR-011)
+- [X] T015 Run quickstart L4 (`grep -n -i "no remote\|no CI\|CI absence\|CI-absence\|once a remote" specs/001-metal-app-shell/plan.md CLAUDE.md`) and confirm no line says there is no remote or no CI (SC-007)
+- [X] T016 Run ./Scripts/verify.sh on the finished branch and confirm `VERIFICATION PASSED` (SC-008)
 
 ---
 
