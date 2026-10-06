@@ -140,15 +140,29 @@ public final class TextBuffer {
     /// Frame times are never negative or NaN, but a formatter must not trap on them: both write as
     /// `0.00`. Values too large for a `UInt64` count of hundredths are clamped to the largest one.
     public func writeHundredths(_ value: Double, width: Int = 0, limit: Int = .max) {
+        writeHundredths(of: value > 0 ? value : 0, negative: false, width: width, limit: limit)
+    }
+
+    /// Writes `value` as `writeHundredths` does, but signed: a leading `-` for a negative value, unless it
+    /// rounds to zero, so `-0.004` is `0.00`, never `-0.00` (015 FR-006). The sign counts towards `width`.
+    /// NaN writes `0.00`; magnitudes too large are clamped as in `writeHundredths`. Allocates nothing.
+    public func writeSignedHundredths(_ value: Double, width: Int = 0, limit: Int = .max) {
+        writeHundredths(of: value.magnitude, negative: value < 0, width: width, limit: limit)
+    }
+
+    /// The shared body: `magnitude` (NaN treated as zero) in hundredths, with a `-` when `negative` and
+    /// the rounded value is not zero.
+    private func writeHundredths(of magnitude: Double, negative: Bool, width: Int, limit: Int) {
         let hundredths: UInt64
-        if !(value > 0) {
+        if !(magnitude > 0) {
             hundredths = 0
-        } else if value * 100 >= Self.largestHundredths {
+        } else if magnitude * 100 >= Self.largestHundredths {
             hundredths = .max
         } else {
-            hundredths = UInt64((value * 100).rounded(.toNearestOrAwayFromZero))
+            hundredths = UInt64((magnitude * 100).rounded(.toNearestOrAwayFromZero))
         }
         let whole = hundredths / 100
+        let sign = negative && hundredths > 0 ? 1 : 0
 
         // Digits of the whole part, plus "." and two decimals.
         var digits = 1
@@ -158,8 +172,13 @@ public final class TextBuffer {
             remaining /= 10
         }
 
-        var written = writeSpaces(width - (digits + 3), limit: limit)
+        var written = writeSpaces(width - (sign + digits + 3), limit: limit)
         guard written < limit else { return }
+        if sign == 1 {
+            write("-", limit: limit - written)
+            written += 1
+            guard written < limit else { return }
+        }
         write(whole, limit: limit - written)
         written += digits
         guard written < limit else { return }
