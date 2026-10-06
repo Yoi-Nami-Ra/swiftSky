@@ -32,4 +32,13 @@ Runs the learner's headless suite (contract C3) with every other suite, and buil
 
 ## Results
 
-(to be filled during implementation)
+Run on 2026-10-07, branch `016-frame-budget-learner`, by the agent (no simulator, no window drags).
+
+| # | Result | Evidence |
+|---|--------|----------|
+| 1 | **PASS** | `./Scripts/verify.sh`: all stages green, both apps build in Debug, no warnings. The `Display interval learner` suite (16 tests: C3 series 1–7 and the floor, forget, rounding and residual-risk cases) runs in `swift test` with no Metal device. FR-010: the macOS app also builds in the Release configuration (`xcodebuild … -configuration Release CODE_SIGNING_ALLOWED=NO build`, exit 0); its only `warning:` line is Xcode's pre-existing "No App Category is set" target notice. |
+| 2 | **LEFT FOR THE USER** | 10-minute Debug run on the loaded iOS simulator. |
+| 3 | **LEFT FOR THE USER** | macOS live resize on the 120 Hz display. |
+| 4 | **LEFT FOR THE USER** | macOS idle on the 120 Hz display. |
+| 5 | **LEFT FOR THE USER** | macOS move to a 60 Hz display. |
+| 6 | **LEFT FOR THE USER** | 011 check 25 on the optimised instrumented build. The learner is a stack value of four scalars and the new event's payload is an `Int`, so no allocation is expected. |
