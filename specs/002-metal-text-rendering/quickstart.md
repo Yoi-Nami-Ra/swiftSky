@@ -40,7 +40,8 @@ abcdefghijklmnopqrstuvwxyz{|}~
 fps 120               ← frames drawn in the past second, updated once a second
 ```
 
-Without either argument the surface is uniformly black, exactly as in 001.
+Without either argument no text is drawn. Since 003 a Debug build shows the debug overlay instead, and
+since 007 the ship is drawn too; with `--no-ship --no-debug-overlay` the surface is uniformly black, as in 001.
 
 ## One-command verification
 
@@ -59,6 +60,13 @@ The script is unchanged in how it is used. It now also:
 > **Since 003-debug-overlay**: a Debug build shows the live debug overlay by default. Check 12's
 > black-surface run therefore takes `--no-debug-overlay`. `--debug-text` and `--debug-text-fill`
 > replace the overlay, so checks 5 to 11 are unchanged.
+>
+> **Since 007-ship-sprite-rendering**: the ship is drawn at the surface centre. Debug runs that expect
+> a uniformly black surface take `--no-ship --no-debug-overlay`, and the text checks (5 to 11) add
+> `--no-ship`. `--no-ship` is a debug argument, so a Release build always draws the ship (check 13).
+>
+> **Since 011-draw-allocation-counter**: checks 15 and 16 use 011's "The method"
+> ([quickstart](../011-draw-allocation-counter/quickstart.md)), not Instruments.
 
 ### Automated (headless)
 
@@ -80,22 +88,22 @@ The script is unchanged in how it is used. It now also:
 | 9 | macOS: resize the window, then enter and leave full screen (on a display with a camera housing, if available) | Text keeps its size, and its anchor moves with the safe area | FR-008, FR-006a |
 | 10 | Watch the FPS line, and compare it with the `frames=` count per second in the instrumentation log | `fps --` for the first second, then the display's rate (for example 120 on a 120 Hz display, 60 on 60 Hz), matching the log to within 1. It is updated once a second. | FR-014 |
 | 11 | Launch with both `--debug-text` and `--debug-text-fill` | The fill pattern appears | FR-015a |
-| 12 | Launch Debug with **no** argument, and re-run 001 checks 1 to 6 | Uniformly black, and 001 checks 1 to 6 pass unchanged | SC-006, FR-015, FR-017 |
+| 12 | Launch Debug with `--no-ship --no-debug-overlay` and neither text argument, and screenshot or capture the surface | Uniformly black: no text is drawn. (001's own checks are tracked in the 001 quickstart; its GPU-capture checks are SKY-18 and SKY-19.) | SC-006, FR-015, FR-017 |
 | 21 | With `--debug-text`, inspect the surface with Accessibility Inspector (macOS) and VoiceOver (iOS) | Only the 001 label "swiftSky game surface" is exposed. None of the test string's text is announced or listed as an element. | FR-020, 001 FR-009 |
 
 ### Release
 
 | # | Check | Expected | Criterion |
 |---|-------|----------|-----------|
-| 13 | Build Release and launch it with `--debug-text-fill` | Uniformly black, with no text | SC-006, FR-016 |
+| 13 | Build Release and launch it with `--debug-text-fill` | Black, with only the ship drawn, centred and facing right (007 FR-014): every non-black pixel lies inside the ship's 40-pt square at the centre. No text. | SC-006, FR-016 |
 | 14 | Inspect the Release binary with `nm` and `strings` | No `DebugTextPattern` or `debug-text` symbols or strings, while `TextBuffer` **is** present | FR-016, SC-006 |
 
 ### Performance and memory (Principle III)
 
 | # | Check | Expected | Criterion |
 |---|-------|----------|-----------|
-| 15 | Instruments → Allocations, a 60 s run with `--debug-text`, filtered to the frame-loop thread's draw path, using the same method as SKY-3 and SKY-4 | Zero allocations on our side in the draw path. This also settles research R5's stored-block question. | SC-003, FR-012 |
-| 16 | The same with `--debug-text-fill` | Zero, and the instrumentation log shows `skipped=0` | SC-003, SC-004 |
+| 15 | 011's "The method": an optimised instrumented build (Release plus `SWIFTSKY_INSTRUMENTATION`), a 60 s run with `--debug-text`, read from the frame summaries | `allocation counter ready`, and `allocs=0 allocframes=0` in every summary after the first. Research R5's stored-block question is settled by 011 research R13: a completion handler is re-bridged into a heap block on every call, so the instance ring has none. | SC-003, FR-012 |
+| 16 | The same with `--debug-text-fill` | As check 15, and every summary shows `skipped=0` | SC-003, SC-004 |
 | 17 | Frame time three ways on one device: no argument, `--debug-text`, `--debug-text-fill` (60 s each, instrumentation log) | Mean and worst stay within budget in all three. Record the before/after numbers here. | SC-004 |
 | 18 | Idle footprint without text, then with `--debug-text-fill`, on the same device and build | Delta ≤ 2 MB, and the first frame is still visible within 1 s | SC-005 |
 
@@ -143,3 +151,82 @@ count "only that warning" as passing.
 | 19 | **PASS** | A forced `bitmapContextUnavailable` on the first frame logged `E … [com.swiftsky.app:text] text disabled: bitmapContextUnavailable`. The app kept rendering (0 skipped), with no failure notice and no crash. The temporary hook was removed, and the source was confirmed free of it. |
 | 20 | **Not run** | Needs a failure forced after a display change, with a window moved by hand |
 | 21 | **Not run** | Needs Accessibility Inspector and VoiceOver |
+
+### Evidence, 2026-10-05 (SKY-33, Apple silicon MacBook Pro, macOS 27, Xcode 27)
+
+The iOS runs used the iPhone 18 Pro simulator (iOS 27.0, 3×, Dynamic Island, landscape 2622 × 1206 px)
+and an iPad (A16) simulator created for this check (iOS 27.0, 2×, portrait 1640 × 2360 px). Screenshots
+came from `xcrun simctl io <udid> screenshot`, which captures the simulator's framebuffer pixel for pixel,
+and logs from `xcrun simctl spawn <udid> log stream`. The host was heavily loaded (load average 30–200),
+so the simulators presented about 42–46 frames a second, with `skipped=0 dropped=0`. Pixel figures come
+from a small CoreGraphics tool. It takes a glyph's ink box from the screenshot. It renders a reference
+`H` with Core Text in the 13-pt system monospaced font at the same scale, with the atlas's settings
+(grayscale anti-aliasing, no smoothing, no subpixel positioning). It then compares the two pixel by pixel.
+
+| # | Result | Notes |
+|---|--------|-------|
+| 7 | **PASS** (iOS simulator, 3× and 2×) | Debug, `--debug-text --no-ship`. **3×** (iPhone 18 Pro): log `text atlas scale=3.000000 cell=27×44px capHeight=9.159668pt`, so the expected height is 27.48 px. The `H` (line 2, 8th glyph) has 28 ink rows, 27 of them at ≥ 50 % coverage, and a coverage-weighted height of **27.48 px**. Against the Core Text reference H it is identical in every measure (186 full and 134 partial pixels, the same stem profile `22,255,255,255,65 … 37,255,255,255,50`), with a mean absolute difference of **0.04/255** over the 20 × 28 box. **2×** (iPad): log `scale=2.000000 cell=19×30px capHeight=9.159668pt`, so 18.32 px expected. The H has 19 ink rows, 18 at ≥ 50 %, and a coverage-weighted height of **18.32 px**. The difference from the reference is **0.00/255** over 14 × 19. White (max RGB 255,255,255), no blur, doubling or extra weight: the drawn glyph *is* the Core Text rasterisation. |
+| 8 | **Prepared, not run** | Rotation needs the Simulator's Rotate Left/Right (⌘← / ⌘→), which the agent cannot press. Launched as delivered, the text starts at x = 211 px (70.3 pt) and y = 30 px on the iPhone 18 Pro, clear of the Dynamic Island in that orientation. Procedure: `xcrun simctl launch 17791BD4-BD96-45F0-B617-A325459BD30A com.swiftsky.app --debug-text --no-ship` (Debug build installed). Then press ⌘→ in Simulator, wait 2 s, and take `xcrun simctl io … screenshot`. Repeat with ⌘← for the other landscape orientation. Expected in each: every glyph's ink lies inside the safe area (8 pt in from its top-left), and none sits under the Dynamic Island or a rounded corner. 003 check 9 (the overlay, no argument) can be run in the same pass. **iPad Split View and Slide Over: not run → SKY-6.** No iPad multitasking can be driven from here. |
+| 10 | **PASS** (iOS simulator) | Debug, `--debug-text --no-ship`. Log summaries every 120 frames give the rate as 120 ÷ the time between summaries. iPhone 18 Pro: on-screen `fps 42`, `fps 43`, `fps 44` at three moments 5 s apart; the summaries around them give 42.6–43.4, 43.1 and 44.1 frames a second. iPad: `fps 46` and `fps 45`, against 46.4 and 44.2. Each is within 1. The `fps --` first second was not captured: the first screenshot comes 5 s after the first summary. 003's `FrameTimeWindowTests` cover it. |
+| 12 | **PASS** (iOS simulator) | Debug, `--no-ship --no-debug-overlay`. Two screenshots 5 s apart while the log showed frames being presented: `2622x1206 nonBlack=0 maxRGB=(0, 0, 0)` in both. macOS: Mac session. |
+| 13 | **PASS** (iOS simulator) | Release (no instrumentation), `--debug-text-fill`. Two screenshots: 7,492 non-black pixels, all inside x 1252…1367 and y 543…662, that is, the ship in the 120 × 120 px (40 pt) square at the surface centre (1311, 603). **0** pixels outside that square, and max RGB 240 (the sprite, not white text). macOS: Mac session. |
+| 15 | **PASS** (iOS simulator and macOS) | 011's "The method": optimised instrumented builds (Release + `SWIFTSKY_INSTRUMENTATION`), `--debug-text --no-ship`, 60 s. **iOS** (iPhone 18 Pro): `allocation counter ready`, then 24 summaries, **every one** `allocs=0 allocframes=0 eventallocs=0`. Last: `frames=2875 skipped=0 dropped=0 mean=0.156ms worst=2.48ms`. `gfxallocs ÷ frames` = 28.0 (one summary 28.0083). **macOS** (`open -n`, window on the 1× 60 Hz external display, `text atlas scale=1.000000 cell=11×17px`): 18 summaries, every one `allocs=0 allocframes=0`. Last: `frames=2153 skipped=0 dropped=0 mean=0.182ms worst=0.79ms`. That is about 36 frames a second, against 60 in the fill run: the loop pauses while the window is covered, so the window was probably partly covered for part of this run. Every frame presented was counted, and none allocated. `gfxallocs ÷ frames` = 10.0. `eventallocs` was 0 except `eventallocs=1` in the final summary, which covers the quit. Zero allocations on our side in the draw path. Research R5's stored-block question was answered by 011 R13. |
+| 16 | **PASS** (iOS simulator and macOS) | As check 15 with `--debug-text-fill` (screenshot confirmed: the test-string block repeated down the surface, 111,335 non-black pixels). **iOS**: 24 summaries, all `allocs=0 allocframes=0 eventallocs=0 skipped=0 dropped=0`. Last: `frames=2878 mean=0.162ms worst=11.04ms`; the worst is one host-load outlier, still under the 16.7 ms budget. **macOS**: 31 summaries, all `allocs=0 allocframes=0 eventallocs=0 skipped=0 dropped=0`. Last: `frames=3713 mean=0.199ms worst=2.27ms`. |
+| 20 | **Prepared, not run** | Needs the window dragged between displays by hand. The temporary hook is ready as a patch (not committed): see the Mac session below. Reading the code (`Renderer.prepareText`): a throw from `prepareAtlas` sets `textDisabled`, clears the buffer and logs `text disabled: …`, and the previous atlas is never reused. So the expected result is that the text disappears. |
+| 21 | **iOS: not run → SKY-39** | The iOS simulator has no VoiceOver, and SKY-39 holds the physical-device VoiceOver checks. macOS: Mac session. Strong prior: 003 check 12 macOS PASS (SKY-8) exposes only "swiftSky game surface" with the overlay, which uses this same text path. |
+
+Still open after this session (Mac session below): 5, 6, 9, 12 and 13 on macOS, 20, and 21 on macOS.
+Then 8 (rotation keypresses only).
+
+### Mac session (SKY-33): the checks that need a person at the Mac
+
+One sitting, about 30 minutes, on this Mac (2× built-in display with a camera housing, plus the 1×
+60 Hz external display). The agent has no Screen Recording or Accessibility permission, so the person
+captures with ⌘⇧5 (window capture: press Space, then click the window; hold Option to drop the shadow)
+and hands over the PNG or MOV files, and the agent does the pixel measurement. Record each result in
+the evidence table under a new dated heading.
+
+**Build once** (Debug, and Release for check 13):
+
+```sh
+xcodebuild build -project swiftSky.xcodeproj -scheme "swiftSky (macOS)" -configuration Debug \
+  -destination 'platform=macOS' -derivedDataPath /tmp/sky33-mac
+xcodebuild build -project swiftSky.xcodeproj -scheme "swiftSky (macOS)" -configuration Release \
+  -destination 'platform=macOS' -derivedDataPath /tmp/sky33-mac
+DBG=/tmp/sky33-mac/Build/Products/Debug/swiftSky.app
+REL=/tmp/sky33-mac/Build/Products/Release/swiftSky.app
+```
+
+Read the text log in another Terminal tab during each run:
+`/usr/bin/log stream --style compact --predicate 'subsystem == "com.swiftsky.app" AND category == "text"'`
+
+1. **Check 5 (2×)**: `open -n $DBG --args --debug-text --no-ship`, with the window on the built-in
+   display. Confirm the log line `text atlas scale=2.000000 … capHeight=9.159668pt`. Open TextEdit
+   beside it with a line `ABCDEFGH` in SF Mono (or Menlo) 13 pt, white on black if possible. Capture
+   both windows. Expected: the capital H is 18 px tall (9.16 × 2 = 18.3, ±1), white, with no blur
+   or doubling, and no heavier than the TextEdit text.
+2. **Check 6 (1×)**: drag the same window onto the external display. Within 1 s the log shows
+   `text atlas scale=1.000000 cell=11×17px`. Capture again. Expected: the capital H is 9 px tall
+   (9.16 ± 1) and equally sharp.
+3. **Check 9 (resize, full screen)**: on the built-in display, record the window with ⌘⇧5 ("Record
+   Selected Portion") while you drag it small, then large, then enter full screen (⌃⌘F) and leave it.
+   Expected: the text stays the same size and stays 8 pt from the safe area's top-left. In full screen
+   it sits below the camera housing, not under it. 003 check 17 and 009 check 8 can be watched in the
+   same recording, launched without `--debug-text`.
+4. **Check 12 (Mac)**: `open -n $DBG --args --no-ship --no-debug-overlay`. Capture the window.
+   Expected: uniformly black.
+5. **Check 13 (Mac)**: `open -n $REL --args --debug-text-fill`. Capture the window. Expected: black
+   with only the ship, centred and facing right. No text.
+6. **Check 21 (Mac)**: `open -n $DBG --args --debug-text --no-ship`. Open Xcode → Open Developer
+   Tool → Accessibility Inspector, target swiftSky, and hover over the text. Then turn VoiceOver on
+   (⌘F5) and move through the window. Expected: only "swiftSky game surface" (VoiceOver: ", image").
+   No test-string text is listed or announced.
+7. **Check 20 (forced failure after a display change)**. The agent applies the temporary hook
+   `sky33-check20-hook.patch` to the worktree (`git apply …`). It makes `GlyphAtlasBitmap.make`
+   throw `bitmapContextUnavailable` on its second call. The agent then rebuilds Debug. Launch
+   `open -n $DBG --args --debug-text --no-ship` on the built-in display, and check the log shows
+   `text atlas scale=2.000000`. Drag the window to the external display. Expected: the text
+   disappears and stays gone, the log shows one `E … [com.swiftsky.app:text] text disabled:
+   bitmapContextUnavailable` line and no `text atlas scale=1` line, and the app keeps running with
+   no failure notice. Drag the window back to the built-in display: the text stays gone.
+   The agent then reverts the hook (`git apply -R …`), and `git status` must be clean.
