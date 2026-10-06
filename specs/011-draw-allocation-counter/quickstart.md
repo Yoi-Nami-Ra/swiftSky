@@ -14,18 +14,19 @@ Validation guide for [spec.md](./spec.md). The counter's API and the summary for
 This is the procedure SKY-4 and the later checks that cite this ticket follow. It needs no Instruments.
 
 1. **Build** an **optimised build with the counter compiled in**: the Release configuration plus the
-   instrumentation condition on the command line (research R12). The Debug configuration also carries
-   the counter, but an unoptimised build allocates on every `for` loop over a range (the standard
-   library's unspecialised iterator), so its counts say nothing about the shipped code; record them for
-   information only. A Profiling build carries no instrumentation at all (research R1).
+   instrumentation condition on the command line (research R12), made by the checked-in script (019).
+   The Debug configuration also carries the counter, but an unoptimised build allocates on every `for`
+   loop over a range (the standard library's unspecialised iterator), so its counts say nothing about
+   the shipped code; record them for information only. The former Profiling configuration carried no
+   instrumentation at all (research R1) and was removed by 019.
 
    ```sh
-   # iOS simulator (for a Mac: -scheme "swiftSky (macOS)" -destination 'platform=macOS')
-   xcodebuild build -project swiftSky.xcodeproj -scheme "swiftSky (iOS)" -configuration Release \
-     -destination "platform=iOS Simulator,id=<udid>" -derivedDataPath <dir> \
-     'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) SWIFTSKY_INSTRUMENTATION' \
-     'GCC_PREPROCESSOR_DEFINITIONS=$(inherited) SWIFTSKY_INSTRUMENTATION=1'
+   ./Scripts/build-instrumented.sh ios     # or macos; prints the built app's path
    ```
+
+   The apps land in `.build/instrumented/Build/Products/Release-iphonesimulator/swiftSky.app` (iOS
+   simulator) and `.build/instrumented/Build/Products/Release/swiftSky.app` (Mac); `<dir>` below is
+   `.build/instrumented`.
 
 2. **Start reading the log before launching**, and launch with the arguments the check names (none, for
    an idle run: the ship and the debug overlay are drawn). Leave it frontmost and untouched.
