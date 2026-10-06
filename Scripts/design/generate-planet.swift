@@ -13,6 +13,14 @@
 //   swift Scripts/design/generate-planet.swift [variant ...]     (slower: unoptimised)
 //
 // Output is deterministic: every variant uses a fixed seed.
+//
+// Chosen: the cratered variant. design/sprites/planet.png is a byte-identical copy of
+// design/proposal/43-planet-cratered.png as generated here, and the proposals were then deleted.
+// To regenerate it:
+//   swiftc -O Scripts/design/generate-planet.swift -o /tmp/generate-planet \
+//     && /tmp/generate-planet cratered \
+//     && cp design/proposal/43-planet-cratered.png design/sprites/planet.png \
+//     && rm -r design/proposal
 
 import CoreGraphics
 import Foundation
