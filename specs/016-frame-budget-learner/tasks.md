@@ -58,9 +58,9 @@ contract C3. The wiring in the frame loop and the view is checked by the quickst
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T011 [P] Add a `specs/016-frame-budget-learner` entry and a key-locations line for `DisplayIntervalLearner.swift` and `.displayRateChanged` to CLAUDE.md
-- [ ] T012 Grep Sources/ for comments that still state the old premise ("whole number of", "never does", "spurious one never", "a genuine interval always has a partner") and update them (FR-009)
-- [ ] T013 Quickstart checks 2–5 (10-minute loaded iOS simulator run; macOS live resize; idle 120 Hz; move to a 60 Hz display): left for the user; record them as open in specs/016-frame-budget-learner/quickstart.md
+- [X] T011 [P] Add a `specs/016-frame-budget-learner` entry and a key-locations line for `DisplayIntervalLearner.swift` and `.displayRateChanged` to CLAUDE.md
+- [X] T012 Grep Sources/ for comments that still state the old premise ("whole number of", "never does", "spurious one never", "a genuine interval always has a partner") and update them (FR-009)
+- [ ] T013 **LEFT FOR THE USER** (recorded in quickstart.md) — Quickstart checks 2–5 (10-minute loaded iOS simulator run; macOS live resize; idle 120 Hz; move to a 60 Hz display): left for the user; record them as open in specs/016-frame-budget-learner/quickstart.md
 
 ## Dependencies & Execution Order
 
