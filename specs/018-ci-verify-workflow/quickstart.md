@@ -53,6 +53,8 @@ Expected: the diff touches `#` comment lines only; the script ends `VERIFICATION
 worktree with no `.build/` (the same starting point as a CI checkout), `./Scripts/verify.sh` ended
 `VERIFICATION PASSED — all stages green`: Metal toolchain, ship image, `swift build`, headless guard,
 `swift test`, both app builds. `real 88.43` s on this Mac (Apple M1 Pro, Xcode 27.0 27A266a).
+After merging `origin/main` (`e4a3040`: 016, SKY-43) into the branch, re-run: `VERIFICATION PASSED`,
+`real 25.54` s (incremental, `.build/` kept).
 
 ### L4 — No record of a missing remote or CI is left (FR-010, FR-011, SC-007)
 
