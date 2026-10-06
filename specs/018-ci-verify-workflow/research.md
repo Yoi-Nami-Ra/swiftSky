@@ -137,6 +137,8 @@ recorded as the constitution asks for exceptions.
 
 **Decision**: `actionlint .github/workflows/verify.yml` before pushing, as a quickstart check. It is not
 added to `verify.sh` (FR-005, and `actionlint` is not part of a clean macOS + Xcode setup).
+`.github/actionlint.yaml` declares the custom runner label `xcode-27` (`self-hosted-runner.labels`);
+without it actionlint rejects `runs-on` as an unknown label (found during implementation, T005).
 
 ## R10 — Records of the gap
 
