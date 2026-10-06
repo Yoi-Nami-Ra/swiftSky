@@ -2,8 +2,8 @@
 
 /// When the debug overlay's values next change: four times a second (003 FR-006, research.md R3).
 ///
-/// Debug and Profiling builds only. Driven solely by the timestamp the frame loop reads once per frame
-/// (001 FR-033) — this reads no clock of its own.
+/// Debug and instrumented Release builds only (`Scripts/build-instrumented.sh`). Driven solely by the
+/// timestamp the frame loop reads once per frame (001 FR-033) — this reads no clock of its own.
 ///
 /// The due times sit on a fixed grid rather than "one interval after the last refresh". At 60 Hz a
 /// "since last" rule fires on the first frame *after* each 0.25 s mark and drifts slower than four a

@@ -56,7 +56,7 @@ description: |
   - No "Profiling build" remains in CLAUDE.md or the 001 plan, and 008 #12
     and 009 #9 carry the annotation.
 platform: macos
-status: ready
+status: in-progress
 phase: Backlog
 priority: medium
 parent: null

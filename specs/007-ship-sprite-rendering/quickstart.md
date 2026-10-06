@@ -25,7 +25,7 @@ expected uniform black now expect black with the ship centred and facing right (
 It now also checks that the bundled ship image is byte-identical to `design/sprites/ship.png`, and runs
 the placement, image and error tests.
 
-## Launch arguments (Debug and Profiling only)
+## Launch arguments (Debug and instrumented Release only)
 
 | Argument | Effect |
 |----------|--------|

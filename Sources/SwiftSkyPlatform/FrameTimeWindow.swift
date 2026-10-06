@@ -11,7 +11,7 @@ struct FrameTimeBucket: Equatable {
 
 /// Mean and worst frame time over the last second, for the debug overlay (003 FR-004, research.md R2).
 ///
-/// Debug and Profiling builds only, like the rest of the instrumentation (001 FR-021e).
+/// Debug and instrumented Release builds only, like the rest of the instrumentation (001 FR-021e).
 ///
 /// The second is kept as four closed buckets — one per overlay refresh — plus the one being recorded.
 /// A bucket closes at each refresh, so the four closed ones always cover exactly the last second the

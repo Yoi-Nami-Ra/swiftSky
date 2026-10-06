@@ -1,10 +1,12 @@
 #!/bin/sh
 # swiftSky verification (FR-019a).
 #
-# Builds every destination and runs the headless test suite. Takes no arguments and needs no setup
-# beyond a clean clone. Exits non-zero if any stage fails. It is the CI job body, verbatim: the `verify`
-# workflow (.github/workflows/verify.yml, spec 018) checks out the commit and runs this file, nothing
-# else, on the self-hosted runner described in .github/RUNNER.md (constitution v1.1.0, Principle II).
+# Builds every destination and runs the headless test suite, then checks that the instrumented macOS
+# build (Scripts/build-instrumented.sh) carries the instrumentation and plain Release does not (019).
+# Takes no arguments and needs no setup beyond a clean clone. Exits non-zero if any stage fails. It is
+# the CI job body, verbatim: the `verify` workflow (.github/workflows/verify.yml, spec 018) checks out
+# the commit and runs this file, nothing else, on the self-hosted runner described in .github/RUNNER.md
+# (constitution v1.1.0, Principle II).
 #
 # Usage:  ./Scripts/verify.sh
 
@@ -178,6 +180,44 @@ if [ -d swiftSky.xcodeproj ]; then
     }
     build_app 'swiftSky (macOS)' 'platform=macOS'
     build_app 'swiftSky (iOS)' 'generic/platform=iOS Simulator'
+
+    # -----------------------------------------------------------------------
+    # The instrumented build and plain Release, macOS (019 FR-008, FR-009).
+    #
+    # The instrumented build — Release plus the instrumentation condition on the command line,
+    # Scripts/build-instrumented.sh — is the one every frame-time and allocation measurement is taken
+    # with. It replaced the Profiling configuration, which silently carried no instrumentation at all
+    # (011 research R1), so it is checked on every run: its executable must contain the frame summary's
+    # text. Plain Release must contain none of the instrumentation (001 check 27, SC-004a); it is built
+    # into its own folder so the two Release builds never overwrite each other. Both checks read the
+    # built executable only: nothing is launched and no log is read.
+    # -----------------------------------------------------------------------
+    section "Instrumented and Release builds (macOS)"
+    instrumented_has_instrumentation() {
+        app=$(./Scripts/build-instrumented.sh macos) || return 1
+        if strings -a "$app/Contents/MacOS/swiftSky" | grep -q 'dropped='; then
+            return 0
+        fi
+        printf 'no frame-summary text (dropped=) in %s\n' "$app/Contents/MacOS/swiftSky"
+        return 1
+    }
+    run_stage "instrumented macOS build carries the instrumentation" \
+        instrumented_has_instrumentation
+
+    release_has_no_instrumentation() {
+        xcodebuild build -project swiftSky.xcodeproj -scheme 'swiftSky (macOS)' \
+            -configuration Release -destination 'platform=macOS' \
+            -derivedDataPath .build/release-check CODE_SIGNING_ALLOWED=NO -quiet || return 1
+        found=$(strings -a .build/release-check/Build/Products/Release/swiftSky.app/Contents/MacOS/swiftSky |
+            grep -E 'skipped=|dropped=|worst=|SWIFTSKY_INSTRUMENTATION' || true)
+        if [ -n "$found" ]; then
+            printf 'instrumentation found in the Release executable:\n%s\n' "$found"
+            return 1
+        fi
+        return 0
+    }
+    run_stage "Release macOS build carries no instrumentation (001 check 27)" \
+        release_has_no_instrumentation
 else
     printf '\033[33mPENDING\033[0m swiftSky.xcodeproj does not exist yet (task T004).\n'
     printf '        App-target builds are NOT covered by this run.\n'

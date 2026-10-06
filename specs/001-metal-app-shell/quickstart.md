@@ -60,7 +60,7 @@ component was found missing on a machine where everything had previously built.
 
 ### Visible output
 
-> **Since 003-debug-overlay**: a Debug or Profiling build shows the live debug overlay by default.
+> **Since 003-debug-overlay**: a Debug or instrumented Release build shows the live debug overlay by default.
 > Launch with `--no-debug-overlay` for every check below that expects a uniformly black surface.
 > Release builds are unaffected.
 
@@ -370,7 +370,7 @@ phys_footprint: 101 MB   phys_footprint_peak: 129 MB
   (2026-10-01, SKY-4)**. FR-021d's allocation counter was built by `specs/011-draw-allocation-counter` and reports in
   this summary line (`allocs= allocframes= eventallocs= gfxallocs=`). iPhone 17 Pro simulator (iOS 27.0),
   an optimised build with the counter compiled in (Release plus the instrumentation condition on the
-  command line — a Profiling build carries no instrumentation, 011 research R1, R12), default launch
+  command line, now `Scripts/build-instrumented.sh` (019) — the former Profiling build carried no instrumentation, 011 research R1, R12), default launch
   arguments, 60 s idle: `allocation counter ready`, then all 21 summaries `allocs=0 allocframes=0
   eventallocs=0`, e.g. `frames=1196 skipped=0 dropped=0 mean=0.201342ms worst=2.388417ms
   budget=16.666667ms ticks=1691 allocs=0 allocframes=0 eventallocs=0 gfxallocs=3360`. Metal allocates

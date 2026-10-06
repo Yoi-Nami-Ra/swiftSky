@@ -241,22 +241,6 @@
 			};
 			name = Release;
 		};
-		5500000000000000000003 /* Profiling */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = SWIFTSKY_INSTRUMENTATION;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_VERSION = 6.0;
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Profiling;
-		};
 		6600000000000000000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -292,24 +276,6 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 			};
 			name = Release;
-		};
-		6600000000000000000003 /* Profiling */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Apps/macOS/Info.plist";
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.swiftsky.app;
-				PRODUCT_NAME = swiftSky;
-				SDKROOT = macosx;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-			};
-			name = Profiling;
 		};
 		7700000000000000000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -352,27 +318,6 @@
 			};
 			name = Release;
 		};
-		7700000000000000000003 /* Profiling */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Apps/iOS/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.swiftsky.app;
-				PRODUCT_NAME = swiftSky;
-				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Profiling;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -380,7 +325,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6600000000000000000001 /* Debug */,
-				6600000000000000000003 /* Profiling */,
 				6600000000000000000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -390,7 +334,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7700000000000000000001 /* Debug */,
-				7700000000000000000003 /* Profiling */,
 				7700000000000000000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -400,7 +343,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5500000000000000000001 /* Debug */,
-				5500000000000000000003 /* Profiling */,
 				5500000000000000000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
