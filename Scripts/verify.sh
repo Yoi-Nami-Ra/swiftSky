@@ -3,9 +3,10 @@
 #
 # Builds every destination and runs the headless test suite, then checks that the instrumented macOS
 # build (Scripts/build-instrumented.sh) carries the instrumentation and plain Release does not (019).
-# Takes no arguments and needs no setup beyond a clean clone. Exits non-zero if any stage fails, so
-# this file can become a CI job body verbatim once the repository has a remote — which is exactly what
-# constitution v1.1.0's Principle II requires as the substitute for CI until then.
+# Takes no arguments and needs no setup beyond a clean clone. Exits non-zero if any stage fails. It is
+# the CI job body, verbatim: the `verify` workflow (.github/workflows/verify.yml, spec 018) checks out
+# the commit and runs this file, nothing else, on the self-hosted runner described in .github/RUNNER.md
+# (constitution v1.1.0, Principle II).
 #
 # Usage:  ./Scripts/verify.sh
 

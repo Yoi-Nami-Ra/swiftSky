@@ -22,6 +22,14 @@ public enum SurfaceEvent: Sendable, Equatable {
     /// pixel density. The drawable dimensions must be updated to stay sharp.
     case backingScaleChanged(RenderSurface)
 
+    /// The maximum frame rate of the screen the surface is on, posted before the geometry event of the
+    /// same change whenever it differs from the last one posted; 0 when unknown (016).
+    ///
+    /// The frame budget never goes below this display's fastest interval, so gaps the display cannot
+    /// produce — a live resize's half intervals, a faster display's gaps after a move — are not learned
+    /// (016 FR-005, research R3).
+    case displayRateChanged(maximumFramesPerSecond: Int)
+
     /// Content became visible or stopped being visible — backgrounded, minimised, occluded, or the
     /// scene disconnected. Drives loop start/stop (FR-008, FR-021).
     case visibilityChanged(isVisible: Bool)
