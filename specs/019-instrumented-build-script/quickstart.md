@@ -33,3 +33,5 @@ Validation guide for [spec.md](./spec.md). The script's interface is in
 
 | # | Date | Result | Evidence |
 |---|------|--------|----------|
+| 1 | 2026-10-07 | **PASS** | `xcodebuild -list`: Build Configurations Debug, Release |
+| 2 | 2026-10-07 | **PASS** | `git diff --stat`: `project.pbxproj` 58 deletions, 0 insertions — three Profiling blocks and their three list entries; no Debug or Release line touched |

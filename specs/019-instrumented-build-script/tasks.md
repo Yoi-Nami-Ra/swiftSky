@@ -12,7 +12,7 @@ quickstart.md
 
 ## Phase 1: Setup
 
-- [ ] T001 Record the baseline: run `./Scripts/verify.sh` on the unchanged code, timed, cold (fresh worktree) and warm, and keep the times for quickstart check 10 (specs/019-instrumented-build-script/quickstart.md)
+- [X] T001 Record the baseline: run `./Scripts/verify.sh` on the unchanged code, timed, cold (fresh worktree) and warm, and keep the times for quickstart check 10 (specs/019-instrumented-build-script/quickstart.md)
 
 ---
 
@@ -20,8 +20,8 @@ quickstart.md
 
 **Purpose**: The project has only Debug and Release before anything names the replacement.
 
-- [ ] T002 Delete the three `XCBuildConfiguration` blocks named Profiling (`5500000000000000000003`, `6600000000000000000003`, `7700000000000000000003`) and their three entries in the `XCConfigurationList`s, changing nothing else, in swiftSky.xcodeproj/project.pbxproj (research R6)
-- [ ] T003 Confirm `xcodebuild -list -project swiftSky.xcodeproj` shows only Debug and Release, and `git diff main -- swiftSky.xcodeproj` removes lines only (quickstart checks 1, 2)
+- [X] T002 Delete the three `XCBuildConfiguration` blocks named Profiling (`5500000000000000000003`, `6600000000000000000003`, `7700000000000000000003`) and their three entries in the `XCConfigurationList`s, changing nothing else, in swiftSky.xcodeproj/project.pbxproj (research R6)
+- [X] T003 Confirm `xcodebuild -list -project swiftSky.xcodeproj` shows only Debug and Release, and `git diff main -- swiftSky.xcodeproj` removes lines only (quickstart checks 1, 2)
 
 **Checkpoint**: Profiling gone; Debug and Release untouched.
 
