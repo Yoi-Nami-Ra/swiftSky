@@ -226,8 +226,9 @@ it, and confirm it shows online again.
 
 - **SC-001**: `git remote -v` shows the private repository and `origin/main` equals local `main` after
   the feature's commits are pushed.
-- **SC-001a**: A job that runs past 30 minutes ends as failed; a second push to a pull request's branch
-  cancels the first push's job if it is still running.
+- **SC-001a**: A second push to a pull request's branch cancels the first push's job if it is still
+  running. The 30-minute job limit is checked in the workflow file rather than by letting a job hang for
+  30 minutes on the only runner.
 - **SC-002**: A push to `main` produces exactly one verification job, which runs on this Mac's runner and
   passes; its duration is within a few minutes of a local `./Scripts/verify.sh` run on the same Mac.
 - **SC-003**: Opening a pull request produces a verification job whose result shows on the pull request.
