@@ -157,7 +157,30 @@ final class MetalSurfaceView: PlatformView {
             )
         }
 
+        reportDisplayRate()
         onSurfaceChange?(scaleChanged ? .backingScaleChanged(surface) : .resized(surface))
+    }
+
+    /// The last maximum frame rate posted, so the event goes out only when the screen's changes (016).
+    private var postedMaximumFramesPerSecond: Int?
+
+    /// The maximum frame rate of the screen the surface is on; 0 when there is no screen yet.
+    private var maximumFramesPerSecond: Int {
+        #if os(macOS)
+        window?.screen?.maximumFramesPerSecond ?? 0
+        #else
+        window?.screen.maximumFramesPerSecond ?? 0
+        #endif
+    }
+
+    /// Posts the screen's maximum frame rate before a geometry event, when it differs from the last one
+    /// posted, so the loop has the new display's floor before it relearns the budget (016 contract C2).
+    private func reportDisplayRate() {
+        guard let post = onSurfaceChange else { return }
+        let framesPerSecond = maximumFramesPerSecond
+        guard framesPerSecond != postedMaximumFramesPerSecond else { return }
+        postedMaximumFramesPerSecond = framesPerSecond
+        post(.displayRateChanged(maximumFramesPerSecond: framesPerSecond))
     }
 
     #if os(macOS)
