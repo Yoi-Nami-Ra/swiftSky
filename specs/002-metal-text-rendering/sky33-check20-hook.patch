@@ -1,0 +1,23 @@
+diff --git a/Sources/SwiftSkyRendering/Text/GlyphAtlasBitmap.swift b/Sources/SwiftSkyRendering/Text/GlyphAtlasBitmap.swift
+index bcf581d..8a758e3 100644
+--- a/Sources/SwiftSkyRendering/Text/GlyphAtlasBitmap.swift
++++ b/Sources/SwiftSkyRendering/Text/GlyphAtlasBitmap.swift
+@@ -34,11 +34,18 @@ public struct GlyphAtlasBitmap: Sendable {
+         return UInt16(asciiCode - firstCode)
+     }
+ 
++    /// SKY-33 check 20 — TEMPORARY HOOK, never commit.
++    nonisolated(unsafe) static var sky33CheckTwentyCalls = 0
++
+     /// Rasterises every printable glyph of `font` at `scale`.
+     ///
+     /// Setup-time only (FR-004): it allocates the bitmap and the glyph arrays. Called on the first frame
+     /// and on each backing-scale change, never on an ordinary frame.
+     public static func make(font: CTFont, scale: Double) throws(TextRenderingError) -> GlyphAtlasBitmap {
++        // SKY-33 check 20 — TEMPORARY HOOK, never commit: fail the second atlas build (the one after a
++        // display change). Revert with `git apply -R specs/002-metal-text-rendering/sky33-check20-hook.patch`.
++        sky33CheckTwentyCalls += 1
++        if sky33CheckTwentyCalls == 2 { throw .bitmapContextUnavailable }
+         let metrics = TextMetrics.make(font: font, scale: scale)
+         let width = columns * metrics.cellWidthPixels
+         let height = rows * metrics.cellHeightPixels

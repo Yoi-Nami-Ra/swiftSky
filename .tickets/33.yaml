@@ -31,7 +31,7 @@ description: |
   Done when every check above is recorded as PASS, or a found defect has its
   own bug ticket.
 platform: macos
-status: in-progress
+status: done
 phase: MVP
 priority: medium
 parent: 22
