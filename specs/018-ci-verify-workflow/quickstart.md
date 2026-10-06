@@ -49,6 +49,11 @@ time ./Scripts/verify.sh
 Expected: the diff touches `#` comment lines only; the script ends `VERIFICATION PASSED`. Note the
 `real` time for D3.
 
+**Result 2026-10-07 (T012, T016)**: PASS. The diff changes three `#` header lines only. From a fresh
+worktree with no `.build/` (the same starting point as a CI checkout), `./Scripts/verify.sh` ended
+`VERIFICATION PASSED — all stages green`: Metal toolchain, ship image, `swift build`, headless guard,
+`swift test`, both app builds. `real 88.43` s on this Mac (Apple M1 Pro, Xcode 27.0 27A266a).
+
 ### L4 — No record of a missing remote or CI is left (FR-010, FR-011, SC-007)
 
 ```sh
@@ -57,6 +62,10 @@ grep -n -i "no remote\|no CI\|CI absence\|CI-absence\|once a remote" specs/001-m
 
 Expected: no line says the repository has no remote or no CI. (001's spec, FR-019a and specs 002–015 are
 merged history and are not checked.)
+
+**Result 2026-10-07 (T015)**: PASS. One hit: the *Gate* column of 001 plan's initial Principle II row,
+which quotes the principle's own wording ("CI once a remote exists, with the gap recorded until then");
+its *Status* column now cites the CI job. Nothing says the repository has no remote or no CI.
 
 ## Developer checks
 
