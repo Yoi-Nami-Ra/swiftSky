@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-07
 
-**Status**: Draft
+**Status**: Implemented — quickstart checks 4 and 6 (launching the instrumented apps and reading the log) are open for the developer
 
 **Input**: User description: "SKY-36 — Replace the Profiling build with an instrumented script"
 (`.tickets/36.yaml`). The Profiling configuration is meant to be an optimised build with the frame
