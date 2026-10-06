@@ -21,7 +21,7 @@ description: |
   be checked with a Debug launch argument that gives a fixed order, if one is
   added for this.
 platform: macos
-status: in-progress
+status: done
 phase: MVP
 priority: low
 parent: 22
