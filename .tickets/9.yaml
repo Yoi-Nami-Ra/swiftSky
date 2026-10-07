@@ -51,7 +51,7 @@ description: |
 platform: macos
 status: in-progress
 phase: Backlog
-priority: medium
+priority: low
 parent: null
 blocked_by: []
 designs: []
