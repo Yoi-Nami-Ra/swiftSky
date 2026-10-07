@@ -54,7 +54,7 @@ contract C3. The wiring in the frame loop and the view is checked by the quickst
 **Independent Test**: `verify.sh`; quickstart check 6.
 
 - [X] T009 [US3] Run `./Scripts/verify.sh` and confirm the new suite runs headlessly (no Metal device), and everything passes; then build the macOS app once in the Release configuration (`xcodebuild -project swiftSky.xcodeproj -scheme 'swiftSky (macOS)' -configuration Release -destination platform=macOS CODE_SIGNING_ALLOWED=NO build`) to confirm FR-010 (the learner compiles in every build and adds no output: `Instrumentation.updateBudget` is the Release no-op); record the result in specs/016-frame-budget-learner/quickstart.md
-- [ ] T010 [US3] **LEFT FOR THE USER** (recorded in quickstart.md) — Quickstart check 6 (011 check 25 on the optimised instrumented build, 60 s): left for the user; mark it so in specs/016-frame-budget-learner/quickstart.md
+- [X] T010 [US3] **PASS on macOS 2026-10-07** (recorded in quickstart.md) — Quickstart check 6 (011 check 25 on the optimised instrumented build, 60 s): left for the user; mark it so in specs/016-frame-budget-learner/quickstart.md
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
