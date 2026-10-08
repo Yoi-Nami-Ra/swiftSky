@@ -34,7 +34,7 @@ description: |
   doesn't have, such as SKY-39's device-only VoiceOver run, are tracked in
   their own tickets and don't hold this one).
 platform: macos
-status: in-progress
+status: done
 phase: MVP
 priority: high
 parent: null
