@@ -61,3 +61,4 @@ parent: null
 blocked_by: []
 designs:
   - design/backgrounds/space.jpg
+quest: main
