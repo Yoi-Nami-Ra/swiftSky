@@ -53,3 +53,4 @@ parent: null
 blocked_by: [42, 43]
 designs:
   - design/sprites/planet.png
+quest: main
