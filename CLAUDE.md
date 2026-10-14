@@ -53,7 +53,9 @@ launch arguments: take every frame-time and allocation measurement with it. Ther
 any more: SwiftPM knows only debug and release, so an Xcode configuration of that name reached the app
 module only and carried none of the instrumentation (011 R1). Plain Release carries none of it either;
 `verify.sh` checks both (`dropped=` in the instrumented macOS executable, none of 001 check 27's strings in
-Release).
+Release). Both builds pass `CLANG_MODULES_PRUNE_AFTER=0`: otherwise Xcode prunes a warm folder's
+explicit-module `.pcm` files after four days unread (an unchanged checkout never reads them), and every
+later Release build gets dsymutil's `….pcm: No such file or directory` warnings (019 research R10).
 
 The project constitution (`.specify/memory/constitution.md`, v1.1.0) is ratified and enforces
 five principles: **Architecture Discipline** (logic / Metal rendering / platform-UI layers kept

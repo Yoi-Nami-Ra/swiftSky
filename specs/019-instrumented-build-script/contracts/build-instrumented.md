@@ -15,7 +15,9 @@ Usage: Scripts/build-instrumented.sh [ios|macos|both]
 - Works from any working directory.
 - Build: Release, with `SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) SWIFTSKY_INSTRUMENTATION` and
   `GCC_PREPROCESSOR_DEFINITIONS=$(inherited) SWIFTSKY_INSTRUMENTATION=1` and `CODE_SIGNING_ALLOWED=NO`
-  (research R1). iOS destination `generic/platform=iOS Simulator`; macOS `platform=macOS`.
+  (research R1), and `CLANG_MODULES_PRUNE_AFTER=0`, which keeps Xcode from pruning the folder's
+  explicit-module caches under a warm build (research R10). iOS destination
+  `generic/platform=iOS Simulator`; macOS `platform=macOS`.
 - Standard error: `xcodebuild -quiet` output (warnings, errors), and usage text on a usage error.
 - Exit status: 0 when every requested build succeeded; `xcodebuild`'s non-zero status on the first
   failed build (nothing printed for it, and a later platform is not built); 64 on a usage error (unknown
@@ -29,7 +31,7 @@ Section "Instrumented and Release builds (macOS)", two stages, both under the ex
 1. `instrumented macOS build carries the instrumentation` — runs `Scripts/build-instrumented.sh macos`;
    passes only if `strings -a` on its executable finds `dropped=`.
 2. `Release macOS build carries no instrumentation (001 check 27)` — builds Release into
-   `.build/release-check/`; passes only if `strings -a` finds none of `skipped=`, `dropped=`, `worst=`,
-   `SWIFTSKY_INSTRUMENTATION`.
+   `.build/release-check/`, with `CLANG_MODULES_PRUNE_AFTER=0` as in the script (research R10); passes
+   only if `strings -a` finds none of `skipped=`, `dropped=`, `worst=`, `SWIFTSKY_INSTRUMENTATION`.
 
 Neither launches an app, boots a simulator or reads the log (FR-009).
