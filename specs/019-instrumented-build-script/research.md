@@ -44,9 +44,9 @@ printed path could not be documented); a folder per platform (no benefit).
 ## R3. The plain Release build for the negative check
 
 **Decision**: `verify.sh` builds the macOS app in Release, with no overrides other than
-`CODE_SIGNING_ALLOWED=NO`, into `.build/release-check/`, then runs `strings -a` on
-`Build/Products/Release/swiftSky.app/Contents/MacOS/swiftSky` and fails if any of `skipped=`, `dropped=`,
-`worst=`, `SWIFTSKY_INSTRUMENTATION` appears.
+`CODE_SIGNING_ALLOWED=NO` (and, since R10, `CLANG_MODULES_PRUNE_AFTER=0`), into `.build/release-check/`,
+then runs `strings -a` on `Build/Products/Release/swiftSky.app/Contents/MacOS/swiftSky` and fails if
+any of `skipped=`, `dropped=`, `worst=`, `SWIFTSKY_INSTRUMENTATION` appears.
 
 **Rationale**: The two Release builds differ only in command-line settings; sharing one folder would make
 each rebuild everything the other built. 001 check 27's string probes are what a built product can be
@@ -114,3 +114,55 @@ stages would fail on it.
 **Rationale**: It is the correct value for this app and the warning's own remedy; no build setting
 changes (FR-002). **Alternative rejected**: a second exemption in `verify.sh`'s warning filter — it would
 hide a real, one-line product defect behind tooling.
+
+## R10. Xcode prunes the explicit-module caches under a warm build (found 2026-10-14)
+
+**Finding**: On 2026-10-14, at `d1b36e6`, `./Scripts/verify.sh` failed on this Mac: both stages of this
+feature exited 0 but printed lines like
+`warning: <repo>/.build/release-check/SDKExplicitPrecompiledModules/AppKit-….pcm: No such file or directory`.
+Both folders had been filled on 2026-10-07, and no source file had changed since. Afterwards
+`.build/release-check/SDKExplicitPrecompiledModules/` held only a fresh `modules.timestamp`.
+`rm -rf .build/instrumented .build/release-check` fixed it. The cause, from swift-build's source and
+reproduced here (quickstart check 17):
+
+- At the end of every build, swift-build (`BuildOperation.pruneExplicitPrecompiledModules`) prunes the
+  folder's explicit-module caches, `SDKExplicitPrecompiledModules/` and
+  `Build/Intermediates.noindex/{,Swift}ExplicitPrecompiledModules/`, through libclang's module-cache
+  prune. At most once per `CLANG_MODULES_PRUNE_INTERVAL` (Xcode: 86,400 s, a day, measured from
+  `modules.timestamp`), it deletes every `.pcm` whose access time is older than
+  `CLANG_MODULES_PRUNE_AFTER` (Xcode: 345,600 s, four days).
+- A build with nothing to compile reads no cached `.pcm`, and APFS updates a file's access time on a
+  read only while it is not later than the modification time, so a cached module's access time stays
+  near its first use however often it is used afterwards. A folder built only from an unchanged checkout
+  is therefore pruned whole by the first build four days after it was filled.
+- The object files' debug information names those `.pcm` files by absolute path. Release makes a dSYM
+  (`DEBUG_INFORMATION_FORMAT = dwarf-with-dsym`). The next build rebuilds the project's own pruned
+  modules and relinks, but does not rebuild the SDK's, so `dsymutil` warns once per missing module (19
+  for the macOS app), on that build and every later one: nothing restores them. The build exits 0, and
+  `verify.sh` fails the stage on its `warning:` lines. Debug makes no dSYM, which is why the Debug
+  stages never showed it.
+
+CI is not affected: `actions/checkout` removes ignored files, so every CI run builds both folders cold.
+
+**Decision**: Both builds pass `CLANG_MODULES_PRUNE_AFTER=0` on the `xcodebuild` command line
+(`Scripts/build-instrumented.sh` for the instrumented one, `verify.sh` for plain Release). swift-build
+skips the prune when the value is not positive (`guard pruneAfter > 0`). Clang also receives it, as
+`-fmodules-prune-after=0`, which concerns only its implicit-module cache. The setting governs cache
+upkeep, not the code compiled, and adds no warning. It changes the compile commands, so the first build
+after it rebuilds each folder once (37 s for `verify.sh`, check 10), which also repairs a folder that
+was already pruned (check 17).
+
+**Cost**: Old module variants are no longer removed. One set is about 130 MB per folder; a new set
+appears only when the compilation context changes (an Xcode or SDK update, a changed setting).
+`rm -rf .build/instrumented .build/release-check` reclaims the space at the price of one cold run.
+
+**Alternatives rejected**:
+- *Clean before every build*: makes every warm run cold, about 55 s more each time (check 10).
+- *Detect the warning and rebuild*: a second exemption in the warning gate keyed to one tool's message,
+  and a cold run whenever it fires; `build-instrumented.sh` users would still see the warnings, and the
+  dSYM would still lack the modules' type information.
+- *Refresh the access times before each build* (`touch -a` on every cached `.pcm`): would work, but
+  reaches into the build system's cache from outside on every run; the build setting is simpler.
+- *A larger `CLANG_MODULES_PRUNE_AFTER`*: only postpones the failure.
+- *Turning off explicit modules, or the dSYM*: changes how the measured and the checked builds are
+  made, only to hide the symptom.

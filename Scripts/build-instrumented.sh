@@ -14,6 +14,14 @@
 # instrumentation (011 research R12). Without the C one the allocation counter's functions do not exist
 # and the app does not link.
 #
+# CLANG_MODULES_PRUNE_AFTER=0 turns off Xcode's pruning of the folder's explicit-module caches. At the
+# end of a build Xcode deletes every cached .pcm not read for four days (checked once a day), but the
+# object files' debug information still points at them, so the next Release build that relinks without
+# recompiling everything gets `warning: …/SDKExplicitPrecompiledModules/<Module>-….pcm: No such file or
+# directory` from dsymutil on every run until the folder is deleted. An unchanged checkout builds
+# without reading the .pcm files, so a folder left alone for four days is pruned whole (019 research
+# R10). Old module variants, after an Xcode or SDK update, now stay until `rm -rf .build/instrumented`.
+#
 # Usage:  ./Scripts/build-instrumented.sh [ios|macos|both]      (default: both)
 #
 # Builds into .build/instrumented/ (git-ignored), and prints the absolute path of each built app on
@@ -44,7 +52,7 @@ build() {  # $1=scheme  $2=destination  $3=products folder
         -destination "$2" -derivedDataPath "$derived" \
         'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) SWIFTSKY_INSTRUMENTATION' \
         'GCC_PREPROCESSOR_DEFINITIONS=$(inherited) SWIFTSKY_INSTRUMENTATION=1' \
-        CODE_SIGNING_ALLOWED=NO -quiet >&2
+        CLANG_MODULES_PRUNE_AFTER=0 CODE_SIGNING_ALLOWED=NO -quiet >&2
     printf '%s\n' "$derived/Build/Products/$3/swiftSky.app"
 }
 

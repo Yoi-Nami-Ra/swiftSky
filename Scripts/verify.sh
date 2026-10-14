@@ -191,6 +191,13 @@ if [ -d swiftSky.xcodeproj ]; then
     # text. Plain Release must contain none of the instrumentation (001 check 27, SC-004a); it is built
     # into its own folder so the two Release builds never overwrite each other. Both checks read the
     # built executable only: nothing is launched and no log is read.
+    #
+    # Both builds pass CLANG_MODULES_PRUNE_AFTER=0 (the instrumented one inside its script). Xcode
+    # otherwise prunes each folder's explicit-module cache of .pcm files unread for four days, which an
+    # unchanged checkout never reads; the next relinking build then fails here on dsymutil's
+    # `warning: …/SDKExplicitPrecompiledModules/<Module>-….pcm: No such file or directory`, every run,
+    # until the folder is deleted (019 research R10). The setting governs cache upkeep only, not the
+    # code compiled.
     # -----------------------------------------------------------------------
     section "Instrumented and Release builds (macOS)"
     instrumented_has_instrumentation() {
@@ -207,7 +214,8 @@ if [ -d swiftSky.xcodeproj ]; then
     release_has_no_instrumentation() {
         xcodebuild build -project swiftSky.xcodeproj -scheme 'swiftSky (macOS)' \
             -configuration Release -destination 'platform=macOS' \
-            -derivedDataPath .build/release-check CODE_SIGNING_ALLOWED=NO -quiet || return 1
+            -derivedDataPath .build/release-check CLANG_MODULES_PRUNE_AFTER=0 \
+            CODE_SIGNING_ALLOWED=NO -quiet || return 1
         found=$(strings -a .build/release-check/Build/Products/Release/swiftSky.app/Contents/MacOS/swiftSky |
             grep -E 'skipped=|dropped=|worst=|SWIFTSKY_INSTRUMENTATION' || true)
         if [ -n "$found" ]; then
