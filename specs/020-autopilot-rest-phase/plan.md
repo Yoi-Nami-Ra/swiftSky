@@ -42,7 +42,7 @@ inputs are untouched: only the phase naming reads the new flag, and the hold rul
 **Constraints**: Bit-identical inputs and ship states (spec FR-004, FR-007). Pure and deterministic (006
 FR-012). Every input stays finite (006 FR-013).
 
-**Scale/Scope**: 1 changed source file (`Sources/SwiftSkySimulation/AutopilotLaw.swift`, about 6 lines). 1 new
+**Scale/Scope**: 1 changed source file (`Sources/SwiftSkySimulation/AutopilotLaw.swift`, a few lines). 1 new
 test file. 2 changed 006 docs (`research.md` R6, `contracts/autopilot.md` step 8) and `CLAUDE.md`. No change
 to `Package.swift`, `verify.sh` or any other layer.
 
@@ -56,7 +56,7 @@ Evaluated against `.specify/memory/constitution.md` v1.1.0.
 | --- | --- | --- |
 | I. Architecture Discipline | The change is in the logic layer only. No Metal or SwiftUI type is used, and the data flow is unchanged. | PASS |
 | II. Test Coverage Discipline | Logic-bearing change with new tests: reproduction, boundary, forward-only, bit-identical fingerprint. They are headless and deterministic, and run by `verify.sh`, which CI runs. | PASS |
-| III. Performance & Resource Efficiency | No hot-path allocation, and constant extra work per tick. It is not the render hot path, so no before/after frame measurement is needed beyond `verify.sh`. | PASS |
+| III. Performance & Resource Efficiency | The law runs every tick in the update hot path, so the before/after measurement is required. It is taken as in 006 check 14 and 010 check 9: 10 M single-tick `advance` calls with an order, on `main` and on this branch, with ns per call and allocations counted (T018, quickstart check 7). The expected result is the same cost within noise and 0 allocations. | PASS |
 | IV. Accessibility & Platform UX | No UI change. The overlay only reads the phase. | PASS (N/A) |
 | V. Simplicity & YAGNI | One local flag reuses an existing constant. No new type, knob or abstraction. | PASS |
 
@@ -104,4 +104,4 @@ specs/006-ship-autopilot/
    (phase-name tests) and that the fingerprint tests pass.
 2. Apply the R2 change. All 020 tests pass, the fingerprints are unchanged, and 006's and 010's suites
    pass untouched.
-3. Update the docs (R5) and run `./Scripts/verify.sh`.
+3. Update the docs (R5), take the before/after hot-path measurement (Principle III) and run `./Scripts/verify.sh`.

@@ -45,7 +45,7 @@ coarse for naming a phase mid-flight).
 
 The player orders the ship somewhere, it arrives and holds still. The player then orders it to a point
 behind it. The phase the game reports (the debug overlay's order line now; anything that reads the phase
-later) starts at `aligning`, then `burning`, `flipping`, `braking` and `arrived`, as it does for a first
+later) starts at `aligning` (skipped when the ship already faces the burn direction), then `burning`, `flipping`, `braking` and `arrived`, as it does for a first
 order from rest — never `flipping` or `braking` before the ship has gone anywhere.
 
 **Why this priority**: It is the whole bug. A phase that jumps to `flipping` with the ship visibly at rest
@@ -59,7 +59,8 @@ record the phase of every tick until arrival.
 
 1. **Given** a ship keeping station after an order, with a leftover velocity that is non-zero, at most the
    settle speed, and pointing away from the next destination, **When** a new order to that destination is
-   given and the first tick is flown, **Then** the phase is `aligning` (it is `flipping` today).
+   given and the first tick is flown, **Then** the phase is `aligning` (it is `flipping` today), or `burning` when the ship already faces the burn
+   direction (it is `braking` today).
 2. **Given** the same re-order, **When** it is flown to arrival, **Then** the phases move forward only
    through aligning → burning → flipping → braking → arrived (aligning skipped if the ship already faces
    the burn direction), with no phase repeated after it has been left.
@@ -156,8 +157,8 @@ and resulting ship state, bit for bit, with the values the law produced before t
 
 ### Measurable Outcomes
 
-- **SC-001**: A re-order from station keeping starts in `aligning` and moves forward only through the
-  phases, every time, in the reproducing test.
+- **SC-001**: A re-order from station keeping starts in `aligning` (or `burning` when the ship already faces
+  the burn direction) and moves forward only through the phases, every time, in the reproducing tests.
 - **SC-002**: 0 bits differ in any tick's control input or ship state between the law before and after the
   fix, over the whole re-order flight.
 - **SC-003**: 0 existing 006 or 010 tests change their expected values, and all pass.

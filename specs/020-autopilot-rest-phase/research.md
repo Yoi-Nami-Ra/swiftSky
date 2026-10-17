@@ -31,7 +31,7 @@ turning rule's guard becomes `!atRest && target·v < 0`. At rest that guard is f
 `burning`-if-burning-else-`aligning` branch and never reaches the braking latch (spec clarification 1).
 `facingAgainstMotion` itself stays as it is, because step 6's hold rule reads it (`committedToBraking`).
 
-**Rationale**: This is four lines of change and adds no state, no allocation and no division (006 FR-013,
+**Rationale**: This is a few lines of change and adds no state, no allocation and no division (006 FR-013,
 FR-015). It also keeps the law pure, so every run gives the same bits (006 FR-012). The settle speed is the
 right threshold: station keeping already treats an error that small as nothing to correct, so a velocity
 that small is the law's own idea of "no motion".
