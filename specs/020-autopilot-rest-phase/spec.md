@@ -28,6 +28,17 @@ zeroing the velocity on arrival (the autopilot affects the ship only through its
 motion stays Newtonian, 004, 006 FR-004), and a threshold tied to the arrival speed tolerance (1 u/s, far too
 coarse for naming a phase mid-flight).
 
+## Clarifications
+
+### Session 2026-10-18
+
+- Q: At rest, which of the turning rule's latches applies — braking's or burning's? → A: A velocity at rest has no direction, so it never opposes the target: the turning rule takes its "any other target" branch (burning if the previous phase was burning, else aligning), and the braking latch is not reached _(assumed — 006 contracts/autopilot.md step 8; Sources/SwiftSkySimulation/AutopilotLaw.swift:164)_
+- Q: Which speed decides rest — before or after the tick? → A: The speed of the ship state the tick is evaluated from, the same speed the law already computes for the tick _(assumed — Sources/SwiftSkySimulation/AutopilotLaw.swift:70)_
+- Q: Is the boundary pinned by its own test, besides the flown re-order? → A: Yes: a single-tick check with a velocity exactly at the settle speed pointing away from the destination (named as rest) and one just above it (named from its direction, as today) _(assumed — spec Edge Cases; constitution v1.1.0 Test Coverage Discipline)_
+- Q: What happens if the bit-identical inputs test shows a changed input? → A: Implementation stops and reports it to the user; neither the inputs nor the test's expected values are changed to make it pass. Reading the law, no input should change: the hold rule needs a closing speed above 0.9 of the speed, which a ship moving away from the destination does not have, and a ship that has just started towards it is far short of the desired speed _(assumed — ticket SKY-46 scope 2; AutopilotLaw.swift:128–134)_
+- Q: Does 006 FR-005's text change? → A: No. The code is brought into line with it; only 006 research R6 and contracts/autopilot.md step 8 gain the rest rule _(assumed — ticket SKY-46 scope 3)_
+- Q: How is "moves forward only" checked for the re-order? → A: As 006's flight tests do: each phase's rank in aligning → burning → flipping → braking → arrived never decreases and no phase appears twice _(assumed — Tests/SwiftSkySimulationTests/AutopilotTests.swift:57–59)_
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A new order after arrival reads as a fresh start (Priority: P1)
@@ -102,28 +113,34 @@ and resulting ship state, bit for bit, with the values the law produced before t
 ### Functional Requirements
 
 - **FR-001**: When naming a tick's phase, the autopilot MUST treat the ship as at rest — its velocity having
-  no direction — when its speed is at most the settle speed (0.001 u/s, 006 research R5).
-- **FR-002**: A ship at rest by FR-001 MUST NOT be named `flipping` when it turns (it is `aligning`), and
-  MUST NOT be named `braking` when it thrusts or coasts (it is `burning`), unless the previous phase was
-  `braking`, whose attitude-correction latch (006 research R6 rule 3) is unchanged.
+  no direction — when its speed, in the state the tick is evaluated from, is at most the settle speed
+  (0.001 u/s, 006 research R5).
+- **FR-002**: A ship at rest by FR-001 MUST NOT be named `flipping` when it turns (it is `aligning`, or
+  `burning` if the previous phase was `burning`, the existing mid-burn latch), and MUST NOT be named
+  `braking` when it thrusts or coasts (it is `burning`). Its velocity never opposes a target, so the braking
+  latch of 006 research R6 rule 3 is not reached at rest.
 - **FR-003**: The rest rule MUST apply to every place the phase is named from the velocity's direction:
   the turning rule, the thrusting rule, the coasting rule and the settled (neutral-input) rule. It MUST NOT
   apply to the arrived rule, which does not use the velocity's direction.
 - **FR-004**: The control input of every tick MUST be unchanged, bit for bit, by this feature — including
-  through the hold rule, which reads the previous tick's phase. If the renamed phases would change any
-  tick's input, the feature MUST be adjusted until they do not; the ticket's premise is that only the
-  reported phase is wrong.
+  through the hold rule, which reads the previous tick's phase. If a test shows a changed input, the work
+  MUST stop and be reported; neither the inputs nor the expected values may be changed to make it pass.
 - **FR-005**: A logic-layer test MUST reproduce the bug: fly an order to arrival, keep station until the
   leftover velocity is non-zero and points away from the next destination, pin that velocity's bits in the
   test (so the setup cannot drift silently to an exact rest), give a new order behind it, and check that the
   first phase is `aligning`. It MUST fail before the fix and pass after it.
+- **FR-005a**: A single-tick test MUST pin the boundary: a velocity of exactly the settle speed pointing away
+  from the destination is named as rest (`aligning` when turning), and one just above it is named from its
+  direction (`flipping`), as today.
 - **FR-006**: A test MUST check that the phases of that re-order, flown to arrival, move forward only
-  (006 FR-005), and that the first thrust tick is `burning`.
+  (006 FR-005: each phase's rank never decreases and none appears twice), and that the first thrust tick is
+  `burning`.
 - **FR-007**: A test MUST pin, bit for bit, the control input of every tick and the resulting ship state of
   that re-order, with the expected values taken from the law before the fix.
 - **FR-008**: All existing 006 and 010 tests MUST pass with no change to their expected values.
 - **FR-009**: 006 research R6 MUST record the rest threshold and why it is the settle speed, and 006
-  `contracts/autopilot.md` MUST state it where it states the phase rules.
+  `contracts/autopilot.md` step 8 MUST state it. 006 FR-005's text is unchanged: the law is brought into
+  line with it.
 - **FR-010**: The fix MUST keep the law's existing guarantees: constant work and no allocation per tick
   (006 FR-015), a finite input for any finite ship (006 FR-013), and the same bits on every run (006 FR-012).
 
