@@ -84,4 +84,38 @@ struct AutopilotRestPhaseTests {
             result.fingerprint == expected.fingerprint && result.ticks == expected.ticks,
             "fingerprint 0x\(String(result.fingerprint, radix: 16)) ticks \(result.ticks)")
     }
+
+    private func expectForwardOnly(_ phases: [AutopilotPhase]) {
+        let ranks = phases.map { AutopilotTests.rank[$0]! }
+        #expect(ranks == ranks.sorted() && Set(ranks).count == ranks.count, "\(phases)")
+    }
+
+    @Test("A re-order at 120° from the leftover velocity starts aligning and only moves forward (FR-005, FR-006)")
+    func reorderAt120DegreesStartsAligning() {
+        let flight = fly(Self.reorder(Self.stationKept(), turnedBy: 2 * .pi / 3), maxTicks: 3_600)
+        #expect(flight.phases == [.aligning, .burning, .flipping, .braking, .arrived], "\(flight.phases)")
+        expectForwardOnly(flight.phases)
+    }
+
+    @Test("A re-order straight behind the leftover velocity starts burning (scenario 3, FR-006)")
+    func reorderStraightBehindStartsBurning() {
+        let flight = fly(Self.reorder(Self.stationKept(), turnedBy: .pi), maxTicks: 3_600)
+        #expect(flight.phases == [.burning, .flipping, .braking, .arrived], "\(flight.phases)")
+        expectForwardOnly(flight.phases)
+    }
+
+    @Test("The rest boundary is the settle speed, inclusive (FR-005a)")
+    func restBoundaryIsSettleSpeed() {
+        func firstPhase(speed s: Double) -> AutopilotPhase? {
+            var state = SimulationState(
+                tickCount: 0,
+                ship: Ship(position: .zero, velocity: Vector2(x: s, y: 0), heading: .pi, angularVelocity: 0))
+            let angle = 2 * Double.pi / 3
+            state.setOrder(to: Vector2(x: 1_000 * cos(angle), y: 1_000 * sin(angle)))
+            _ = state.autopilot.control(for: state.ship)
+            return state.autopilot.phase
+        }
+        #expect(firstPhase(speed: Autopilot.settleSpeed) == .aligning)
+        #expect(firstPhase(speed: Autopilot.settleSpeed.nextUp) == .flipping)
+    }
 }

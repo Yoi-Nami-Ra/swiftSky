@@ -60,20 +60,20 @@ pass after it, and T007 still passes, unedited.
 
 ### Tests (written first, failing on the unfixed law)
 
-- [ ] T009 [US1] In `Tests/SwiftSkySimulationTests/AutopilotRestPhaseTests.swift`, add "A re-order at 120° from the leftover velocity starts aligning and only moves forward (FR-005, FR-006)". Fly `reorder(stationKept(), turnedBy: 2 * .pi / 3)` with `fly(_:maxTicks: 3_600)`. Expect `phases == [.aligning, .burning, .flipping, .braking, .arrived]`, and check forward-only with `AutopilotTests.rank`: ranks sorted and no duplicates, as `AutopilotTests.swift` does
-- [ ] T010 [US1] Add "A re-order straight behind the leftover velocity starts burning (scenario 3, FR-006)". Fly `reorder(stationKept(), turnedBy: .pi)` and expect `phases == [.burning, .flipping, .braking, .arrived]` with the same forward-only check
-- [ ] T011 [US1] Add "The rest boundary is the settle speed, inclusive (FR-005a)". Build `SimulationState(tickCount: 0, ship: Ship(position: .zero, velocity: Vector2(x: s, y: 0), heading: .pi, angularVelocity: 0))` ordered to the point 1,000 units away at 120° from +x. Call `state.autopilot.control(for: state.ship)` once and read `state.autopilot.phase`. Expect `.aligning` for `s = Autopilot.settleSpeed` and `.flipping` for `s = Autopilot.settleSpeed.nextUp`
-- [ ] T012 [US1] Run `swift test --filter AutopilotRestPhase` and confirm that T009–T011's rest cases fail as research R1 records (`flipping, braking, …`, `braking, burning, …`, `.flipping` at exactly the settle speed) and that everything else passes. Note the output in the commit message of T014
+- [x] T009 [US1] In `Tests/SwiftSkySimulationTests/AutopilotRestPhaseTests.swift`, add "A re-order at 120° from the leftover velocity starts aligning and only moves forward (FR-005, FR-006)". Fly `reorder(stationKept(), turnedBy: 2 * .pi / 3)` with `fly(_:maxTicks: 3_600)`. Expect `phases == [.aligning, .burning, .flipping, .braking, .arrived]`, and check forward-only with `AutopilotTests.rank`: ranks sorted and no duplicates, as `AutopilotTests.swift` does
+- [x] T010 [US1] Add "A re-order straight behind the leftover velocity starts burning (scenario 3, FR-006)". Fly `reorder(stationKept(), turnedBy: .pi)` and expect `phases == [.burning, .flipping, .braking, .arrived]` with the same forward-only check
+- [x] T011 [US1] Add "The rest boundary is the settle speed, inclusive (FR-005a)". Build `SimulationState(tickCount: 0, ship: Ship(position: .zero, velocity: Vector2(x: s, y: 0), heading: .pi, angularVelocity: 0))` ordered to the point 1,000 units away at 120° from +x. Call `state.autopilot.control(for: state.ship)` once and read `state.autopilot.phase`. Expect `.aligning` for `s = Autopilot.settleSpeed` and `.flipping` for `s = Autopilot.settleSpeed.nextUp`
+- [x] T012 [US1] Run `swift test --filter AutopilotRestPhase` and confirm that T009–T011's rest cases fail as research R1 records (`flipping, braking, …`, `braking, burning, …`, `.flipping` at exactly the settle speed) and that everything else passes. Note the output in the commit message of T014
 
 ### Implementation
 
-- [ ] T013 [US1] In `Sources/SwiftSkySimulation/AutopilotLaw.swift` `evaluate`, apply research R2 and contracts/phase-rule.md:
+- [x] T013 [US1] In `Sources/SwiftSkySimulation/AutopilotLaw.swift` `evaluate`, apply research R2 and contracts/phase-rule.md:
   - before step 5's settled return, add `let atRest = speed <= Self.settleSpeed` and `let namedAgainstMotion = facingAgainstMotion && !atRest`, with a comment citing 020 and SKY-46;
   - use `namedAgainstMotion` in the settled return, the thrusting rule and the final coasting return of step 8;
   - make the turning rule's guard `guard !atRest, targetX * vx + targetY * vy < 0 else { … }`;
   - leave `facingAgainstMotion` in step 6 (`committedToBraking`) and every input calculation untouched;
   - update the step 8 comment to say that at rest the velocity has no direction.
-- [ ] T014 [US1] Run `swift test` (the whole package). All 020 tests pass, T007's constants are unedited, and `AutopilotTests` and `PlannedPathTests` pass unchanged (`git diff main -- Tests/SwiftSkySimulationTests/AutopilotTests.swift Tests/SwiftSkySimulationTests/PlannedPathTests.swift` empty). If T007 fails, **stop and report**; do not edit the constants or the inputs (spec FR-004). Commit
+- [x] T014 [US1] Run `swift test` (the whole package). All 020 tests pass, T007's constants are unedited, and `AutopilotTests` and `PlannedPathTests` pass unchanged (`git diff main -- Tests/SwiftSkySimulationTests/AutopilotTests.swift Tests/SwiftSkySimulationTests/PlannedPathTests.swift` empty). If T007 fails, **stop and report**; do not edit the constants or the inputs (spec FR-004). Commit
 
 **Checkpoint**: The bug is fixed and the inputs are proven unchanged.
 

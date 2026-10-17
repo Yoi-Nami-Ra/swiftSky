@@ -111,8 +111,14 @@ extension Autopilot {
         let ey = uy * desiredSpeed - vy
         let error = (ex * ex + ey * ey).squareRoot()
         let facingAgainstMotion = hx * vx + hy * vy < 0
+        // At a speed of at most the settle speed the velocity has no direction, so the ship is not facing
+        // against its motion: station keeping leaves up to that much velocity behind, and a re-order must
+        // not start in .braking or .flipping because of it. This names the phase only; step 6's hold rule
+        // still reads `facingAgainstMotion` (020, SKY-46).
+        let atRest = speed <= Self.settleSpeed
+        let namedAgainstMotion = facingAgainstMotion && !atRest
         if error <= Self.settleSpeed {
-            return (.neutral, arrived ? .arrived : (facingAgainstMotion ? .braking : .burning))
+            return (.neutral, arrived ? .arrived : (namedAgainstMotion ? .braking : .burning))
         }
         let closingSpeed = vx * ux + vy * uy
         let feedforward = -closingSpeed * desiredSpeedSlope
@@ -157,14 +163,15 @@ extension Autopilot {
 
         // Step 8: the phase this tick implies (research R6).
         if arrived { return (input, .arrived) }
-        if thrust > 0 { return (input, facingAgainstMotion ? .braking : .burning) }
+        if thrust > 0 { return (input, namedAgainstMotion ? .braking : .burning) }
         if abs(headingError) > Self.thrustCone {
             // Mid-burn or mid-brake, a turn is an attitude correction and keeps its phase; otherwise it is
-            // a flip when it turns to face against the motion, and aligning when it does not.
-            guard targetX * vx + targetY * vy < 0 else { return (input, phase == .burning ? .burning : .aligning) }
+            // a flip when it turns to face against the motion, and aligning when it does not. At rest the
+            // velocity has no direction, so nothing is faced against and it is never a flip.
+            guard !atRest, targetX * vx + targetY * vy < 0 else { return (input, phase == .burning ? .burning : .aligning) }
             return (input, phase == .braking ? .braking : .flipping)
         }
-        return (input, facingAgainstMotion ? .braking : .burning)
+        return (input, namedAgainstMotion ? .braking : .burning)
     }
 
     /// The shortest time to turn through `angle` radians (signed, positive counter-clockwise) and end
