@@ -27,8 +27,8 @@ from the developer's notes in `specs/021-ios-gpu-frame-capture/capture-notes.md`
 
 **Purpose**: A baseline and a place for the developer's observations.
 
-- [ ] T001 Run `./Scripts/verify.sh` on branch `021-ios-gpu-frame-capture` and confirm it passes before anything changes; note the result in `specs/021-ios-gpu-frame-capture/capture-notes.md`
-- [ ] T002 Create `specs/021-ios-gpu-frame-capture/capture-notes.md` with one empty section per observation in data-model.md's "Captured frame" table (draws in the pass, pipeline label, buffer label, geometry, pixel history ×5, creation calls ×2 captures, object identity ×2 captures), plus a header for Xcode version, build, arguments and destination
+- [ ] T001 Run `./Scripts/verify.sh` on branch `021-ios-gpu-frame-capture` and confirm it passes before anything changes
+- [ ] T002 Create `specs/021-ios-gpu-frame-capture/capture-notes.md` with a header holding T001's verify result and empty fields for Xcode version, build, arguments and destination, then one empty section per observation in data-model.md's "Captured frame" table (draws in the pass, pipeline label, buffer label, geometry, pixel history ×5, creation calls ×2 captures, object identity ×2 captures)
 
 **Checkpoint**: the notes file exists; the developer can fill it while capturing.
 
@@ -44,7 +44,7 @@ the centre.
 
 - [ ] T003 [US1] **MANUAL** Capture frame 1 of the Debug iOS app with `--no-ship --no-debug-overlay` per `specs/021-ios-gpu-frame-capture/quickstart.md` Setup and "Check 4", in the simulator (device only if the simulator cannot be captured, research R1), and fill the check 4 sections of `specs/021-ios-gpu-frame-capture/capture-notes.md`
 - [ ] T004 [US1] Judge check 4 against spec FR-003 and research R2 from `specs/021-ios-gpu-frame-capture/capture-notes.md`; write `**Check 4 — PASS|FAIL on iOS, <simulator|device> (<date>, SKY-18).**` with build, destination and observations into `specs/001-metal-app-shell/quickstart.md`, after the last existing check record and before the summary section, in the shape data-model.md describes
-- [ ] T005 [US1] If check 4 failed: file a bug ticket with `/tickets` (title naming what the capture showed, phase MVP, platform ios, quest main) and add its key to the check 4 record in `specs/001-metal-app-shell/quickstart.md`; otherwise mark this task done with "not needed"
+- [ ] T005 [US1] If check 4 failed: file a bug ticket with `/tickets` (title naming what the capture showed, phase MVP, platform ios) and add its key to the check 4 record in `specs/001-metal-app-shell/quickstart.md`; otherwise mark this task done with "not needed"
 
 **Checkpoint**: check 4's iOS result is recorded.
 
@@ -137,6 +137,8 @@ Session:   T004, T005, then T007, T008 from the filled notes
 
 ## Notes
 
-- **MANUAL** tasks cannot be done by an automated phase agent; an implementer reaching one stops and
-  asks the developer to do it, then continues from `capture-notes.md`.
+- **MANUAL** tasks cannot be done by an automated phase agent. After Phase 1, the developer does T003
+  and T006 in one sitting and fills `capture-notes.md`; only then do phases 2 and 3 run. A phase agent
+  marks a MANUAL task `[x]` when its sections of `capture-notes.md` are filled, and reports `blocked`
+  when they are not.
 - Commit after each phase.

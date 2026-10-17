@@ -50,7 +50,7 @@ for a buffer, a second live allocation. The code already builds them once (`Rend
 (Edit Scheme › Run › Arguments), GPU Frame Capture left at its default (the project has no shared
 schemes, so each developer's scheme has Xcode's default, which enables capture for Metal apps), and
 capture with the Debug bar's capture-GPU-workload button. A third capture with the default launch
-covers spec story 1 scenario 3.
+is optional (spec Edge Cases).
 
 **Rationale**: The same build and arguments closed check 2 (SKY-16). Without the ship, overlay or an
 order, the quad is the only draw in the pass, so it is unambiguous.

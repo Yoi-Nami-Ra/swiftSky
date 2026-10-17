@@ -40,7 +40,7 @@ Pass: no creation calls in either frame, one of each object, the same identity i
 ## Optional — default launch
 
 Remove the two arguments, run, capture a frame. Expect the quad draw first in the pass, with the ship
-and the debug overlay's draws after it (spec story 1, scenario 3).
+and the debug overlay's draws after it (optional; spec Edge Cases).
 
 ## Hand-off and record
 

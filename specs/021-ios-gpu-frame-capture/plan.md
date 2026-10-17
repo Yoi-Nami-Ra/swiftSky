@@ -78,7 +78,7 @@ No `contracts/`: the feature exposes no interface.
 ```text
 specs/001-metal-app-shell/
 └── quickstart.md        # The only file the feature changes outside its own directory:
-                         # checks 4 and 5 records, the open-checks table and its count
+                         # checks 4 and 5 records, the open-checks summary
 
 Sources/SwiftSkyRendering/      # Read, not changed: the evidence's subject
 ├── FullscreenQuad.swift        # pipeline "swiftSky.fullscreenQuad", buffer "swiftSky.quadVertices"

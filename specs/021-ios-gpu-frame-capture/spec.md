@@ -60,9 +60,6 @@ pixels.
    surface's four corners and centre are inspected, **Then** the quad spans the whole surface and the
    draw wrote every one of those pixels. (The final colour cannot show this: the pass is cleared to
    black and the quad also draws black.)
-3. **Given** the iOS app running with its default launch (ship and debug overlay shown), **When** a
-   frame is captured, **Then** the same full-screen quad draw is still there, first in the pass, under
-   the other draws.
 
 ---
 
@@ -101,7 +98,7 @@ observed, and its summary of open checks no longer lists their iOS half.
 
 1. **Given** stories 1 and 2 are done, **When** 001's quickstart is read, **Then** checks 4 and 5 each
    have a dated iOS result (PASS or FAIL) naming the build, the destination and what was observed.
-2. **Given** that record, **When** the open-checks table and its count are read, **Then** they say
+2. **Given** that record, **When** the open-checks summary is read, **Then** it says
    that checks 4 and 5 remain open for macOS only (SKY-19), or are no longer open if SKY-19 has
    already recorded its half.
 
@@ -116,6 +113,8 @@ observed, and its summary of open checks no longer lists their iOS half.
   the same way.
 - The developer captures a frame while the app shows the startup failure notice instead of the
   surface: that capture does not count; the check needs the surface running normally.
+- A capture with the default launch (ship and debug overlay shown) may be taken as well; it should show
+  the quad draw first in the pass, under the other draws. It is optional and not needed to pass check 4.
 - SKY-19 has already recorded the macOS half when this one is recorded: the open-checks table drops
   checks 4 and 5 entirely rather than listing them as macOS-only.
 
@@ -138,8 +137,10 @@ observed, and its summary of open checks no longer lists their iOS half.
   under that check, dated, naming the build configuration, the destination (simulator or device, with
   its model and OS version) and what was observed. The record is text; no capture files or screenshots
   are committed.
-- **FR-006**: The quickstart's open-checks table and its running count MUST be updated to match the
-  recorded results, keeping the macOS half open under SKY-19 unless it is already recorded.
+- **FR-006**: The quickstart's open-checks summary MUST be updated to match the recorded results, as
+  earlier closings were: a dated sentence above the open-checks table (the original count stays as
+  written), and the table rows for checks 4 and 5 changed to macOS only under SKY-19, or removed if
+  that half is already recorded.
 - **FR-007**: A failed check MUST be recorded as FAIL with what was seen, and a bug ticket MUST be filed
   for it in the project's backlog; the fix is out of scope for this feature.
 - **FR-008**: The feature MUST NOT change the app's rendering code. Any change found necessary goes to
