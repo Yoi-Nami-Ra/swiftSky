@@ -48,15 +48,18 @@ two checks that cannot be argued from the code alone.
 
 **Independent Test**: Capture one frame of the iOS app with the ship and the debug overlay switched
 off, and read the frame's render pass: it must hold a draw of four vertices with the full-screen quad's
-pipeline, and the surface must still come out uniformly black.
+pipeline, whose geometry spans the whole surface and which writes the surface's corner and centre
+pixels.
 
 **Acceptance Scenarios**:
 
 1. **Given** the iOS app running with the ship and the debug overlay switched off, **When** a frame is
    captured, **Then** its render pass contains exactly one draw, using the full-screen quad's pipeline
    with its own vertex and fragment shaders and the quad's vertex buffer, covering the whole surface.
-2. **Given** the same captured frame, **When** its final attachment is inspected, **Then** it is
-   uniformly black, so the draw and not a clear produced what is on screen.
+2. **Given** the same captured frame, **When** the draw's geometry and the history of pixels at the
+   surface's four corners and centre are inspected, **Then** the quad spans the whole surface and the
+   draw wrote every one of those pixels. (The final colour cannot show this: the pass is cleared to
+   black and the quad also draws black.)
 3. **Given** the iOS app running with its default launch (ship and debug overlay shown), **When** a
    frame is captured, **Then** the same full-screen quad draw is still there, first in the pass, under
    the other draws.
@@ -126,8 +129,9 @@ observed, and its summary of open checks no longer lists their iOS half.
 - **FR-002**: A frame of the iOS app MUST be captured by hand in Xcode's GPU debugger while the surface
   is running normally. No capture code is added to the app.
 - **FR-003**: Check 4 MUST pass only when the captured render pass contains a draw that uses the
-  full-screen quad's pipeline and vertex buffer and covers the whole surface, and the surface is not
-  produced by a clear alone.
+  full-screen quad's pipeline and vertex buffer, whose geometry spans the whole surface, and which
+  writes the surface's four corner pixels and its centre pixel. The final colour is not evidence:
+  the clear and the quad are both black.
 - **FR-004**: Check 5 MUST pass only when two frames captured in one run use the same quad pipeline
   state and vertex buffer, and neither frame creates them.
 - **FR-005**: The result of each check MUST be recorded in specs/001-metal-app-shell/quickstart.md
