@@ -13,6 +13,24 @@ call covering the surface, not a clear-only pass (check 4); (2) the pipeline sta
 created once at init and reused every frame, not rebuilt (check 5; structural evidence is in
 FullscreenQuad). Record the result in the quickstart. The macOS capture is SKY-19."
 
+## Clarifications
+
+### Session 2026-10-18
+
+- Q: How are the iOS frames captured? → A: By hand in Xcode's GPU debugger; no capture code is added
+  to the app.
+- Q: Does a capture in the iOS Simulator close the checks, or is a physical device needed? → A: The
+  simulator closes them; a device is used only if the simulator cannot be captured _(assumed —
+  specs/001-metal-app-shell/quickstart.md:116–137, check 2 closed on the simulator in SKY-16)_
+- Q: What happens if a check fails? → A: It is recorded as FAIL and a bug ticket is filed; the fix is
+  a separate ticket _(assumed — check 33's Dynamic Type FAIL became SKY-38,
+  specs/001-metal-app-shell/quickstart.md:735)_
+- Q: In what form is the evidence kept? → A: As text in 001's quickstart; no capture files or
+  screenshots are committed _(assumed — `git ls-files specs` holds only Markdown and one patch; checks
+  2, 25 and 29 were recorded as text)_
+- Q: Which build is captured? → A: Debug, run from Xcode with `--no-ship --no-debug-overlay` _(assumed
+  — SKY-16's check 2 used the same build and arguments, specs/001-metal-app-shell/quickstart.md:116–117)_
+
 ## User Scenarios & Testing *(mandatory)*
 
 This feature closes two checks that 001-metal-app-shell left open on iOS. It adds no behaviour to the
@@ -105,8 +123,8 @@ observed, and its summary of open checks no longer lists their iOS half.
 - **FR-001**: The check MUST be made on a build that runs the same rendering path as a shipped build,
   with launch options that switch off the ship and the debug overlay available, so the quad's draw can
   be seen on its own.
-- **FR-002**: A frame of the iOS app MUST be captured in the GPU debugger while the surface is running
-  normally.
+- **FR-002**: A frame of the iOS app MUST be captured by hand in Xcode's GPU debugger while the surface
+  is running normally. No capture code is added to the app.
 - **FR-003**: Check 4 MUST pass only when the captured render pass contains a draw that uses the
   full-screen quad's pipeline and vertex buffer and covers the whole surface, and the surface is not
   produced by a clear alone.
@@ -114,7 +132,8 @@ observed, and its summary of open checks no longer lists their iOS half.
   state and vertex buffer, and neither frame creates them.
 - **FR-005**: The result of each check MUST be recorded in specs/001-metal-app-shell/quickstart.md
   under that check, dated, naming the build configuration, the destination (simulator or device, with
-  its model and OS version) and what was observed.
+  its model and OS version) and what was observed. The record is text; no capture files or screenshots
+  are committed.
 - **FR-006**: The quickstart's open-checks table and its running count MUST be updated to match the
   recorded results, keeping the macOS half open under SKY-19 unless it is already recorded.
 - **FR-007**: A failed check MUST be recorded as FAIL with what was seen, and a bug ticket MUST be filed
@@ -145,11 +164,12 @@ observed, and its summary of open checks no longer lists their iOS half.
 
 - The capture is taken by the developer by hand: this environment cannot drive Xcode's GPU debugger
   (no Accessibility or Screen Recording permission, as 001's quickstart records).
-- The Debug build is used, since it carries the launch options `--no-ship` and `--no-debug-overlay`;
-  the instrumented Release build carries them too and may be used instead.
+- The Debug build is used, run from Xcode, since it carries the launch options `--no-ship` and
+  `--no-debug-overlay` (as in SKY-16's check 2).
 - The full-screen quad's pipeline and vertex buffer carry debug labels that identify them in the
   capture.
-- The iOS Simulator is tried first; a physical device is used if the simulator cannot be captured.
+- A capture in the iOS Simulator closes the checks, as the simulator closed check 2 (SKY-16); a
+  physical device is used only if the simulator cannot be captured.
 - With the ship and debug overlay off and no order given, the order overlay draws nothing, so the quad
   is the only draw in the pass.
 - The macOS half of checks 4 and 5 is SKY-19 and is not done here.
