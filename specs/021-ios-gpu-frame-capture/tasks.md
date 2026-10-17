@@ -27,8 +27,8 @@ from the developer's notes in `specs/021-ios-gpu-frame-capture/capture-notes.md`
 
 **Purpose**: A baseline and a place for the developer's observations.
 
-- [ ] T001 Run `./Scripts/verify.sh` on branch `021-ios-gpu-frame-capture` and confirm it passes before anything changes
-- [ ] T002 Create `specs/021-ios-gpu-frame-capture/capture-notes.md` with a header holding T001's verify result and empty fields for Xcode version, build, arguments and destination, then one empty section per observation in data-model.md's "Captured frame" table (draws in the pass, pipeline label, buffer label, geometry, pixel history ×5, creation calls ×2 captures, object identity ×2 captures)
+- [x] T001 Run `./Scripts/verify.sh` on branch `021-ios-gpu-frame-capture` and confirm it passes before anything changes
+- [x] T002 Create `specs/021-ios-gpu-frame-capture/capture-notes.md` with a header holding T001's verify result and empty fields for Xcode version, build, arguments and destination, then one empty section per observation in data-model.md's "Captured frame" table (draws in the pass, pipeline label, buffer label, geometry, pixel history ×5, creation calls ×2 captures, object identity ×2 captures)
 
 **Checkpoint**: the notes file exists; the developer can fill it while capturing.
 
