@@ -45,4 +45,43 @@ struct AutopilotRestPhaseTests {
             state.ship.velocity.x.bitPattern == 0x3f50_578f_7e85_aca9
                 && state.ship.velocity.y.bitPattern == 0xbf04_3c4d_bd8f_d4fa)
     }
+
+    /// FNV-1a 64 over every tick's control input and resulting ship bits, until the first tick whose phase is
+    /// `.arrived` (research R3). The phase itself is never hashed: it is the one thing the fix may change.
+    static func fingerprint(_ start: SimulationState, maxTicks: Int) -> (fingerprint: UInt64, ticks: Int) {
+        var hash: UInt64 = 0xcbf2_9ce4_8422_2325
+        func fold(_ value: UInt64) { hash = (hash ^ value) &* 0x100_0000_01b3 }
+        var state = start
+        var ticks = 0
+        while ticks < maxTicks {
+            var probe = state.autopilot
+            let input = probe.control(for: state.ship)
+            state = Simulation.advance(state, ticks: 1)
+            ticks += 1
+            fold(input.thrust.bitPattern)
+            fold(input.turn.bitPattern)
+            for word in bits(state.ship) { fold(word) }
+            if state.autopilot.phase == .arrived { break }
+        }
+        return (hash, ticks)
+    }
+
+    // Recorded from the law as it was BEFORE the 020 fix. They must never be edited to make the test pass
+    // (spec FR-004): a failure here means the fix changed the inputs, and the fix is wrong.
+    static let reorderFingerprints: [Double: (fingerprint: UInt64, ticks: Int)] = [
+        .pi: (0x4e5a_c65f_1bad_fcc0, 341),
+        2 * .pi / 3: (0x60fc_6859_ea22_29a8, 369),
+    ]
+
+    @Test(
+        "A re-order from station keeping flies bit-identical inputs and states (FR-007, SC-002)",
+        arguments: [Double.pi, 2 * Double.pi / 3])
+    func reorderFlightIsBitIdentical(offset: Double) {
+        let ordered = Self.reorder(Self.stationKept(), turnedBy: offset)
+        let result = Self.fingerprint(ordered, maxTicks: 3_600)
+        let expected = Self.reorderFingerprints[offset]!
+        #expect(
+            result.fingerprint == expected.fingerprint && result.ticks == expected.ticks,
+            "fingerprint 0x\(String(result.fingerprint, radix: 16)) ticks \(result.ticks)")
+    }
 }
