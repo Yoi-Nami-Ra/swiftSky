@@ -57,7 +57,7 @@ description: |
   (the planned path holds positions, not phases, so SKY-26's prediction
   doesn't change); `./Scripts/verify.sh` passes.
 platform: ios
-status: in-progress
+status: done
 phase: Backlog
 priority: medium
 parent: null
