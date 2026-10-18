@@ -6,6 +6,7 @@ No code entities. Two records describe what the feature reads and writes.
 
 | Field | From | Check | Expected |
 |-------|------|-------|----------|
+| Breakpoint locations | COUNTS, `=== TOTALS` | 4, 5 | ≥ 1 for each of the six (a 0 hit count on no location proves nothing) |
 | Presents over 10 s | COUNTS, `presentDrawable:` hit count | 4 | > 0 (the frame count) |
 | Draws over 10 s | COUNTS, `drawPrimitives:vertexStart:vertexCount:` | 4 | presents ± 1 |
 | Pipeline bindings over 10 s | COUNTS, `setRenderPipelineState:` | 4 | presents ± 1 |
@@ -19,12 +20,13 @@ No code entities. Two records describe what the feature reads and writes.
 
 ## Check record (written, in specs/001-metal-app-shell/quickstart.md)
 
-One paragraph per check, after the existing check records, in the shape 001 already uses:
+One paragraph per check, under that check: in the "Visible output" section, after the records already
+there, in the shape 001 already uses:
 
 - heading line: `**Check N — PASS|FAIL on iOS, simulator (YYYY-MM-DD, SKY-18).**`
 - build and destination: Xcode version, Debug, launch arguments, simulator model and OS
-- method: lldb attached to the running app, by `specs/021-ios-gpu-frame-capture/probe.sh`, instead of
-  the GPU debugger, and why that settles the check
+- method: lldb attached to the running app, by `specs/021-ios-gpu-frame-capture/probe.sh` following this
+  feature's quickstart, instead of the GPU debugger, and why that settles the check
 - what was observed, field by field from the table above
 - on FAIL: the bug ticket's key
 

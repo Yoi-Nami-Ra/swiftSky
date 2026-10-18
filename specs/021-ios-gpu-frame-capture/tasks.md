@@ -43,7 +43,7 @@ sampled pipeline and buffer labels, the 4-vertex triangle strip at (−1, −1)�
 change.
 
 - [x] T003 [US1] Run `specs/021-ios-gpu-frame-capture/probe.sh` (booted simulator) and fill the Header, Counts and Sample 1 sections of `specs/021-ios-gpu-frame-capture/capture-notes.md` from its output, per quickstart.md "Read the output"; if lldb cannot attach or break, stop and report (spec Edge Cases)
-- [x] T004 [US1] Judge check 4 against spec FR-003 and research R2 from `specs/021-ios-gpu-frame-capture/capture-notes.md`; write `**Check 4 — PASS|FAIL on iOS, <simulator|device> (<date>, SKY-18).**` with build, destination and observations into `specs/001-metal-app-shell/quickstart.md`, after the last existing check record and before the summary section, in the shape data-model.md describes
+- [x] T004 [US1] Judge check 4 against spec FR-003 and research R2 from `specs/021-ios-gpu-frame-capture/capture-notes.md`; write `**Check 4 — PASS|FAIL on iOS, <simulator|device> (<date>, SKY-18).**` with build, destination and observations into `specs/001-metal-app-shell/quickstart.md`, under check 4 in the "Visible output" section, after the records already there (FR-005), in the shape data-model.md describes
 - [x] T005 [US1] If check 4 failed: file a bug ticket with `/tickets` (title naming what the capture showed, phase MVP, platform ios) and add its key to the check 4 record in `specs/001-metal-app-shell/quickstart.md`; otherwise mark this task done with "not needed" — not needed (check 5 passed) — not needed (check 4 passed)
 
 **Checkpoint**: check 4's iOS result is recorded.

@@ -165,6 +165,42 @@ The window opened at 640×360, the minimum, because macOS restored a size saved 
 (`NSWindow Frame main` in the app's defaults). Check 1's 1280×720 is the first-launch size and is not
 affected.
 
+**Check 4 — PASS on iOS, simulator (2026-10-18, SKY-18).** iPhone 18 Pro simulator, iOS 27.0, Xcode 27.0
+(27A266a), Debug build launched with `--no-ship --no-debug-overlay`. It was verified with lldb attached to
+the running app instead of Xcode's GPU debugger (spec 021 Clarifications, research R2), by
+[`specs/021-ios-gpu-frame-capture/probe.sh`](../021-ios-gpu-frame-capture/probe.sh), following
+spec 021's [quickstart](../021-ios-gpu-frame-capture/quickstart.md). The final colour is
+not evidence here: the clear colour and the quad are both black, so a missing draw and a working one look
+the same. The evidence is the calls themselves. Over 10 seconds of frames the breakpoints counted 186
+`presentDrawable:` calls, 187 `drawPrimitives:vertexStart:vertexCount:` calls and 187
+`setRenderPipelineState:` calls: one quad draw per presented frame (the extra one is a frame still in
+flight when the count stopped). `setViewport:` was hit 0 times, so the default viewport, the whole
+drawable, is used. A sampled frame on thread `com.swiftsky.frameLoop` bound the pipeline labelled
+`swiftSky.fullscreenQuad` (0x00000001041af180) and the vertex buffer labelled `swiftSky.quadVertices`
+(0x00000001041af0c0, offset 0, index 0, length 32 bytes) holding the floats `-1 -1 1 -1 -1 1 1 1`, the four
+clip-space corners (−1, −1) to (1, 1), and drew primitive type 4 (triangle strip), vertex start 0, vertex
+count 4. The labels were read in the two sampled frames; that every frame binds the same pipeline and
+buffer follows from the equal counts and from `Renderer.swift` lines 194–196, where every frame's first draw
+binds these two, not from a label read in each frame. On that reading the run meets spec 021 FR-003,
+so the quad draw covers the whole surface. The
+full output is summarised in
+[`capture-notes.md`](../021-ios-gpu-frame-capture/capture-notes.md).
+
+**Check 5 — PASS on iOS, simulator (2026-10-18, SKY-18).** Same probe run as check 4 (its counts and its
+two samples come from two launches of the app): iPhone 18 Pro simulator,
+iOS 27.0, Xcode 27.0 (27A266a), Debug build with `--no-ship --no-debug-overlay`. It was verified with lldb
+attached to the running app instead of Xcode's GPU debugger (spec 021 Clarifications, research R2), by
+[`specs/021-ios-gpu-frame-capture/probe.sh`](../021-ios-gpu-frame-capture/probe.sh), following
+spec 021's [quickstart](../021-ios-gpu-frame-capture/quickstart.md). Over 10 seconds of
+frames, breakpoints on every class implementing `newRenderPipelineStateWithDescriptor:` (27 locations, all
+resolved) and `newBufferWithBytes:`/`newBufferWithLength:` (45 locations, all resolved) were hit 0 times:
+nothing created a pipeline state or a buffer while frames were drawn. Two samples 5 seconds apart in one
+launch bound the same objects: pipeline `swiftSky.fullscreenQuad` at 0x00000001041af180 and vertex buffer
+`swiftSky.quadVertices` at 0x00000001041af0c0 in both. That meets spec 021 FR-004 and research R3. The probe
+attaches after launch, so the one-time creation at initialisation (`Renderer.swift`, `init`, line 107 builds
+`FullscreenQuad`) is shown by the code, and its constancy by the observation. The full output is summarised
+in [`capture-notes.md`](../021-ios-gpu-frame-capture/capture-notes.md).
+
 ### Window and scene behaviour
 
 | # | Check | Expected | Criterion |
@@ -699,36 +735,6 @@ and ASan builds of both schemes plus `swift build` and `swift test`. `.gitignore
 `DerivedData/`, `.build/`, `xcuserdata/`, `*.xcodeproj/xcuserdata/` and
 `*.xcodeproj/project.xcworkspace/xcuserdata/`.
 
-**Check 4 — PASS on iOS, simulator (2026-10-18, SKY-18).** iPhone 18 Pro simulator, iOS 27.0, Xcode 27.0
-(27A266a), Debug build launched with `--no-ship --no-debug-overlay`. It was verified with lldb attached to
-the running app instead of Xcode's GPU debugger (spec 021 Clarifications, research R2), by
-[`specs/021-ios-gpu-frame-capture/probe.sh`](../021-ios-gpu-frame-capture/probe.sh). The final colour is
-not evidence here: the clear colour and the quad are both black, so a missing draw and a working one look
-the same. The evidence is the calls themselves. Over 10 seconds of frames the breakpoints counted 186
-`presentDrawable:` calls, 187 `drawPrimitives:vertexStart:vertexCount:` calls and 187
-`setRenderPipelineState:` calls: one quad draw per presented frame (the extra one is a frame still in
-flight when the count stopped). `setViewport:` was hit 0 times, so the default viewport, the whole
-drawable, is used. A sampled frame on thread `com.swiftsky.frameLoop` bound the pipeline labelled
-`swiftSky.fullscreenQuad` (0x00000001041af180) and the vertex buffer labelled `swiftSky.quadVertices`
-(0x00000001041af0c0, offset 0, index 0, length 32 bytes) holding the floats `-1 -1 1 -1 -1 1 1 1`, the four
-clip-space corners (−1, −1) to (1, 1), and drew primitive type 4 (triangle strip), vertex start 0, vertex
-count 4. That meets every condition of spec 021 FR-003, so the quad draw covers the whole surface. The
-full output is summarised in
-[`capture-notes.md`](../021-ios-gpu-frame-capture/capture-notes.md).
-
-**Check 5 — PASS on iOS, simulator (2026-10-18, SKY-18).** Same run as check 4: iPhone 18 Pro simulator,
-iOS 27.0, Xcode 27.0 (27A266a), Debug build with `--no-ship --no-debug-overlay`. It was verified with lldb
-attached to the running app instead of Xcode's GPU debugger (spec 021 Clarifications, research R2), by
-[`specs/021-ios-gpu-frame-capture/probe.sh`](../021-ios-gpu-frame-capture/probe.sh). Over 10 seconds of
-frames, breakpoints on every class implementing `newRenderPipelineStateWithDescriptor:` (27 locations, all
-resolved) and `newBufferWithBytes:`/`newBufferWithLength:` (45 locations, all resolved) were hit 0 times:
-nothing created a pipeline state or a buffer while frames were drawn. Two samples 5 seconds apart in the
-same run bound the same objects: pipeline `swiftSky.fullscreenQuad` at 0x00000001041af180 and vertex buffer
-`swiftSky.quadVertices` at 0x00000001041af0c0 in both. That meets spec 021 FR-004 and research R3. The probe
-attaches after launch, so the one-time creation at initialisation (`Renderer.swift`, `init`, line 107 builds
-`FullscreenQuad`) is shown by the code, and its constancy by the observation. The full output is summarised
-in [`capture-notes.md`](../021-ios-gpu-frame-capture/capture-notes.md).
-
 ---
 
 ## Definition of done
@@ -758,8 +764,8 @@ GPU debugger, and remain open for macOS (SKY-19).
 
 | # | Check | Why it is still open |
 |---|-------|----------------------|
-| 4 | GPU frame capture shows a draw call | iOS passed (SKY-18, lldb); macOS needs the same probe or a capture (SKY-19) |
-| 5 | Pipeline state built once | iOS passed (SKY-18, lldb); macOS needs the same probe or a capture (SKY-19) |
+| 4 | GPU frame capture shows a draw call | iOS passed (SKY-18, lldb); macOS needs a macOS variant of the probe or a capture (SKY-19) |
+| 5 | Pipeline state built once | iOS passed (SKY-18, lldb); macOS needs a macOS variant of the probe or a capture (SKY-19) |
 | 7, 8 | Resize range, minimum size | Needs interactive window dragging |
 | 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |
