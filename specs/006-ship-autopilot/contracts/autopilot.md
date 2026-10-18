@@ -93,7 +93,9 @@ Inputs: the ship (`p`, `v`, heading `h`, rate of turn `ω`, limits `a`, `ωmax`,
    - otherwise (coasting / holding / settled) → **braking** if `ĥ·v < 0` and not at rest, else **burning**.
 
    Step 5's settled return names its phase by the last bullet. Step 6's hold rule still reads `ĥ·v < 0`
-   without the rest clause, so no input changes (020 FR-004).
+   without the rest clause, so a flight the autopilot flies throughout keeps its inputs bit for bit (020
+   FR-004). After explicit-input ticks, which keep the stored phase, a phase named from rest can still
+   change a later input through the hold rule (020 contracts/phase-rule.md).
 
 All quantities are finite for any finite ship, any sanitised limits and any accepted order (FR-013):
 every division is guarded as written above.

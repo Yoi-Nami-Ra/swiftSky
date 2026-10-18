@@ -13,7 +13,10 @@ states what 006's step 8 says after 020. The implementation copies the wording i
    - otherwise (coasting / holding / settled) → **braking** if `ĥ·v < 0` and not at rest, else **burning**.
 
 Step 5's settled return names its phase by the last bullet. Step 6's hold rule still reads `ĥ·v < 0`
-without the rest clause, so no input changes (020 FR-004).
+without the rest clause. It also reads the previous phase, which this rule can rename.
 
-**Guarantees**: For any ship and order, `control(for:)` returns the same `ControlInput` bits as before 020.
-Only `phase` can differ, and only on ticks evaluated from a ship at rest.
+**Guarantees**: While the autopilot flies every tick from the order on, `control(for:)` returns the same
+`ControlInput` bits as before 020; only `phase` differs, on ticks evaluated from a ship at rest and on the
+ticks that phase latches into. The exception is a flight interrupted by explicit-input ticks (006 FR-011),
+which keep the stored phase: a phase named from rest can then reach the hold rule on a later tick, when
+the ship is moving, and change its input. `AutopilotRestPhaseTests` pins both.

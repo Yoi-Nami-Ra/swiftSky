@@ -123,8 +123,11 @@ and resulting ship state, bit for bit, with the values the law produced before t
 - **FR-003**: The rest rule MUST apply to every place the phase is named from the velocity's direction:
   the turning rule, the thrusting rule, the coasting rule and the settled (neutral-input) rule. It MUST NOT
   apply to the arrived rule, which does not use the velocity's direction.
-- **FR-004**: The control input of every tick MUST be unchanged, bit for bit, by this feature — including
-  through the hold rule, which reads the previous tick's phase. If a test shows a changed input, the work
+- **FR-004**: The control input of every tick the autopilot flies from the order on MUST be unchanged, bit
+  for bit, by this feature — including through the hold rule, which reads the previous tick's phase.
+  Explicit-input ticks (006 FR-011) keep the stored phase, so after them a phase named from rest can change
+  a later input through the hold rule; that exception was found in review and accepted, and is pinned by a
+  test. If a test shows a changed input, the work
   MUST stop and be reported; neither the inputs nor the expected values may be changed to make it pass.
 - **FR-005**: A logic-layer test MUST reproduce the bug: fly an order to arrival, keep station until the
   leftover velocity is non-zero and points away from the next destination, pin that velocity's bits in the

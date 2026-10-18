@@ -145,6 +145,37 @@ struct AutopilotRestPhaseTests {
         #expect(result.phase == .burning)
     }
 
+    @Test("The hold rule still reads the raw velocity direction at rest (FR-004, contract step 6)")
+    func holdRuleReadsRawDirection() {
+        // Facing against its motion at rest and closing on a destination inside the hold rule's reach: the
+        // raw test commits it to braking, so it holds and turns to face against the velocity (+1). Read
+        // through the rest rule, it would turn the other way (−1).
+        let result = Self.evaluate(
+            velocity: Self.polar(0.0009206945536779856, 1.3930853137224208), heading: -3.092044748158288,
+            angularVelocity: -0.04705009884062106,
+            destination: Self.polar(0.0014877396441076868, 1.0055581949092154),
+            tolerances: ArrivalTolerances(position: 1e-4, speed: 1e-4), previous: .aligning)
+        #expect(result.input.thrust.bitPattern == 0)
+        #expect(result.input.turn == 1)
+    }
+
+    @Test("After explicit-input ticks, a phase named from rest can change a later input (FR-004 exception)")
+    func explicitInputInterludeKeepsBurning() {
+        // An order given at rest facing against a slight drift used to be named braking. Thrust given
+        // explicitly then carries the ship to 200 u/s towards the destination with the phase unchanged, and
+        // the stale braking engaged the hold rule: thrust 0, turn +1. Named burning, it flies on at full thrust.
+        var state = SimulationState(
+            tickCount: 0,
+            ship: Ship(position: .zero, velocity: Vector2(x: -0.0005, y: 0), heading: 0, angularVelocity: 0))
+        state.setOrder(to: Vector2(x: 1_000, y: 0))
+        #expect(state.autopilot.phase == .burning)
+        state = Simulation.advance(state, ticks: 60, input: ControlInput(thrust: 1, turn: 0))
+        var autopilot = state.autopilot
+        let input = autopilot.control(for: state.ship)
+        #expect(input.thrust == 1 && input.turn.bitPattern == 0)
+        #expect(autopilot.phase == .burning)
+    }
+
     @Test("The rest boundary is the settle speed, inclusive (FR-005a)")
     func restBoundaryIsSettleSpeed() {
         func firstPhase(speed s: Double) -> AutopilotPhase? {

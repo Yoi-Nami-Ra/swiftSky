@@ -118,8 +118,10 @@ state machine with explicit transition guards (more state, more cases, same beha
 
 **Rest** (020, SKY-46): rules 2–4 treat a speed of at most `settleSpeed` (0.001 u/s) as rest, with no
 direction, so never against the motion. Station keeping leaves up to that much velocity and calls it
-settled, so the settle speed is the law's own "no motion". It is phase naming only: the hold rule is
-unchanged, so inputs are bit-identical.
+settled, so the settle speed is the law's own "no motion". It is phase naming only: the hold rule's own
+direction test is unchanged, so a flight the autopilot flies throughout has bit-identical inputs. The hold
+rule also reads the previous phase, so after explicit-input ticks a phase named from rest can change a
+later input (020 contracts/phase-rule.md).
 
 The previous phase is the only memory; it is stored in the state (FR-014).
 

@@ -114,7 +114,7 @@ extension Autopilot {
         // At a speed of at most the settle speed the velocity has no direction, so the ship is not facing
         // against its motion: station keeping leaves up to that much velocity behind, and a re-order must
         // not start in .braking or .flipping because of it. This names the phase only; step 6's hold rule
-        // still reads `facingAgainstMotion` (020, SKY-46).
+        // still reads `facingAgainstMotion`, though it also reads the phase (020, SKY-46).
         let atRest = speed <= Self.settleSpeed
         let namedAgainstMotion = facingAgainstMotion && !atRest
         if error <= Self.settleSpeed {

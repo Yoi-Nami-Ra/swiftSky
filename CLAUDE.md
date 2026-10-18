@@ -142,8 +142,9 @@ artifacts, keep them consistent with these templates.
   `Simulation.advance(_:ticks:)` is flown by the autopilot when there is an order;
   `advance(_:ticks:input:)` takes an explicit input and leaves the order alone. `AutopilotLaw.swift` is
   the logic layer's second file with a `Darwin` import. Its tuning history is research R11. When naming
-  the phase, a speed of at most `settleSpeed` is rest (020, SKY-46); the hold rule and the inputs do not
-  use that rule.
+  the phase, a speed of at most `settleSpeed` is rest (020, SKY-46); the hold rule's direction test does
+  not use that rule, so autopilot-flown inputs are unchanged, but after explicit-input ticks a phase named
+  from rest can change a later input through the hold rule.
 - `Sources/SwiftSkySimulation/PlannedPath.swift` — the current order's planned path, held in
   `SimulationState.plannedPath` and written only by `setOrder(to:)`: up to 256 positions in an
   `InlineArray` (no heap, so the state is ~4.2 KB), the tick of every point (`startTick`, `spacing`,

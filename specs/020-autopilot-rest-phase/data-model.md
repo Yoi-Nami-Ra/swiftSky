@@ -23,5 +23,6 @@ No stored data changes. `SimulationState`, `Autopilot`, `AutopilotPhase` and `Sh
 | Turns, any other target | burning if previous burning, else aligning | burning if previous burning, else aligning |
 | Coasts or holds | braking if `ĥ·v < 0`, else burning | burning |
 
-The previous phase is stored as before. Under the hold rule it feeds the next tick's input, which R3 shows
-does not change for any re-order from rest.
+The previous phase is stored as before. Under the hold rule it feeds the next tick's input, which R3 and
+the fingerprint tests show does not change for a re-order the autopilot flies. Explicit-input ticks keep
+the stored phase, so after them it can (contracts/phase-rule.md).
