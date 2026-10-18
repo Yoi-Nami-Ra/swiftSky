@@ -84,12 +84,18 @@ Inputs: the ship (`p`, `v`, heading `h`, rate of turn `ω`, limits `a`, `ωmax`,
 7. **Input**:
    - `turn = sign(δ) · min(ωmax, √(2α|δ|), |δ|/dt) / ωmax` (0 if `ωmax = 0`).
    - `thrust = clamp((A·ĥ)/a, 0, 1)` if `|δ| ≤ cone` and not holding and `a > 0`; else 0.
-8. **Phase** (unless arrived by step 2):
-   - thrusting → **braking** if `ĥ·v < 0`, else **burning**;
-   - turning (`|δ| > cone`) towards a target opposing the velocity (`target·v < 0`) → **braking** if
-     the previous phase is braking, else **flipping**; towards any other target → **burning** if the
-     previous phase is burning, else **aligning**;
-   - otherwise (coasting / holding / settled) → **braking** if `ĥ·v < 0`, else **burning**.
+8. **Phase** (unless arrived by step 2). **Rest**: a ship whose speed is at most `settle` (0.001 u/s) is at
+   rest, and its velocity has no direction for naming the phase (020):
+   - thrusting → **braking** if `ĥ·v < 0` and not at rest, else **burning**;
+   - turning (`|δ| > cone`) towards a target opposing the velocity (`target·v < 0`, never at rest) →
+     **braking** if the previous phase is braking, else **flipping**; towards any other target →
+     **burning** if the previous phase is burning, else **aligning**;
+   - otherwise (coasting / holding / settled) → **braking** if `ĥ·v < 0` and not at rest, else **burning**.
+
+   Step 5's settled return names its phase by the last bullet. Step 6's hold rule still reads `ĥ·v < 0`
+   without the rest clause, so a flight the autopilot flies throughout keeps its inputs bit for bit (020
+   FR-004). After explicit-input ticks, which keep the stored phase, a phase named from rest can still
+   change a later input through the hold rule (020 contracts/phase-rule.md).
 
 All quantities are finite for any finite ship, any sanitised limits and any accepted order (FR-013):
 every division is guarded as written above.
