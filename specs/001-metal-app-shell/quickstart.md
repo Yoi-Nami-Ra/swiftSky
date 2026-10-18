@@ -753,11 +753,13 @@ Check 29's race half and its mid-drag stall half passed on 2026-10-01 (012); one
 the end of live resize keeps it open (SKY-37).
 Check 2 passed on 2026-10-05 and is no longer open: iOS in the simulator (SKY-16), macOS from a
 screen recording (SKY-17).
+Checks 4 and 5 passed on iOS in the simulator on 2026-10-18 (SKY-18), verified with lldb rather than the
+GPU debugger, and remain open for macOS (SKY-19).
 
 | # | Check | Why it is still open |
 |---|-------|----------------------|
-| 4 | GPU frame capture shows a draw call | Needs Xcode's GPU debugger, interactive |
-| 5 | Pipeline state built once | Same; structural evidence in `FullscreenQuad` |
+| 4 | GPU frame capture shows a draw call | iOS passed (SKY-18, lldb); macOS needs the same probe or a capture (SKY-19) |
+| 5 | Pipeline state built once | iOS passed (SKY-18, lldb); macOS needs the same probe or a capture (SKY-19) |
 | 7, 8 | Resize range, minimum size | Needs interactive window dragging |
 | 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |

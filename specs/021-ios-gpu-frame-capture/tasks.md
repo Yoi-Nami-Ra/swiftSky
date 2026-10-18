@@ -72,8 +72,8 @@ in the two samples.
 **Independent Test**: The open-checks table and the paragraph above it in 001's quickstart agree with
 the check 4 and 5 records.
 
-- [ ] T009 [US3] Check whether SKY-19 has recorded the macOS half of checks 4 and 5 (`python3 -I ~/.claude/skills/tickets/scripts/tickets.py desc 19` and a search for "Check 4 — " in `specs/001-metal-app-shell/quickstart.md`)
-- [ ] T010 [US3] In the summary of `specs/001-metal-app-shell/quickstart.md`: add a sentence above the open-checks table saying the iOS half of checks 4 and 5 closed on the date (SKY-18), and change the table's rows for 4 and 5 to say macOS only (SKY-19) with the reason, or remove them if T009 found the macOS half recorded; on a FAIL, keep the row and name the bug ticket
+- [x] T009 [US3] Check whether SKY-19 has recorded the macOS half of checks 4 and 5 (`python3 -I ~/.claude/skills/tickets/scripts/tickets.py desc 19` and a search for "Check 4 — " in `specs/001-metal-app-shell/quickstart.md`)
+- [x] T010 [US3] In the summary of `specs/001-metal-app-shell/quickstart.md`: add a sentence above the open-checks table saying the iOS half of checks 4 and 5 closed on the date (SKY-18), and change the table's rows for 4 and 5 to say macOS only (SKY-19) with the reason, or remove them if T009 found the macOS half recorded; on a FAIL, keep the row and name the bug ticket
 
 **Checkpoint**: the quickstart is consistent.
 
