@@ -66,16 +66,19 @@ struct AutopilotRestPhaseTests {
         return (hash, ticks)
     }
 
-    // Recorded from the law as it was BEFORE the 020 fix. They must never be edited to make the test pass
-    // (spec FR-004): a failure here means the fix changed the inputs, and the fix is wrong.
+    // Recorded from the law as it was BEFORE the 020 fix (the sideways pair from 7bcdc9a's law, in review).
+    // They must never be edited to make the test pass (spec FR-004): a failure here means the fix changed the
+    // inputs, and the fix is wrong.
     static let reorderFingerprints: [Double: (fingerprint: UInt64, ticks: Int)] = [
         .pi: (0x4e5a_c65f_1bad_fcc0, 341),
         2 * .pi / 3: (0x60fc_6859_ea22_29a8, 369),
+        .pi / 2: (0x6a9a_e620_5450_201d, 371),
+        -.pi / 2: (0x1142_c354_ef87_68b9, 371),
     ]
 
     @Test(
         "A re-order from station keeping flies bit-identical inputs and states (FR-007, SC-002)",
-        arguments: [Double.pi, 2 * Double.pi / 3])
+        arguments: [Double.pi, 2 * Double.pi / 3, Double.pi / 2, -Double.pi / 2])
     func reorderFlightIsBitIdentical(offset: Double) {
         let ordered = Self.reorder(Self.stationKept(), turnedBy: offset)
         let result = Self.fingerprint(ordered, maxTicks: 3_600)
@@ -101,6 +104,15 @@ struct AutopilotRestPhaseTests {
     func reorderStraightBehindStartsBurning() {
         let flight = fly(Self.reorder(Self.stationKept(), turnedBy: .pi), maxTicks: 3_600)
         #expect(flight.phases == [.burning, .flipping, .braking, .arrived], "\(flight.phases)")
+        expectForwardOnly(flight.phases)
+    }
+
+    @Test(
+        "A sideways re-order starts aligning; before 020 it started flipping (edge case)",
+        arguments: [Double.pi / 2, -Double.pi / 2])
+    func sidewaysReorderStartsAligning(offset: Double) {
+        let flight = fly(Self.reorder(Self.stationKept(), turnedBy: offset), maxTicks: 3_600)
+        #expect(flight.phases == [.aligning, .burning, .flipping, .braking, .arrived], "\(flight.phases)")
         expectForwardOnly(flight.phases)
     }
 

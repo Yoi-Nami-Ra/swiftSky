@@ -100,8 +100,10 @@ and resulting ship state, bit for bit, with the values the law produced before t
 - **Speed just above the settle speed**: the phase is named from the velocity's direction as today; the ship
   is genuinely moving and 006 FR-005 allows repeats from a moving start.
 - **Exactly zero velocity**: unchanged — it is already treated as rest by the existing rules.
-- **Leftover velocity pointing towards the new destination, or sideways**: the first phase is `aligning`
-  (or `burning` if the ship already faces the burn direction), as today.
+- **Leftover velocity pointing towards the new destination**: the first phase is `aligning` (or `burning`
+  if the ship already faces the burn direction), as today.
+- **Leftover velocity pointing sideways**: the same bug — the order started in `flipping` — and the same
+  fix: it starts `aligning` (pinned at ±90°).
 - **New order while still arrived at the old destination's tolerance, nothing to fly**: the arrived rules are
   unchanged; this feature touches only how a non-arrived tick is named.
 - **Mid-flight ticks**: during a real flight the speed is far above the settle speed except at the very
