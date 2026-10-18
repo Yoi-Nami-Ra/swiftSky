@@ -699,6 +699,23 @@ and ASan builds of both schemes plus `swift build` and `swift test`. `.gitignore
 `DerivedData/`, `.build/`, `xcuserdata/`, `*.xcodeproj/xcuserdata/` and
 `*.xcodeproj/project.xcworkspace/xcuserdata/`.
 
+**Check 4 — PASS on iOS, simulator (2026-10-18, SKY-18).** iPhone 18 Pro simulator, iOS 27.0, Xcode 27.0
+(27A266a), Debug build launched with `--no-ship --no-debug-overlay`. It was verified with lldb attached to
+the running app instead of Xcode's GPU debugger (spec 021 Clarifications, research R2), by
+[`specs/021-ios-gpu-frame-capture/probe.sh`](../021-ios-gpu-frame-capture/probe.sh). The final colour is
+not evidence here: the clear colour and the quad are both black, so a missing draw and a working one look
+the same. The evidence is the calls themselves. Over 10 seconds of frames the breakpoints counted 186
+`presentDrawable:` calls, 187 `drawPrimitives:vertexStart:vertexCount:` calls and 187
+`setRenderPipelineState:` calls: one quad draw per presented frame (the extra one is a frame still in
+flight when the count stopped). `setViewport:` was hit 0 times, so the default viewport, the whole
+drawable, is used. A sampled frame on thread `com.swiftsky.frameLoop` bound the pipeline labelled
+`swiftSky.fullscreenQuad` (0x00000001041af180) and the vertex buffer labelled `swiftSky.quadVertices`
+(0x00000001041af0c0, offset 0, index 0, length 32 bytes) holding the floats `-1 -1 1 -1 -1 1 1 1`, the four
+clip-space corners (−1, −1) to (1, 1), and drew primitive type 4 (triangle strip), vertex start 0, vertex
+count 4. That meets every condition of spec 021 FR-003, so the quad draw covers the whole surface. The
+full output is summarised in
+[`capture-notes.md`](../021-ios-gpu-frame-capture/capture-notes.md).
+
 ---
 
 ## Definition of done

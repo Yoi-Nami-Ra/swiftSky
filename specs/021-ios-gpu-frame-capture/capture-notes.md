@@ -6,29 +6,29 @@ expected values are in [data-model.md](data-model.md) "Probe run". Text only; no
 ## Header
 
 - T001 verify result (`./Scripts/verify.sh`, branch `021-ios-gpu-frame-capture`, 2026-10-18): VERIFICATION PASSED, all stages green (exit 0)
-- Date of run: _(to fill)_
-- Xcode version: _(to fill)_
-- Build: _(to fill)_ (expected: Debug)
-- Launch arguments: _(to fill)_ (expected: `--no-ship --no-debug-overlay`)
-- Simulator (model, UDID, OS): _(to fill)_
-- Failure notice shown at launch (yes/no): _(to fill)_
+- Date of run: 2026-10-18
+- Xcode version: Xcode 27.0, build version 27A266a
+- Build: Debug (built by probe.sh, scheme `swiftSky (iOS)`) (expected: Debug)
+- Launch arguments: `--no-ship --no-debug-overlay` (expected: `--no-ship --no-debug-overlay`)
+- Simulator (model, UDID, OS): iPhone 18 Pro, 17791BD4-BD96-45F0-B617-A325459BD30A, iOS 27.0
+- Failure notice shown at launch (yes/no): not checked; the probe attaches to the process and does not read the screen
 
 ## Counts (10 s)
 
-- presents: _(to fill)_
-- draws: _(to fill)_
-- pipeline bindings: _(to fill)_
-- viewport changes: _(to fill)_
-- pipeline-state creations: _(to fill)_
-- buffer creations: _(to fill)_
+- presents: 186
+- draws: 187
+- pipeline bindings: 187
+- viewport changes: 0
+- pipeline-state creations: 0
+- buffer creations: 0
 
 ## Sample 1
 
-- thread: _(to fill)_
-- pipeline address, label: _(to fill)_
-- vertex buffer address, label, offset, index, length: _(to fill)_
-- vertex buffer floats: _(to fill)_
-- draw primitive type, start, count: _(to fill)_
+- thread: #7, tid 0x40864c9, `com.swiftsky.frameLoop`
+- pipeline address, label: 0x00000001041af180, `swiftSky.fullscreenQuad`
+- vertex buffer address, label, offset, index, length: 0x00000001041af0c0, `swiftSky.quadVertices`, 0, 0, 32
+- vertex buffer floats: -1 -1 1 -1 -1 1 1 1
+- draw primitive type, start, count: 4 (triangle strip), 0, 4
 
 ## Sample 2 (5 s later, same run)
 
