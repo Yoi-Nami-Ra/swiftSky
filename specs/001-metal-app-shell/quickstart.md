@@ -716,6 +716,19 @@ count 4. That meets every condition of spec 021 FR-003, so the quad draw covers 
 full output is summarised in
 [`capture-notes.md`](../021-ios-gpu-frame-capture/capture-notes.md).
 
+**Check 5 — PASS on iOS, simulator (2026-10-18, SKY-18).** Same run as check 4: iPhone 18 Pro simulator,
+iOS 27.0, Xcode 27.0 (27A266a), Debug build with `--no-ship --no-debug-overlay`. It was verified with lldb
+attached to the running app instead of Xcode's GPU debugger (spec 021 Clarifications, research R2), by
+[`specs/021-ios-gpu-frame-capture/probe.sh`](../021-ios-gpu-frame-capture/probe.sh). Over 10 seconds of
+frames, breakpoints on every class implementing `newRenderPipelineStateWithDescriptor:` (27 locations, all
+resolved) and `newBufferWithBytes:`/`newBufferWithLength:` (45 locations, all resolved) were hit 0 times:
+nothing created a pipeline state or a buffer while frames were drawn. Two samples 5 seconds apart in the
+same run bound the same objects: pipeline `swiftSky.fullscreenQuad` at 0x00000001041af180 and vertex buffer
+`swiftSky.quadVertices` at 0x00000001041af0c0 in both. That meets spec 021 FR-004 and research R3. The probe
+attaches after launch, so the one-time creation at initialisation (`Renderer.swift`, `init`, line 107 builds
+`FullscreenQuad`) is shown by the code, and its constancy by the observation. The full output is summarised
+in [`capture-notes.md`](../021-ios-gpu-frame-capture/capture-notes.md).
+
 ---
 
 ## Definition of done

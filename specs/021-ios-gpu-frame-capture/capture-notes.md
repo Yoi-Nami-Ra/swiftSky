@@ -11,7 +11,7 @@ expected values are in [data-model.md](data-model.md) "Probe run". Text only; no
 - Build: Debug (built by probe.sh, scheme `swiftSky (iOS)`) (expected: Debug)
 - Launch arguments: `--no-ship --no-debug-overlay` (expected: `--no-ship --no-debug-overlay`)
 - Simulator (model, UDID, OS): iPhone 18 Pro, 17791BD4-BD96-45F0-B617-A325459BD30A, iOS 27.0
-- Failure notice shown at launch (yes/no): not checked; the probe attaches to the process and does not read the screen
+- Failure notice shown at launch (yes/no): no — the renderer encoded and presented frames throughout (186 presents in 10 s); the failure notice replaces the surface, so no frames would be drawn
 
 ## Counts (10 s)
 
@@ -32,9 +32,9 @@ expected values are in [data-model.md](data-model.md) "Probe run". Text only; no
 
 ## Sample 2 (5 s later, same run)
 
-- thread: _(to fill)_
-- pipeline address, label: _(to fill)_
-- vertex buffer address, label, offset, index, length: _(to fill)_
-- vertex buffer floats: _(to fill)_
-- draw primitive type, start, count: _(to fill)_
-- same pipeline and buffer addresses as sample 1: _(to fill)_
+- thread: #7, tid 0x40864c9, `com.swiftsky.frameLoop`
+- pipeline address, label: 0x00000001041af180, `swiftSky.fullscreenQuad`
+- vertex buffer address, label, offset, index, length: 0x00000001041af0c0, `swiftSky.quadVertices`, 0, 0, 32
+- vertex buffer floats: -1 -1 1 -1 -1 1 1 1
+- draw primitive type, start, count: 4 (triangle strip), 0, 4
+- same pipeline and buffer addresses as sample 1: yes (0x00000001041af180 and 0x00000001041af0c0 in both)

@@ -44,7 +44,7 @@ change.
 
 - [x] T003 [US1] Run `specs/021-ios-gpu-frame-capture/probe.sh` (booted simulator) and fill the Header, Counts and Sample 1 sections of `specs/021-ios-gpu-frame-capture/capture-notes.md` from its output, per quickstart.md "Read the output"; if lldb cannot attach or break, stop and report (spec Edge Cases)
 - [x] T004 [US1] Judge check 4 against spec FR-003 and research R2 from `specs/021-ios-gpu-frame-capture/capture-notes.md`; write `**Check 4 — PASS|FAIL on iOS, <simulator|device> (<date>, SKY-18).**` with build, destination and observations into `specs/001-metal-app-shell/quickstart.md`, after the last existing check record and before the summary section, in the shape data-model.md describes
-- [x] T005 [US1] If check 4 failed: file a bug ticket with `/tickets` (title naming what the capture showed, phase MVP, platform ios) and add its key to the check 4 record in `specs/001-metal-app-shell/quickstart.md`; otherwise mark this task done with "not needed" — not needed (check 4 passed)
+- [x] T005 [US1] If check 4 failed: file a bug ticket with `/tickets` (title naming what the capture showed, phase MVP, platform ios) and add its key to the check 4 record in `specs/001-metal-app-shell/quickstart.md`; otherwise mark this task done with "not needed" — not needed (check 5 passed) — not needed (check 4 passed)
 
 **Checkpoint**: check 4's iOS result is recorded.
 
@@ -57,9 +57,9 @@ change.
 **Independent Test**: The probe output shows zero creation calls and equal pipeline and buffer addresses
 in the two samples.
 
-- [ ] T006 [US2] From the same `probe.sh` output as T003, fill the Sample 2 section of `specs/021-ios-gpu-frame-capture/capture-notes.md`, including whether its pipeline and buffer addresses equal sample 1's
-- [ ] T007 [US2] Judge check 5 against spec FR-004 and research R3 from `specs/021-ios-gpu-frame-capture/capture-notes.md`; write the `**Check 5 — …**` record into `specs/001-metal-app-shell/quickstart.md` directly after the check 4 record
-- [ ] T008 [US2] If check 5 failed: file a bug ticket as in T005 and add its key to the check 5 record in `specs/001-metal-app-shell/quickstart.md`; otherwise mark this task done with "not needed"
+- [x] T006 [US2] From the same `probe.sh` output as T003, fill the Sample 2 section of `specs/021-ios-gpu-frame-capture/capture-notes.md`, including whether its pipeline and buffer addresses equal sample 1's
+- [x] T007 [US2] Judge check 5 against spec FR-004 and research R3 from `specs/021-ios-gpu-frame-capture/capture-notes.md`; write the `**Check 5 — …**` record into `specs/001-metal-app-shell/quickstart.md` directly after the check 4 record
+- [x] T008 [US2] If check 5 failed: file a bug ticket as in T005 and add its key to the check 5 record in `specs/001-metal-app-shell/quickstart.md`; otherwise mark this task done with "not needed"
 
 **Checkpoint**: check 5's iOS result is recorded.
 
