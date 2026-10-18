@@ -13,7 +13,7 @@ description: |
 
   Record the result in the quickstart. The macOS capture is SKY-19.
 platform: ios
-status: ready
+status: done
 phase: MVP
 priority: medium
 parent: null
