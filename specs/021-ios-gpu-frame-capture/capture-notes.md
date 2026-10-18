@@ -38,3 +38,21 @@ expected values are in [data-model.md](data-model.md) "Probe run". Text only; no
 - vertex buffer floats: -1 -1 1 -1 -1 1 1 1
 - draw primitive type, start, count: 4 (triangle strip), 0, 4
 - same pipeline and buffer addresses as sample 1: yes (0x00000001041af180 and 0x00000001041af0c0 in both)
+
+## Re-run with the counts check (2026-10-18)
+
+`probe.sh` after it learned to check its own counts and print `=== TOTALS`; same simulator, Xcode and
+launch arguments. Exit 0, `=== COUNTS PASSED`.
+
+| Breakpoint | Locations (all resolved) | Hits over 10 s |
+|------------|--------------------------|----------------|
+| `pipeline_new` | 27 | 0 |
+| `buffer_new` | 45 | 0 |
+| `set_viewport` | 8 | 0 |
+| `set_pipeline` | 14 | 191 |
+| `draw` | 7 | 191 |
+| `present` | 4 | 190 |
+
+Both samples again bound `swiftSky.fullscreenQuad` and `swiftSky.quadVertices` (offset 0, index 0,
+32 bytes, `-1 -1 1 -1 -1 1 1 1`), drew 4, 0, 4, and had equal addresses (new launch, so new addresses:
+0x00000001045a3180 and 0x00000001045a30c0).

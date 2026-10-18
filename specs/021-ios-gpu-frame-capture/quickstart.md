@@ -15,12 +15,19 @@ it with `--no-ship --no-debug-overlay`, attaches lldb and prints two parts.
 
 ## Read the output
 
-**COUNTS** (10 s, auto-continue breakpoints; only non-zero locations are listed, plus the six totals):
+**COUNTS** (10 s, auto-continue breakpoints; non-zero locations and any backtraces, then `=== TOTALS`
+with one `name locations hits` line per breakpoint):
 
-- `present`, `draw` and `set_pipeline` hit counts within one of each other: one quad draw per frame.
+- every breakpoint has at least one location. A breakpoint that resolved to nothing shows `0` locations
+  and `-1` hits, and its 0 proves nothing;
+- `present`, `draw` and `set_pipeline` hit counts above 0 and within one of each other: one quad draw
+  per frame.
 - `set_viewport` hit count 0: the default viewport, the whole drawable, is used.
 - `pipeline_new` and `buffer_new` hit counts 0: nothing is created while frames run. Any hit prints a
   backtrace; name the caller in the record.
+
+The probe checks these itself: it prints a `FAIL:` line for each one that does not hold and exits 1
+(also when the app does not launch). Exit 0 means the counts passed; the samples are read by hand.
 
 **SAMPLES** (two, 5 s apart, on thread `com.swiftsky.frameLoop`):
 
@@ -48,5 +55,7 @@ It must still pass; the feature changes no code.
 
 ## If lldb cannot attach or break
 
+The probe exits 1 (`FAIL: … resolved to no location (or lldb did not attach)`). If the SAMPLES part
+hangs, no frame is being encoded: the simulator window is covered or the failure notice is shown.
 Stop and report it. The fallback is the hand capture in Xcode's GPU debugger (Debug navigator ›
 Capture GPU Workload), which the developer decides on.

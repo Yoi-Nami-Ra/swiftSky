@@ -8,6 +8,9 @@
 #      pipeline-state / buffer creation (creations and viewport changes print a backtrace).
 #   2. SAMPLES: two samples, 5 s apart, of the bound pipeline, the bound vertex buffer (address, label,
 #      length, contents as floats) and the draw's arguments (primitive type, start, count).
+# Then it checks the COUNTS: it exits 1 with a FAIL line for each count that breaks check 4 or 5, or for
+# a breakpoint that resolved to no location (a 0 hit count there proves nothing). The SAMPLES values are
+# read by hand (quickstart.md, "Read the output"). Exit 0 means the counts passed, not the samples.
 # Nothing in the app changes; breakpoints slow the frame rate while attached.
 set -euo pipefail
 
@@ -25,9 +28,17 @@ xcrun simctl install "$UDID" "$WORK/dd/Build/Products/Debug-iphonesimulator/swif
 launch() {
   xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
   local out
-  out=$(xcrun simctl launch "$UDID" "$BUNDLE" --no-ship --no-debug-overlay)
+  out=$(xcrun simctl launch "$UDID" "$BUNDLE" --no-ship --no-debug-overlay) || return 1
   sleep 4
   echo "${out##*: }"
+}
+
+# errexit does not reach inside $( ), so a failed launch is caught here.
+launch_pid() {
+  local pid
+  pid=$(launch) || pid=
+  [[ $pid =~ ^[0-9]+$ ]] || { echo "FAIL: the app did not launch on $UDID" >&2; exit 1; }
+  echo "$pid"
 }
 
 C='-\[[A-Za-z0-9_]+ '
@@ -35,7 +46,7 @@ echo "=== xcode: $(xcodebuild -version | tr '\n' ' ')"
 xcrun simctl list devices | grep "$UDID" | sed 's/^ */=== simulator: /'
 
 echo "=== COUNTS"
-PID=$(launch)
+PID=$(launch_pid)
 xcrun lldb --batch \
   -o "settings set target.process.stop-on-sharedlibrary-events false" \
   -o "process attach -p $PID" \
@@ -55,8 +66,39 @@ xcrun lldb --batch \
   -o "script time.sleep(2)" \
   -o "script lldb.debugger.SetAsync(False)" \
   -o "breakpoint list" \
-  -o "process detach" 2>&1 \
-  | grep -E "^[0-9]+: name|^[0-9]+: regex|hit count|where = |frame #|error" | grep -v "hit count = 0 *$" || true
+  -o "process detach" >"$WORK/counts.txt" 2>&1 || true
+grep -E "^[0-9]+: regex|hit count|where = |frame #|error" "$WORK/counts.txt" | grep -v "hit count = 0 *$" || true
+
+# One line per breakpoint from `breakpoint list`: its name, locations and hit count. A breakpoint that
+# resolved to nothing prints "locations = 0 (pending)" and no hit count.
+TOTALS=$(awk '
+  /^[0-9]+: regex = / {
+    id = $1; sub(":", "", id)
+    loc[id] = 0; if (match($0, /locations = [0-9]+/)) loc[id] = substr($0, RSTART + 12, RLENGTH - 12) + 0
+    hit[id] = -1; if (match($0, /hit count = [0-9]+/)) hit[id] = substr($0, RSTART + 12, RLENGTH - 12) + 0
+    cur = id; next
+  }
+  /^  Names:$/ { getline; gsub(/ /, ""); name[cur] = $0 }
+  END { for (i in name) print name[i], loc[i], hit[i] }
+' "$WORK/counts.txt")
+echo "=== TOTALS (name locations hits)"
+echo "$TOTALS"
+
+failures=0
+fail() { echo "FAIL: $*"; failures=$((failures + 1)); }
+total() { awk -v n="$1" -v f="$2" '$1 == n { print $f; found = 1 } END { if (!found) print -1 }' <<<"$TOTALS"; }
+for name in pipeline_new buffer_new set_viewport set_pipeline draw present; do
+  [ "$(total "$name" 2)" -ge 1 ] || fail "$name resolved to no location (or lldb did not attach)"
+done
+for name in pipeline_new buffer_new set_viewport; do
+  [ "$(total "$name" 3)" -eq 0 ] || fail "$name hit $(total "$name" 3) times, expected 0"
+done
+present=$(total present 3)
+[ "$present" -gt 0 ] || fail "no frame was presented"
+for name in draw set_pipeline; do
+  n=$(total "$name" 3)
+  [ $((n - present)) -le 1 ] && [ $((present - n)) -le 1 ] || fail "$name hit $n times for $present presents"
+done
 
 echo "=== SAMPLES"
 E='MTLSerializerRenderCommandEncoder'
@@ -69,7 +111,7 @@ SAMPLE=(
   -o "breakpoint set -o true -r \"^-\\[$E drawPrimitives:vertexStart:vertexCount:\\]\$\""
   -o "process continue" -o 'p (unsigned long)$x2' -o 'p (unsigned long)$x3' -o 'p (unsigned long)$x4'
 )
-PID=$(launch)
+PID=$(launch_pid)
 xcrun lldb --batch \
   -o "settings set target.process.stop-on-sharedlibrary-events false" \
   -o "process attach -p $PID" \
@@ -83,3 +125,5 @@ xcrun lldb --batch \
 
 xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
 rm -rf "$WORK"
+[ "$failures" -eq 0 ] || { echo "=== COUNTS FAILED ($failures)"; exit 1; }
+echo "=== COUNTS PASSED; read the SAMPLES against quickstart.md"
