@@ -40,8 +40,10 @@ statistics) and `specs/016-frame-budget-learner` (the frame budget learned only 
 gaps, never below the display's fastest interval) and `specs/018-ci-verify-workflow` (CI: `verify.sh`
 run on every push to `main` and every pull request, on a self-hosted runner on this Mac) and
 `specs/019-instrumented-build-script` (the Profiling configuration removed; `Scripts/build-instrumented.sh`
-makes the optimised build with the instrumentation, and `verify.sh` checks it has it and Release has not)
-and `specs/021-ios-gpu-frame-capture` (001's checks 4 and 5 closed on iOS by an lldb probe instead of a GPU
+makes the optimised build with the instrumentation, and `verify.sh` checks it has it and Release has not) and
+`specs/020-autopilot-rest-phase` (a ship at rest is never "against its motion" when the phase is named, so a
+re-order after arrival starts `aligning` or `burning`, not `flipping` or `braking`) and
+`specs/021-ios-gpu-frame-capture` (001's checks 4 and 5 closed on iOS by an lldb probe instead of a GPU
 capture; no code changes).
 Layer libraries and tests live in the root `Package.swift`, and the two app targets live in
 `swiftSky.xcodeproj`, which has two build configurations, Debug and Release.
@@ -141,7 +143,10 @@ artifacts, keep them consistent with these templates.
   arrival tolerances and the autopilot value held in `SimulationState`, and the per-tick law.
   `Simulation.advance(_:ticks:)` is flown by the autopilot when there is an order;
   `advance(_:ticks:input:)` takes an explicit input and leaves the order alone. `AutopilotLaw.swift` is
-  the logic layer's second file with a `Darwin` import. Its tuning history is research R11.
+  the logic layer's second file with a `Darwin` import. Its tuning history is research R11. When naming
+  the phase, a speed of at most `settleSpeed` is rest (020, SKY-46); the hold rule's direction test does
+  not use that rule, so autopilot-flown inputs are unchanged, but after explicit-input ticks a phase named
+  from rest can change a later input through the hold rule.
 - `Sources/SwiftSkySimulation/PlannedPath.swift` — the current order's planned path, held in
   `SimulationState.plannedPath` and written only by `setOrder(to:)`: up to 256 positions in an
   `InlineArray` (no heap, so the state is ~4.2 KB), the tick of every point (`startTick`, `spacing`,

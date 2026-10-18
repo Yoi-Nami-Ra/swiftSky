@@ -75,7 +75,7 @@ be a subdirectory of the git repository); run every command from there.
    Rules:
    - Do only the tasks in this phase. If one depends on unfinished work from another phase, stop and report it; do not work around it.
    - Mark each finished task [x] in tasks.md.
-   - Do not execute optional extension hooks and do not commit. The orchestrator commits.
+   - Do not execute extension hooks, optional or mandatory, and do not commit. The orchestrator runs the hooks and commits.
    - Follow CLAUDE.md / AGENTS.md and the constitution.
    - Before returning, run the quality gate: <gate>. Fix failures caused by your changes.
    - Checklist gate (the base's "Check checklists status" step): <"all checklists pass" | the user's answer from setup step 6, quoted>. Apply that answer at the gate instead of asking again.
@@ -100,8 +100,9 @@ be a subdirectory of the git repository); run every command from there.
      TASKS NOT DONE is empty. Failures the subagent calls "not caused by my change"
      still fail this check.
    - Re-run the gate's cheapest static part yourself (from setup step 4) and confirm it
-     is clean. If the gate has no cheap part, re-run the whole gate only for the last
-     phase.
+     is clean. If the gate has no cheap part, the earlier phases are committed on the
+     report alone: re-run the whole gate after the last phase, and if it fails, say that
+     any phase may be the cause.
 10. If STATUS is `done` and every check above passes, stage **only** this phase's files
     by path (never `git add .` / `git add -A`) plus `tasks.md`, and commit with the
     convention from setup step 5. Then go to the next phase.
@@ -110,6 +111,11 @@ be a subdirectory of the git repository); run every command from there.
     to fix it yourself unless the user asks.
 
 ## Finish
+
+12a. The base's extension hooks run here, never in a phase: before phase 1 the
+     orchestrator runs the base's `hooks.before_implement` step once, and after the last
+     phase its `hooks.after_implement` step once, exactly as the base describes them.
+     With no `.specify/extensions.yml`, both are no-ops; say so in the report.
 
 12. When every phase is done, if the `speckit-converge` skill (or
     `.claude/commands/speckit.converge.md`) exists, run it. If it appends a Convergence
