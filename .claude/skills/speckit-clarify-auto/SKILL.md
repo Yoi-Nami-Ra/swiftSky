@@ -30,7 +30,7 @@ Read the base and execute it **exactly as written** (Pre-Execution Checks, every
 Outline step except "Sequential questioning loop", behavior rules, Mandatory
 Post-Execution Hooks, Completion Report), with only the overrides below. Re-reading the
 base on every run keeps this variant correct after `specify` upgrades rewrite it. Base
-steps are named by their heading text, never by number: upgrades renumber them. If a
+steps are named by their text, never by number: upgrades renumber them. If a
 step named below no longer exists in the base, stop and tell the user this wrapper
 needs updating for their Spec Kit version; do not guess its replacement.
 
@@ -98,8 +98,7 @@ Clarifications bullet as:
 - Otherwise put the top ≤5 ASK items (by Impact × Uncertainty) to the user **in one
   batch** with the `AskUserQuestion` tool (max 4 questions per call, so 5 items = one
   call of 4 + one call of 1). Each question:
-  - is a full interrogative ending with `?` (the "Question writing quality" rules
-    from the base's sequential questioning loop apply, if present);
+  - is a full interrogative ending with `?`;
   - has 2–4 options, the recommended one first with `(Recommended)` in the label and a
     one-sentence why in its description;
   - leaves free-form answers to the tool's built-in "Other" choice.
