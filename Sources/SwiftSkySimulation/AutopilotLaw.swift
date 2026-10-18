@@ -37,7 +37,8 @@ extension Autopilot {
     static let responseTime = 1.0 / 15
 
     /// Below this velocity error, in units per second, the input is neutral: no thrust, and a turn input
-    /// of zero, which stops any spin exactly (research R5, 006 FR-009).
+    /// of zero, which stops any spin exactly (research R5, 006 FR-009). A speed of at most this much is also
+    /// rest when the phase is named, so station keeping's leftover has no direction (research R6, 020).
     static let settleSpeed = 0.001
 
     /// This tick's input for `ship`, recording the phase it implies (006 FR-004, FR-005,
@@ -167,8 +168,10 @@ extension Autopilot {
         if abs(headingError) > Self.thrustCone {
             // Mid-burn or mid-brake, a turn is an attitude correction and keeps its phase; otherwise it is
             // a flip when it turns to face against the motion, and aligning when it does not. At rest the
-            // velocity has no direction, so nothing is faced against and it is never a flip.
-            guard !atRest, targetX * vx + targetY * vy < 0 else { return (input, phase == .burning ? .burning : .aligning) }
+            // velocity has no direction, so nothing is faced against: never a flip, and a brake ends.
+            guard !atRest, targetX * vx + targetY * vy < 0 else {
+                return (input, phase == .burning ? .burning : .aligning)
+            }
             return (input, phase == .braking ? .braking : .flipping)
         }
         return (input, namedAgainstMotion ? .braking : .burning)
