@@ -1,11 +1,10 @@
 # Feature Specification: A Re-order From Rest Starts in Aligning
 
-**Feature Branch**: `claude/sky-46-autopilot-rest-phase-0b0e2c` (spec number 020; the work stays on this
-worktree's branch)
+**Feature Branch**: `claude/sky-46-autopilot-rest-phase-0b0e2c` (spec number 020)
 
 **Created**: 2026-10-18
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "SKY-46 — Autopilot starts a re-order from rest in flipping" (`.tickets/46.yaml`).
 Seen while verifying SKY-34 (specs/015-debug-overlay-ship-order/quickstart.md, check 5): after the ship had
@@ -179,4 +178,4 @@ and resulting ship state, bit for bit, with the values the law produced before t
 - The planned path holds positions, not phases, so its prediction (010, SKY-26) does not change, which
   FR-004 and FR-008 confirm.
 - The expected inputs and states for FR-007 are recorded from the current law before the fix is applied.
-- Commits stay on this worktree's branch; nothing is pushed.
+- The work is reviewed as pull request 3 before it merges.
