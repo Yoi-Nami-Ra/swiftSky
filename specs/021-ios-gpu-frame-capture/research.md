@@ -1,59 +1,60 @@
 # Research: iOS GPU Frame Capture Check
 
-## R1 — Capturing in the iOS Simulator
+## R1 — Observing in the iOS Simulator
 
-**Decision**: Capture in the iOS Simulator first; use a physical iOS device only if Xcode will not
-capture the simulator, and say in the record which was used.
+**Decision**: Observe in the iOS Simulator; it closes the checks.
 
 **Rationale**: The simulator closed 001's check 2 (SKY-16), and the claim under test is about the
 app's own command stream (which draws it encodes, with which objects), which the simulator records as
-the app issued it. Xcode's Metal debugger captures simulator apps on Apple-silicon Macs; whether the
-installed Xcode 27.0 beta does so could not be confirmed from this session (it cannot drive Xcode), so
-the device is the documented fallback rather than an assumption.
+the app issued it. lldb attaches to simulator apps and breaks in the simulator's Metal serializer
+(confirmed 2026-10-18, Xcode 27.0, iPhone 18 Pro simulator, iOS 27.0).
 
 **Alternatives considered**: Device only — stronger on GPU behaviour, which neither check is about,
 and both test devices were last recorded as disconnected (001 quickstart, check 2).
 
 ## R2 — What proves check 4
 
-**Decision**: Check 4 passes when the captured frame's render pass contains a draw that (a) uses the
-pipeline labelled `swiftSky.fullscreenQuad` and the buffer `swiftSky.quadVertices`, (b) draws 4
-vertices as a triangle strip at clip-space (−1, −1) to (1, 1), shown by the geometry viewer, with the
-default viewport (the renderer sets none, so it is the whole attachment), and (c) appears in the pixel
-history of the attachment's four corner pixels and its centre pixel.
+**Decision** (amended 2026-10-18): check 4 passes when, with lldb attached to the running Debug app,
+(a) over 10 s every presented frame has one `drawPrimitives:vertexStart:vertexCount:` and one
+`setRenderPipelineState:` call (hit counts equal to the present count, ±1 for the frame in flight),
+(b) a sampled frame binds the pipeline labelled `swiftSky.fullscreenQuad` and the 32-byte buffer
+`swiftSky.quadVertices` at index 0 holding (−1, −1), (1, −1), (−1, 1), (1, 1), and draws primitive type 4
+(`MTLPrimitiveTypeTriangleStrip`) from vertex 0, count 4, and (c) `setViewport:` is never called, so the
+default viewport — the whole colour attachment, which the renderer sets to the drawable's texture — is
+used, and the strip covers every pixel.
 
-**Rationale**: The pass descriptor clears to black (`Renderer.swift:128`) and the quad's fragment
-shader returns black (`Shaders.metal:43–46`). A uniformly black attachment is therefore what a
-clear-only pass would also produce: colour is not evidence. The presence of the draw rules out a
-clear-only pass; its geometry and the pixel history show it covers the surface.
+**Rationale**: The pass clears to black (`Renderer.swift:128`) and the quad's fragment shader returns
+black (`Shaders.metal:43–46`), so colour is not evidence. The breakpoints sit on Metal's serializer
+layer (`MTLSerializerRenderCommandEncoder`, the simulator's encoder), below the app, so they observe
+exactly what the app encodes, every frame rather than one captured frame.
 
-**Alternatives considered**: Temporarily changing the fragment colour to make the draw visible —
-rejected, it changes the rendering code (spec FR-008) and tests a different build.
+**Alternatives considered**: Xcode's GPU debugger by hand (the original plan) — cannot be automated
+from this session, and observes one frame; changing the fragment colour — changes rendering code
+(spec FR-008).
 
 ## R3 — What proves check 5
 
-**Decision**: Take two captures in one run, at least a few seconds apart. Check 5 passes when (a)
-neither frame's recorded calls include creating a render pipeline state or a buffer, (b) the
-resource list of each capture holds exactly one pipeline labelled `swiftSky.fullscreenQuad` and one
-buffer labelled `swiftSky.quadVertices`, and (c) the quad draw in both captures binds the same
-objects (the same identity shown in the object inspector).
+**Decision** (amended 2026-10-18): check 5 passes when no `newRenderPipelineStateWithDescriptor:…` or
+`newBufferWith…` call is made over 10 s of frames, and two samples 5 s apart in one run bind the same
+pipeline and vertex-buffer addresses.
 
-**Rationale**: A frame that rebuilt them would show the creation calls inside the captured frame and,
-for a buffer, a second live allocation. The code already builds them once (`Renderer.swift:107`, in
-`init`); the captures turn that into an observation.
+**Rationale**: A renderer that rebuilt them would call the creation methods every frame. Breakpoints on
+every class implementing them (27 and 45 locations) leave no other path. The probe attaches after launch,
+so the creation at initialisation (`Renderer.swift:107`, in `init`) is shown by the code, and its
+constancy by the observation.
 
-**Alternatives considered**: One capture only — it shows reuse within one frame, not across frames.
+## R4 — Running the probe
 
-## R4 — Capture settings
+**Decision**: `specs/021-ios-gpu-frame-capture/probe.sh [udid]` builds the Debug iOS app, installs and
+launches it with `--no-ship --no-debug-overlay` via `xcrun simctl launch`, waits 4 s, attaches
+`xcrun lldb --batch`, and runs two passes: hit counts with auto-continue breakpoints over 10 s, then two
+one-shot samples 5 s apart.
 
-**Decision**: Run the iOS scheme in Debug from Xcode with arguments `--no-ship --no-debug-overlay`
-(Edit Scheme › Run › Arguments), GPU Frame Capture left at its default (the project has no shared
-schemes, so each developer's scheme has Xcode's default, which enables capture for Metal apps), and
-capture with the Debug bar's capture-GPU-workload button. A third capture with the default launch
-is optional (spec Edge Cases).
-
-**Rationale**: The same build and arguments closed check 2 (SKY-16). Without the ship, overlay or an
-order, the quad is the only draw in the pass, so it is unambiguous.
+**Findings while building it**: attaching at launch (`simctl launch --wait-for-debugger`) stops at the
+simulator's dyld notifier trap and does not resume in batch mode, and Python breakpoint callbacks
+stalled the frame thread; attaching to the running app with plain auto-continue breakpoints and
+`breakpoint list` hit counts works. Breakpoints slow the app to about 19 frames per second while
+attached, which changes nothing that is encoded.
 
 ## R5 — A failed check
 

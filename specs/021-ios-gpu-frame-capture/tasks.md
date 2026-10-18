@@ -6,9 +6,9 @@
 
 **Tests**: None requested. The feature changes no code; `./Scripts/verify.sh` must stay green.
 
-**Organization**: One phase per user story. Tasks marked **MANUAL** are done by the developer in Xcode
-(this session cannot drive the GPU debugger, spec FR-002); every other task is done by the session
-from the developer's notes in `specs/021-ios-gpu-frame-capture/capture-notes.md`.
+**Organization**: One phase per user story. Amended 2026-10-18: no task is manual; the observation is
+made by `specs/021-ios-gpu-frame-capture/probe.sh` (spec FR-002) and summarised in
+`specs/021-ios-gpu-frame-capture/capture-notes.md`.
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -30,7 +30,7 @@ from the developer's notes in `specs/021-ios-gpu-frame-capture/capture-notes.md`
 - [x] T001 Run `./Scripts/verify.sh` on branch `021-ios-gpu-frame-capture` and confirm it passes before anything changes
 - [x] T002 Create `specs/021-ios-gpu-frame-capture/capture-notes.md` with a header holding T001's verify result and empty fields for Xcode version, build, arguments and destination, then one empty section per observation in data-model.md's "Captured frame" table (draws in the pass, pipeline label, buffer label, geometry, pixel history ×5, creation calls ×2 captures, object identity ×2 captures)
 
-**Checkpoint**: the notes file exists; the developer can fill it while capturing.
+**Checkpoint**: the notes file exists (its template was replaced for the lldb method on 2026-10-18).
 
 ---
 
@@ -38,11 +38,11 @@ from the developer's notes in `specs/021-ios-gpu-frame-capture/capture-notes.md`
 
 **Goal**: Close check 4 on iOS (SC-019, FR-002a).
 
-**Independent Test**: The first capture, read per quickstart.md "Check 4", shows the quad draw with its
-labels, 4-vertex triangle strip at (−1, −1)…(1, 1), and in the pixel history of all four corners and
-the centre.
+**Independent Test**: The probe output, read per quickstart.md, shows one quad draw per frame, the
+sampled pipeline and buffer labels, the 4-vertex triangle strip at (−1, −1)…(1, 1), and no viewport
+change.
 
-- [ ] T003 [US1] **MANUAL** Capture frame 1 of the Debug iOS app with `--no-ship --no-debug-overlay` per `specs/021-ios-gpu-frame-capture/quickstart.md` Setup and "Check 4", in the simulator (device only if the simulator cannot be captured, research R1), and fill the check 4 sections of `specs/021-ios-gpu-frame-capture/capture-notes.md`
+- [ ] T003 [US1] Run `specs/021-ios-gpu-frame-capture/probe.sh` (booted simulator) and fill the Header, Counts and Sample 1 sections of `specs/021-ios-gpu-frame-capture/capture-notes.md` from its output, per quickstart.md "Read the output"; if lldb cannot attach or break, stop and report (spec Edge Cases)
 - [ ] T004 [US1] Judge check 4 against spec FR-003 and research R2 from `specs/021-ios-gpu-frame-capture/capture-notes.md`; write `**Check 4 — PASS|FAIL on iOS, <simulator|device> (<date>, SKY-18).**` with build, destination and observations into `specs/001-metal-app-shell/quickstart.md`, after the last existing check record and before the summary section, in the shape data-model.md describes
 - [ ] T005 [US1] If check 4 failed: file a bug ticket with `/tickets` (title naming what the capture showed, phase MVP, platform ios) and add its key to the check 4 record in `specs/001-metal-app-shell/quickstart.md`; otherwise mark this task done with "not needed"
 
@@ -54,10 +54,10 @@ the centre.
 
 **Goal**: Close check 5 on iOS (FR-002b).
 
-**Independent Test**: Two captures in one run, read per quickstart.md "Check 5", show no creation calls,
-one object of each label, and the same identities.
+**Independent Test**: The probe output shows zero creation calls and equal pipeline and buffer addresses
+in the two samples.
 
-- [ ] T006 [US2] **MANUAL** In the same run as T003, wait at least five seconds, capture frame 2, and fill the check 5 sections of `specs/021-ios-gpu-frame-capture/capture-notes.md` for both captures (creation calls, object counts, identities) per quickstart.md "Check 5"
+- [ ] T006 [US2] From the same `probe.sh` output as T003, fill the Sample 2 section of `specs/021-ios-gpu-frame-capture/capture-notes.md`, including whether its pipeline and buffer addresses equal sample 1's
 - [ ] T007 [US2] Judge check 5 against spec FR-004 and research R3 from `specs/021-ios-gpu-frame-capture/capture-notes.md`; write the `**Check 5 — …**` record into `specs/001-metal-app-shell/quickstart.md` directly after the check 4 record
 - [ ] T008 [US2] If check 5 failed: file a bug ticket as in T005 and add its key to the check 5 record in `specs/001-metal-app-shell/quickstart.md`; otherwise mark this task done with "not needed"
 
@@ -92,8 +92,7 @@ the check 4 and 5 records.
 ### Phase Dependencies
 
 - Setup (Phase 1) → US1 (Phase 2) → US2 (Phase 3) → US3 (Phase 4) → Polish (Phase 5).
-- US2's capture (T006) must be in the same app run as US1's (T003): the identities are compared
-  across the two.
+- T006 reads the same probe output as T003: the two samples come from one app run.
 
 ### User Story Dependencies
 
@@ -103,21 +102,20 @@ the check 4 and 5 records.
 
 ### Within Each User Story
 
-- MANUAL capture → judge and record → ticket only on FAIL.
+- Probe output → notes → judge and record → ticket only on FAIL.
 
 ### Parallel Opportunities
 
 - T004 and T007 write adjacent paragraphs of one file, so they are not [P].
-- The MANUAL tasks T003 and T006 are one sitting for the developer: do them back to back, then hand
-  the notes over.
+- T003 and T006 share one probe run: keep its output for both.
 
 ---
 
 ## Parallel Example: User Story 1
 
 ```text
-Developer: T003 then T006 (one Xcode session, one app run)
-Session:   T004, T005, then T007, T008 from the filled notes
+Phase 2: T003 (run probe.sh, keep its output in the phase's notes), T004, T005
+Phase 3: T006 from the same output (passed on in the hand-off notes), T007, T008
 ```
 
 ---
@@ -126,7 +124,7 @@ Session:   T004, T005, then T007, T008 from the filled notes
 
 ### MVP First (User Story 1 Only)
 
-1. Phase 1, then T003 by hand.
+1. Phase 1, then T003 (the probe).
 2. Record check 4 (T004–T005). This alone closes SC-019's iOS half.
 
 ### Incremental Delivery
@@ -137,8 +135,6 @@ Session:   T004, T005, then T007, T008 from the filled notes
 
 ## Notes
 
-- **MANUAL** tasks cannot be done by an automated phase agent. After Phase 1, the developer does T003
-  and T006 in one sitting and fills `capture-notes.md`; only then do phases 2 and 3 run. A phase agent
-  marks a MANUAL task `[x]` when its sections of `capture-notes.md` are filled, and reports `blocked`
-  when they are not.
+- No task is manual. If `probe.sh` cannot attach or break, the phase stops and reports `blocked`;
+  the hand capture in Xcode is the developer's fallback.
 - Commit after each phase.
