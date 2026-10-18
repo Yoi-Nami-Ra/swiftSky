@@ -8,25 +8,56 @@ description: |
   `vel x 0.00 y 0.00`. From rest the autopilot should start with `aligning`
   (specs/006-ship-autopilot: from rest the phases only move forward).
 
-  Likely cause, not yet confirmed: station keeping leaves a residual velocity
-  below the overlay's 0.005 u/s display resolution, pointing away from the
-  new target, and the phase rule (Sources/SwiftSkySimulation/AutopilotLaw.swift)
-  reads that as a ship already moving away, so it picks the flip to brake.
-  If so, the ship spends time flipping and braking a velocity that is
-  effectively zero before it turns to the target.
+  Cause, from reading the code (2026-10-17): station keeping
+  (AutopilotLaw.evaluate step 5) stops correcting once the velocity error is
+  at most `settleSpeed` (0.001 u/s), so a ship keeping station keeps a
+  leftover velocity of up to 0.001 u/s, below the overlay's 0.005 u/s
+  resolution. On a new order, the phase rule in step 8 (research R6, rule 3)
+  only looks at the sign of ψ̂·v, so a leftover velocity pointing away from
+  the new target reads as "turning to face against the motion", which it
+  calls `flipping`. The same sign test (`facingAgainstMotion`) can call the
+  first thrust ticks `braking`. The inputs barely change: the target heading
+  comes from the acceleration, which the desired speed towards the target
+  dominates, and the hold rule needs closing speed, which a ship moving away
+  doesn't have. So the ship flies the re-order correctly, and only the
+  reported phase is wrong (FR-005: from rest the phases only move forward).
 
-  To do: reproduce in a logic-layer test (fly an order to arrival, keep
-  station for some ticks, give a new order, check the first phase and the
-  velocity bits), decide whether a velocity this small should count as rest
-  (a threshold tied to ArrivalTolerances.speed, or zeroing the velocity on
-  arrival), fix, and confirm 006's and 010's tests still pass. The planned
-  path (SKY-26) flies the same law, so its prediction changes with the fix.
+  Decision: count a speed of at most `settleSpeed` as rest when naming the
+  phase. Rejected: zeroing the velocity on arrival (the autopilot writes only
+  the control input, never the ship's state, and the motion must stay
+  Newtonian); a threshold tied to ArrivalTolerances.speed (1 u/s is far too
+  coarse for naming the phase mid-flight).
 
-  Done when a re-order after station keeping starts in `aligning` (or the
-  analysis shows `flipping` is the right choice and the spec says so), with a
-  test that pins it.
+  Already in place: `AutopilotLaw.settleSpeed` (0.001), the phase rules in
+  step 8 and in step 5's settled return, 006's phase-order tests from rest
+  (story 3 scenario 2) and 010's planned-path tests.
+
+  Scope:
+  1. A logic-layer test that reproduces it: fly an order to arrival, keep
+     station for some ticks until the leftover velocity is non-zero and points
+     away from the next target, give a new order to a point behind that
+     velocity, and check that the first phase is `aligning` (it fails today).
+     Pin the leftover velocity's bits in the test so the setup can't silently
+     drift to an exact rest.
+  2. In `AutopilotLaw.evaluate`, treat the velocity as zero for naming the
+     phase when `speed <= settleSpeed`: step 8's flip test and the
+     `facingAgainstMotion` checks in step 5's settled return and step 8. Leave
+     step 6's hold rule and every input calculation as they are, so no
+     `ControlInput` changes.
+  3. Update 006 research R6 (and contracts/autopilot.md step 8, if it states
+     the rule) with the rest threshold.
+
+  Out of scope: leftover-velocity drift during long station keeping (the
+  latch lets go after about 1,000 s per unit of drift and the order is flown
+  again, which FR-009 allows); anything shown on the overlay or the order
+  overlay (SKY-34, SKY-30), which only read the phase.
+
+  Done when: the test in scope 1 passes and every phase after a re-order from
+  station keeping moves forward only; 006's and 010's tests pass unchanged
+  (the planned path holds positions, not phases, so SKY-26's prediction
+  doesn't change); `./Scripts/verify.sh` passes.
 platform: ios
-status: refine
+status: done
 phase: Backlog
 priority: medium
 parent: null

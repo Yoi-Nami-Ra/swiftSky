@@ -37,7 +37,8 @@ extension Autopilot {
     static let responseTime = 1.0 / 15
 
     /// Below this velocity error, in units per second, the input is neutral: no thrust, and a turn input
-    /// of zero, which stops any spin exactly (research R5, 006 FR-009).
+    /// of zero, which stops any spin exactly (research R5, 006 FR-009). A speed of at most this much is also
+    /// rest when the phase is named, so station keeping's leftover has no direction (research R6, 020).
     static let settleSpeed = 0.001
 
     /// This tick's input for `ship`, recording the phase it implies (006 FR-004, FR-005,
@@ -111,8 +112,14 @@ extension Autopilot {
         let ey = uy * desiredSpeed - vy
         let error = (ex * ex + ey * ey).squareRoot()
         let facingAgainstMotion = hx * vx + hy * vy < 0
+        // At a speed of at most the settle speed the velocity has no direction, so the ship is not facing
+        // against its motion: station keeping leaves up to that much velocity behind, and a re-order must
+        // not start in .braking or .flipping because of it. This names the phase only; step 6's hold rule
+        // still reads `facingAgainstMotion`, though it also reads the phase (020, SKY-46).
+        let atRest = speed <= Self.settleSpeed
+        let namedAgainstMotion = facingAgainstMotion && !atRest
         if error <= Self.settleSpeed {
-            return (.neutral, arrived ? .arrived : (facingAgainstMotion ? .braking : .burning))
+            return (.neutral, arrived ? .arrived : (namedAgainstMotion ? .braking : .burning))
         }
         let closingSpeed = vx * ux + vy * uy
         let feedforward = -closingSpeed * desiredSpeedSlope
@@ -157,14 +164,17 @@ extension Autopilot {
 
         // Step 8: the phase this tick implies (research R6).
         if arrived { return (input, .arrived) }
-        if thrust > 0 { return (input, facingAgainstMotion ? .braking : .burning) }
+        if thrust > 0 { return (input, namedAgainstMotion ? .braking : .burning) }
         if abs(headingError) > Self.thrustCone {
             // Mid-burn or mid-brake, a turn is an attitude correction and keeps its phase; otherwise it is
-            // a flip when it turns to face against the motion, and aligning when it does not.
-            guard targetX * vx + targetY * vy < 0 else { return (input, phase == .burning ? .burning : .aligning) }
+            // a flip when it turns to face against the motion, and aligning when it does not. At rest the
+            // velocity has no direction, so nothing is faced against: never a flip, and a brake ends.
+            guard !atRest, targetX * vx + targetY * vy < 0 else {
+                return (input, phase == .burning ? .burning : .aligning)
+            }
             return (input, phase == .braking ? .braking : .flipping)
         }
-        return (input, facingAgainstMotion ? .braking : .burning)
+        return (input, namedAgainstMotion ? .braking : .burning)
     }
 
     /// The shortest time to turn through `angle` radians (signed, positive counter-clockwise) and end
