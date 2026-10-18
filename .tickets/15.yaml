@@ -2,12 +2,52 @@ id: 15
 title: "Move user-facing strings to a string catalog"
 type: task
 description: |
-  The FR-024 renderer-failure notice is the app's only user-facing string, and
-  specs/001-metal-app-shell leaves it English-only and not externalised. Move it
-  into a String Catalog so it can be localised, and establish that as the
-  pattern before more UI text arrives. Shared by both platforms.
+  The FR-024 renderer-failure notice (specs/001-metal-app-shell) is English-only
+  and its wording is hard-coded. Move every user-facing string into a String
+  Catalog so it can be localised, and set that as the pattern before more UI
+  text arrives. Shared by both platforms.
+
+  Already in place: nine user-facing strings in two package targets.
+  Sources/SwiftSkyPlatform/RendererFailureNotice.swift holds the title
+  "swiftSky cannot start" (also the accessibility label) and the "Quit"
+  button. Sources/SwiftSkyRendering/RendererError.swift
+  (`userFacingDescription`) holds one explanation per RendererError case, six
+  in all; three insert a value (shader name, underlying error, image reason).
+  `diagnosticCode` is the stable, non-localised identifier for the FR-026 log
+  line. Tests/SwiftSkyRenderingTests/RendererErrorTests.swift checks the
+  ship-image text. Debug-overlay text (003, 015) is developer-only and not
+  user-facing.
+
+  Decisions (2026-10-18): the platform layer owns all user-facing wording
+  (constitution I, Architecture Discipline); English is the only language.
+
+  Scope:
+  1. Remove `userFacingDescription` from RendererError: the rendering layer
+     keeps the error cases and `diagnosticCode` only.
+  2. In SwiftSkyPlatform, map each RendererError case to its catalog string,
+     with the inserted values as format arguments, in a pure, testable
+     function (e.g. `RendererFailureText`).
+  3. Add one String Catalog (`Localizable.xcstrings`) to the SwiftSkyPlatform
+     target as a processed resource, set `defaultLocalization: "en"` in
+     Package.swift, and look the strings up in the package's bundle
+     (`bundle: .module`), not the app's. The English wording stays as it is
+     today.
+  4. RendererFailureNotice and the FR-026 log line use the new mapping; the
+     log line keeps `diagnosticCode` and logs the English text.
+  5. Move the wording assertions out of RendererErrorTests into a platform
+     test; RendererErrorTests keeps the diagnostic-code tests.
+
+  Out of scope: translations (a later ticket); the debug overlay and debug
+  text (developer-only); the app icon and launch branding (SKY-13, SKY-14).
+
+  Done when: platform tests check that every RendererError case resolves
+  to a non-empty catalog string that is not its key, and that the three
+  strings with inserted values contain them; RendererErrorTests no longer
+  mentions user-facing text; no user-facing literal is left in
+  SwiftSkyRendering; the platform tests still create no Metal device;
+  `./Scripts/verify.sh` passes, including the Release strings check.
 platform: macos
-status: idea
+status: ready
 phase: Backlog
 priority: low
 parent: null
