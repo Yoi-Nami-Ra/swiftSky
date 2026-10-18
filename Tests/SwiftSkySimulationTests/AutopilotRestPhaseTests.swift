@@ -104,6 +104,47 @@ struct AutopilotRestPhaseTests {
         expectForwardOnly(flight.phases)
     }
 
+    /// One evaluation of a ship at rest: the order is set, the previous phase replaced by `previous`, and the
+    /// law run once. Reaching the settled, coasting and hold rules at rest needs tolerances tighter than the
+    /// defaults; the states were found by sampling rest states (review of PR 3).
+    static func evaluate(
+        velocity: Vector2, heading: Double, angularVelocity: Double, destination: Vector2,
+        tolerances: ArrivalTolerances, previous: AutopilotPhase? = nil
+    ) -> (input: ControlInput, phase: AutopilotPhase?) {
+        let ship = Ship(position: .zero, velocity: velocity, heading: heading, angularVelocity: angularVelocity)
+        var autopilot = Autopilot(tolerances: tolerances)
+        autopilot.setOrder(MoveOrder(destination: destination)!, for: ship)
+        if let previous { autopilot.phase = previous }
+        let input = autopilot.control(for: ship)
+        return (input, autopilot.phase)
+    }
+
+    static func polar(_ length: Double, _ angle: Double) -> Vector2 {
+        Vector2(x: length * cos(angle), y: length * sin(angle))
+    }
+
+    @Test("The settled return names a ship at rest burning, not braking (FR-003)")
+    func settledReturnAtRestIsBurning() {
+        // Facing against a velocity of half the settle speed, ordered to where it is: the error is within the
+        // settle speed, so the input is neutral, and with zero tolerances it has not arrived.
+        let result = Self.evaluate(
+            velocity: Vector2(x: -0.0005, y: 0), heading: 0, angularVelocity: 0, destination: .zero,
+            tolerances: ArrivalTolerances(position: 0, speed: 0))
+        #expect(result.input.thrust.bitPattern == 0 && result.input.turn.bitPattern == 0)
+        #expect(result.phase == .burning)
+    }
+
+    @Test("The coasting rule names a ship at rest burning, even after braking (FR-002, FR-003)")
+    func coastingAtRestIsBurning() {
+        let result = Self.evaluate(
+            velocity: Self.polar(0.0009490693130516976, 4.069874449992827), heading: 0.8508375501921908,
+            angularVelocity: -0.7692800063991303,
+            destination: Self.polar(0.0013037368578249688, 4.429180250849325),
+            tolerances: ArrivalTolerances(position: 0, speed: 0), previous: .braking)
+        #expect(result.input.thrust.bitPattern == 0)
+        #expect(result.phase == .burning)
+    }
+
     @Test("The rest boundary is the settle speed, inclusive (FR-005a)")
     func restBoundaryIsSettleSpeed() {
         func firstPhase(speed s: Double) -> AutopilotPhase? {
