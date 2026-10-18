@@ -42,7 +42,9 @@ run on every push to `main` and every pull request, on a self-hosted runner on t
 `specs/019-instrumented-build-script` (the Profiling configuration removed; `Scripts/build-instrumented.sh`
 makes the optimised build with the instrumentation, and `verify.sh` checks it has it and Release has not) and
 `specs/020-autopilot-rest-phase` (a ship at rest is never "against its motion" when the phase is named, so a
-re-order after arrival starts `aligning` or `burning`, not `flipping` or `braking`).
+re-order after arrival starts `aligning` or `burning`, not `flipping` or `braking`) and
+`specs/021-ios-gpu-frame-capture` (001's checks 4 and 5 closed on iOS by an lldb probe instead of a GPU
+capture; no code changes).
 Layer libraries and tests live in the root `Package.swift`, and the two app targets live in
 `swiftSky.xcodeproj`, which has two build configurations, Debug and Release.
 `./Scripts/verify.sh` is the single checked-in verification command.
@@ -259,4 +261,15 @@ artifacts, keep them consistent with these templates.
   following `RUNNER.md`. `actionlint .github/workflows/verify.yml` checks the workflow locally;
   `.github/actionlint.yaml` declares the `xcode-27` label. When Xcode changes, change the runner label
   and `runs-on` together.
-- `.claude/skills/speckit-*/` — the skill definitions backing each `/speckit.*` command.
+- `specs/021-ios-gpu-frame-capture/probe.sh` (021) — builds the Debug iOS app, launches it in the first booted
+  simulator with `--no-ship --no-debug-overlay`, attaches lldb and counts Metal calls over 10 s (presents,
+  draws, pipeline bindings, `setViewport:`, pipeline-state and buffer creation), then samples the bound
+  pipeline, vertex buffer and draw twice, 5 s apart. It exits 1 when a count breaks 001 check 4 or 5, when a
+  breakpoint resolves to no location, or when the app does not launch; the samples are read by hand
+  against the spec's quickstart. iOS simulator only (arm64 registers, the simulator's
+  `MTLSerializerRenderCommandEncoder`); not part of `verify.sh` or CI. A covered simulator window stops the
+  frames, and the samples part then waits.
+- `.claude/skills/speckit-*/` — the skill definitions backing each `/speckit.*` command, plus two
+  project-authored variants that read the base skills at run time: `speckit-clarify-auto` (answers what the
+  code, constitution and ticket settle, asks only the rest) and `speckit-implement-phased` (one `tasks.md`
+  phase per subagent, committed after each). The ticket start flow in `.tickets/project.yaml` runs them.

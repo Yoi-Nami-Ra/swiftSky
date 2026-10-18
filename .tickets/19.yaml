@@ -7,6 +7,11 @@ description: |
   a shader-backed draw call covers the surface (not a clear-only pass), and that
   the pipeline state and vertex buffer are reused across frames rather than
   rebuilt. Record the result in the quickstart. The iOS capture is SKY-18.
+
+  SKY-18 closed the iOS half with lldb instead of a GPU capture
+  (specs/021-ios-gpu-frame-capture/probe.sh). That probe is iOS-simulator only
+  (simctl, the iOS scheme, the simulator's MTLSerializerRenderCommandEncoder);
+  the same breakpoints on a macOS launch, or a capture, would do here.
 platform: macos
 status: ready
 phase: MVP
