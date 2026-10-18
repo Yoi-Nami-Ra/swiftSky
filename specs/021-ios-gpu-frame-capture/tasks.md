@@ -81,9 +81,9 @@ the check 4 and 5 records.
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T011 Run `./Scripts/verify.sh` and confirm it passes and that `git diff --stat main` lists no file under `Sources/` (spec FR-008, SC-004)
-- [ ] T012 Check that `git diff --stat main` adds no image, `.gputrace` or other binary file and that `specs/021-ios-gpu-frame-capture/capture-notes.md` holds only text observations (spec FR-005)
-- [ ] T013 Set SKY-18 to `done` with `python3 -I ~/.claude/skills/tickets/scripts/tickets.py set 18 status=done` when both checks passed, or leave it `in-progress` and report if either failed
+- [x] T011 Run `./Scripts/verify.sh` and confirm it passes and that `git diff --stat main` lists no file under `Sources/` (spec FR-008, SC-004)
+- [x] T012 Check that `git diff --stat main` adds no image, `.gputrace` or other binary file and that `specs/021-ios-gpu-frame-capture/capture-notes.md` holds only text observations (spec FR-005)
+- [x] T013 Set SKY-18 to `done` with `python3 -I ~/.claude/skills/tickets/scripts/tickets.py set 18 status=done` when both checks passed, or leave it `in-progress` and report if either failed
 
 ---
 
