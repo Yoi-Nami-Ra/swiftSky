@@ -5,10 +5,8 @@
 name: verify
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  # Disabled: no automatic runs on push or pull request. Run by hand from the Actions tab (workflow_dispatch).
+  workflow_dispatch:
 
 permissions:
   contents: read
