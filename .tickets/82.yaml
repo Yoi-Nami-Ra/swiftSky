@@ -1,0 +1,18 @@
+id: 82
+title: "Factions and reputation"
+type: feature
+description: |
+  Part of the sandbox roadmap (Endless Sky style 2D flight and trading, plus X-series style simulated economy, fleets and factions). Phase 3.
+
+  Factions own systems and react to what the player does. Children: faction
+  model and reputation (SKY-83), reputation effects (SKY-84), contraband and
+  scans (SKY-85), territory on the galaxy map (SKY-86).
+
+  Done when every child is done.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

@@ -1,0 +1,16 @@
+id: 86
+title: "Show faction territory on the galaxy map"
+type: feature
+description: |
+  Part of SKY-82. The galaxy map (SKY-56) tints each system by the owning
+  faction and shows the player's standing with it.
+
+  Done when: territory and standing show on iOS and macOS and are readable
+  without relying on colour alone.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 82
+blocked_by: [56, 83]
+designs: []

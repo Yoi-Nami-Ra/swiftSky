@@ -1,0 +1,17 @@
+id: 70
+title: "Spawn NPC traders that follow the economy"
+type: feature
+description: |
+  Part of SKY-66. NPC trader ships pick a profitable route from current
+  prices (SKY-69), buy, fly and jump (SKY-55) using the real autopilot, and
+  sell, changing station stock. Their numbers are capped per system.
+
+  Done when: tests cover route choice; traders are visible docking and
+  leaving in the player's system on iOS and macOS within the frame budget.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 66
+blocked_by: [55, 69]
+designs: []

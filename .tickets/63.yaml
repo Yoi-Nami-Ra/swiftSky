@@ -1,0 +1,18 @@
+id: 63
+title: "Hostile NPC ship AI"
+type: feature
+description: |
+  Part of SKY-58. An NPC ship (default sprite from SKY-87) with a simple state
+  machine: patrol, approach the player within range, attack (keep firing
+  distance, SKY-60), flee at low hull. It flies through the same Newtonian
+  motion and autopilot as the player (SKY-24, SKY-25).
+
+  Done when: headless tests cover the state transitions; a hostile spawns and
+  attacks on iOS and macOS.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 58
+blocked_by: [60, 87]
+designs: []

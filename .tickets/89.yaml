@@ -1,0 +1,23 @@
+id: 89
+title: "Spike: UI approach for docked and map screens"
+type: spike
+description: |
+  Question: should management screens (docked screen SKY-51, market SKY-53,
+  galaxy map SKY-56, outfitter SKY-75) be SwiftUI views over the Metal
+  surface or drawn in Metal (SKY-28's text), considering accessibility
+  (VoiceOver, Dynamic Type), iPad Split View, macOS windowing, input
+  handling and the frame budget while a screen is open?
+
+  Approach: a throwaway POC of one docked screen both ways on a
+  poc/ui-approach branch that is never merged; check VoiceOver, Dynamic Type
+  and frame times on iOS and macOS.
+
+  Done when: a recommendation with evidence is under Findings and the
+  follow-up tickets (if any) are named.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

@@ -1,0 +1,17 @@
+id: 78
+title: "Own an escort ship that follows you"
+type: feature
+description: |
+  Part of SKY-77. Buy or hire a second ship with a pilot; it holds formation
+  near the player, fights the player's target and jumps along with the
+  player (SKY-55).
+
+  Done when: tests cover formation keeping; an escort follows through a jump
+  on iOS and macOS.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 77
+blocked_by: [55, 61]
+designs: []

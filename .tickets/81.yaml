@@ -1,0 +1,17 @@
+id: 81
+title: "Build an outpost or station"
+type: feature
+description: |
+  Part of SKY-77. The player buys a station construction in a system; once
+  built it runs a production recipe (SKY-68) or trades, producing passive
+  income, and sells into the local market.
+
+  Done when: tests cover construction cost and the income; an owned station
+  appears in its system and produces goods.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 77
+blocked_by: [68]
+designs: []

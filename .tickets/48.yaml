@@ -1,0 +1,25 @@
+id: 48
+title: "Second playable: dock, trade and jump"
+type: feature
+description: |
+  Part of the sandbox roadmap (Endless Sky style 2D flight and trading, plus X-series style simulated economy, fleets and factions). Phase 1, the Endless Sky core loop.
+
+  The ship can fly to a point (SKY-22). This milestone turns that into a game
+  loop: fly to a station, dock, buy cargo cheap, jump to another system, sell
+  it dear, and keep the progress across launches.
+
+  Children: star system model (SKY-49), docking (SKY-50), docked screen
+  (SKY-51), cargo hold (SKY-52), commodity market (SKY-53), galaxy map model
+  (SKY-54), jumping (SKY-55), galaxy map screen (SKY-56), save and load
+  (SKY-57). Builds on the follow camera (SKY-42) and zoom (SKY-45), which let
+  the world grow beyond one screen. Art: default sprites (SKY-87).
+
+  Done when every child is done and one full trade run (buy, jump, sell, quit,
+  relaunch, credits kept) works on iOS and macOS.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

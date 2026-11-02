@@ -1,0 +1,18 @@
+id: 65
+title: "Offer bounty missions on a station board"
+type: feature
+description: |
+  Part of SKY-58. The docked screen (SKY-51) gets a mission board with bounty
+  missions: destroy a named hostile in a given system for a reward. Accepted
+  missions show in a list; the target spawns there (SKY-63); returning after
+  the kill pays the reward.
+
+  Done when: tests cover accept, complete and fail (target escaped or the
+  player died); one bounty can be done end to end on iOS and macOS.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 58
+blocked_by: [51, 63, 64]
+designs: []

@@ -1,0 +1,18 @@
+id: 60
+title: "Simulate weapons and projectiles"
+type: feature
+description: |
+  Part of SKY-58. A forward-firing gun with fire rate, projectile speed
+  (added to the ship's velocity), lifetime and damage. Projectiles live in a
+  fixed-capacity pool updated each simulation tick (no allocation per shot)
+  and hit ships by circle test, applying damage (SKY-59).
+
+  Done when: headless tests cover fire rate, projectile motion, lifetime
+  expiry, hits and the pool limit.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 58
+blocked_by: [59]
+designs: []

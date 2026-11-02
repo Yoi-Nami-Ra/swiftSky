@@ -1,0 +1,19 @@
+id: 53
+title: "Buy and sell commodities at a station market"
+type: feature
+description: |
+  Part of SKY-48. Each station has fixed buy and sell prices per commodity
+  (from data, varying between stations so trade routes exist). The player has
+  credits. Trade (from the docked screen, SKY-51) lists commodities with
+  price and amount held, and buys or sells amounts, changing credits and the
+  hold (SKY-52). Prices become dynamic later (SKY-69).
+
+  Done when: tests cover buy and sell maths, not enough credits and a full
+  hold; a profitable buy-here sell-there run works on iOS and macOS.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 48
+blocked_by: [51, 52]
+designs: []

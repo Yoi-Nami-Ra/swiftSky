@@ -1,0 +1,22 @@
+id: 71
+title: "Simulate distant systems at a coarse tick rate"
+type: feature
+description: |
+  Part of SKY-66. Only the player's system runs every simulation tick; other
+  systems run the economy and NPC traders abstractly at a coarse tick
+  (minutes of game time), so 50 systems cost little. Ships entering the
+  player's system are made real at a plausible position; leaving makes them
+  abstract again.
+
+  Waits on the simulation tick spike (SKY-88).
+
+  Done when: headless tests show equivalent economic results for both tick
+  rates within a tolerance; the frame summary shows no budget overrun with 50
+  systems simulated.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 66
+blocked_by: [70, 88]
+designs: []

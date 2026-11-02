@@ -1,0 +1,18 @@
+id: 56
+title: "Show a galaxy map screen to plot routes"
+type: feature
+description: |
+  Part of SKY-48. A map screen with the systems and lanes (SKY-54), the
+  current system, and the plotted route. Selecting a system plots the route;
+  the ship then jumps along it one lane at a time (SKY-55). Uses the UI
+  approach from SKY-89.
+
+  Done when: the map opens and closes on iOS and macOS, a route can be
+  plotted and flown, and the screen works with VoiceOver.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 48
+blocked_by: [54, 55, 89]
+designs: []

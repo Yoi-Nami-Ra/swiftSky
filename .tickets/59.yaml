@@ -1,0 +1,17 @@
+id: 59
+title: "Add hull and shields to ships"
+type: feature
+description: |
+  Part of SKY-58. Ships get hull and shield points; shields absorb damage
+  first and recharge after a delay; hull at zero destroys the ship (handled
+  by SKY-64). Logic layer only; the debug overlay (SKY-29) shows both.
+
+  Done when: headless tests cover absorbing, overflow into the hull,
+  recharge delay and rate.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 58
+blocked_by: []
+designs: []

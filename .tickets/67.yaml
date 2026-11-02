@@ -1,0 +1,15 @@
+id: 67
+title: "Define production recipes"
+type: feature
+description: |
+  Part of SKY-66. Recipes as data: inputs and amounts, output and amount, and
+  cycle time (e.g. ore + energy cells to steel). Logic layer only.
+
+  Done when: headless tests cover loading recipes and rejecting invalid ones.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 66
+blocked_by: []
+designs: []

@@ -1,0 +1,18 @@
+id: 52
+title: "Add a cargo hold to the ship"
+type: feature
+description: |
+  Part of SKY-48. The ship gets a cargo capacity (tons) and a hold of
+  commodity amounts; the commodity list (name, id, base price) comes from a
+  bundled data file. Logic layer only.
+
+  Done when: headless tests cover adding and removing cargo, the capacity
+  limit and rejecting negative amounts; the debug overlay (SKY-29) shows the
+  used and free capacity.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 48
+blocked_by: []
+designs: []

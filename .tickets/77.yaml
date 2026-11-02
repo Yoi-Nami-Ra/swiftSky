@@ -1,0 +1,18 @@
+id: 77
+title: "Fleet and ownership"
+type: feature
+description: |
+  Part of the sandbox roadmap (Endless Sky style 2D flight and trading, plus X-series style simulated economy, fleets and factions). Phase 3.
+
+  The player grows from one pilot to a fleet owner: escorts, fleet orders,
+  automated traders and an owned station. Children: escort ship (SKY-78),
+  fleet orders (SKY-79), automated trade route (SKY-80), outpost (SKY-81).
+
+  Done when every child is done.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

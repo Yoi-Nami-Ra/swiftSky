@@ -1,0 +1,16 @@
+id: 79
+title: "Give fleet orders"
+type: feature
+description: |
+  Part of SKY-77. Orders for owned ships (SKY-78): follow me, hold position,
+  attack target, patrol between points, protect a trade route.
+
+  Done when: tests cover each order's behaviour; orders can be given on iOS
+  and macOS.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 77
+blocked_by: [78]
+designs: []

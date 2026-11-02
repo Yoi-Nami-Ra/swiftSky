@@ -1,0 +1,21 @@
+id: 51
+title: "Show a docked screen with leave and trade"
+type: feature
+description: |
+  Part of SKY-48. While docked (SKY-50), a screen names the planet or station
+  and offers Leave and Trade (Trade opens the market, SKY-53; later entries
+  such as outfitter and mission board plug in here). The simulation keeps
+  running or pauses as the plan decides.
+
+  Waits on the UI approach spike (SKY-89): SwiftUI over the Metal surface or
+  Metal-drawn.
+
+  Done when: the screen opens on docking and closes on Leave on iOS and macOS,
+  works with VoiceOver and Dynamic Type, and fits iPad Split View.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 48
+blocked_by: [50, 89]
+designs: []
