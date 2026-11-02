@@ -3,12 +3,14 @@ name: "swiftSky"
 platforms: [ios, ipad, macos]
 start: |                            # prompt run by `/tickets start <key>`
   * analyze {key} - show short summary of what should be done
+     * if the ticket does not need the speckit flow (e.g. a small fix, config or docs change), say so here
   * wait for go ahead
+     * if the analysis said no speckit flow is needed, do the work directly and skip the steps below
   * /speckit-specify {key}
   * /goal /speckit-clarify-auto {key} asks no questions
      * stop and wait for the user to answer each question it asks
-  * /speckit-plan
-  * /speckit-tasks
+  * /speckit-plan - run it in a subagent (model sonnet, effort medium) and wait for its report
+  * /speckit-tasks - run it in a subagent (model sonnet, effort medium) and wait for its report
   * /goal /speckit-analyze returns no things worth fixing
      * let it fix all the findings
   * /speckit-implement-phased {key}

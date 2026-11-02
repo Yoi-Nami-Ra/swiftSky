@@ -49,7 +49,7 @@ description: |
     job fail, then is reverted.
   - The 001 plan and CLAUDE.md no longer say there is no remote or CI.
 platform: macos
-status: in-progress
+status: done
 phase: Backlog
 priority: low
 parent: null
