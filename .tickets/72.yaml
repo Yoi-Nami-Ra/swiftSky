@@ -1,0 +1,16 @@
+id: 72
+title: "Show market price history"
+type: feature
+description: |
+  Part of SKY-66. In the market (SKY-53), a small price trend per commodity
+  for the current station and the best known buy and sell prices nearby.
+  Kept readable: no spreadsheet-style tables.
+
+  Done when: the trend shows on iOS and macOS and is readable by VoiceOver.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 66
+blocked_by: [69]
+designs: []

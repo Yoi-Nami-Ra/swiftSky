@@ -1,0 +1,18 @@
+id: 57
+title: "Save and load the game"
+type: feature
+description: |
+  Part of SKY-48. Persist the player state (current system, ship position and
+  velocity, credits, cargo) as Codable data, saved automatically on docking
+  and when the app goes to the background, and loaded at launch. A versioned
+  format so later fields (outfits, fleet, reputation) can be added.
+
+  Done when: headless tests round-trip the state and load an older version;
+  quitting and relaunching keeps the state on iOS and macOS.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 48
+blocked_by: [53, 55]
+designs: []

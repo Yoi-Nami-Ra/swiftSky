@@ -1,0 +1,17 @@
+id: 76
+title: "Add a shipyard to buy other hulls"
+type: feature
+description: |
+  Part of SKY-73. From the docked screen (SKY-51): buy a different hull and
+  trade in the current one; each hull has its own sprite (default from
+  SKY-87, specialised art in later design tickets).
+
+  Done when: buying a hull changes the drawn ship and its stats on iOS and
+  macOS.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 73
+blocked_by: [75, 87]
+designs: []

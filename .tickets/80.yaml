@@ -1,0 +1,17 @@
+id: 80
+title: "Run an automated trade route"
+type: feature
+description: |
+  Part of SKY-77. Assign an owned ship a buy-here sell-there route across
+  systems (or let it pick from prices, like NPC traders, SKY-70); earnings
+  go to the player's credits, simulated abstractly when out of the system
+  (SKY-71).
+
+  Done when: tests cover a route's earnings; a ship runs a route unattended.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 77
+blocked_by: [70, 71, 79]
+designs: []

@@ -1,0 +1,18 @@
+id: 74
+title: "Add outfit slots and ship mass"
+type: feature
+description: |
+  Part of SKY-73. A ship is a hull plus outfits in typed slots; mass, thrust,
+  turn rate, cargo capacity, shields and weapons are derived from them and
+  feed the Newtonian model (SKY-24), the autopilot (SKY-25) and path
+  prediction (SKY-26). Outfits come from data.
+
+  Done when: headless tests cover derived stats, slot rules and that more
+  mass means less acceleration.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 73
+blocked_by: [52, 59, 60]
+designs: []

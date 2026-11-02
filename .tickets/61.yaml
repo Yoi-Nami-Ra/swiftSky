@@ -1,0 +1,19 @@
+id: 61
+title: "Select a combat target"
+type: feature
+description: |
+  Part of SKY-58. Tapping or clicking a ship selects it as the target
+  (distinguished from a move order and from docking, SKY-50); a target ring
+  and its hull and shield bars appear on the overlay; an arrow at the screen
+  edge points to an off-screen target (like SKY-40's arrow). The weapon
+  fires at the target when ordered.
+
+  Done when: selection, clearing and the off-screen arrow work on iOS and
+  macOS; tests cover the hit test that picks a ship over a move order.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 58
+blocked_by: [50, 60]
+designs: []

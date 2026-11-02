@@ -1,0 +1,17 @@
+id: 68
+title: "Run station stock and production"
+type: feature
+description: |
+  Part of SKY-66. Stations hold stock and run recipes (SKY-67) each economy
+  tick; production stops when an input runs out and resumes when supplied;
+  stock has a storage limit. Player trades (SKY-53) change the stock.
+
+  Done when: headless tests cover a production cycle, starvation and the
+  storage limit.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 66
+blocked_by: [53, 67]
+designs: []

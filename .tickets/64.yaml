@@ -1,0 +1,18 @@
+id: 64
+title: "Destroy ships and collect loot"
+type: feature
+description: |
+  Part of SKY-58. A ship at zero hull explodes (effect from SKY-87) and drops
+  loot: credits or cargo canisters that drift and can be picked up by flying
+  over them, into the cargo hold (SKY-52). The player's own destruction ends
+  the run and returns to the last save (SKY-57).
+
+  Done when: tests cover the drop and the pickup into a full hold; destroying
+  a hostile and collecting its loot works on iOS and macOS.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 58
+blocked_by: [52, 57, 59, 87]
+designs: []

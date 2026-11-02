@@ -1,0 +1,17 @@
+id: 75
+title: "Add an outfitter screen"
+type: feature
+description: |
+  Part of SKY-73. From the docked screen (SKY-51): list installed and
+  available outfits with prices and the stats they change; buy, sell and
+  swap them (SKY-74).
+
+  Done when: an outfit can be bought and installed on iOS and macOS, with
+  VoiceOver labels on every control.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 73
+blocked_by: [51, 74]
+designs: []

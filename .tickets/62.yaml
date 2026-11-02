@@ -1,0 +1,17 @@
+id: 62
+title: "Draw projectiles and hit effects"
+type: feature
+description: |
+  Part of SKY-58. Draw the projectile pool (SKY-60) and a short hit flash,
+  batched in one draw call, using the default art from SKY-87. Reduce Motion
+  tones down the flashes.
+
+  Done when: projectiles and hits are visible on iOS and macOS; 011's check
+  25 stays at zero allocations per frame with 200 projectiles alive.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 58
+blocked_by: [60, 87]
+designs: []

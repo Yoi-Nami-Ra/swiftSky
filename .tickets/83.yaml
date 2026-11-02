@@ -1,0 +1,18 @@
+id: 83
+title: "Add factions and per-faction reputation"
+type: feature
+description: |
+  Part of SKY-82. Factions as data (name, colour, home systems, relations
+  between factions); a reputation value per faction for the player, changed
+  by actions (killing their ships, completing their missions, trade). Saved
+  with the game (SKY-57).
+
+  Done when: headless tests cover reputation changes, including spill-over to
+  allied and enemy factions.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 82
+blocked_by: [57]
+designs: []

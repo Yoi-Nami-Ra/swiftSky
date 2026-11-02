@@ -1,0 +1,16 @@
+id: 85
+title: "Add contraband and cargo scans"
+type: feature
+description: |
+  Part of SKY-82. Some commodities are illegal in some factions' space; their
+  patrols scan nearby ships, and caught smugglers are fined, lose the cargo
+  and reputation (SKY-83). Contraband sells at a premium.
+
+  Done when: tests cover scan chance, fine and confiscation.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 82
+blocked_by: [52, 83]
+designs: []

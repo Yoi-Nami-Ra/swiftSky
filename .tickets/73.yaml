@@ -1,0 +1,20 @@
+id: 73
+title: "Outfitting and shipyard"
+type: feature
+description: |
+  Part of the sandbox roadmap (Endless Sky style 2D flight and trading, plus X-series style simulated economy, fleets and factions). Phase 2.
+
+  Ships carry outfits (engines, thrusters, weapons, shields, cargo pods)
+  that change how they fly and fight, and the player can buy other hulls.
+  Children: outfit slots and mass (SKY-74), outfitter screen (SKY-75),
+  shipyard (SKY-76).
+
+  Done when every child is done and an outfit change visibly changes
+  acceleration and turn rate.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

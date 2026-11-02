@@ -1,0 +1,24 @@
+id: 88
+title: "Spike: simulation tick for many ships and the economy"
+type: spike
+description: |
+  Question: can the fixed simulation tick (the logic layer behind SKY-24 and
+  SKY-25) carry dozens of ships, projectiles (SKY-60) and a coarse economy
+  tick for distant systems (SKY-71) within the frame budget, and how should
+  the two tick rates and the abstract/real switch of ships be structured?
+
+  Approach: read the current tick and frame loop; measure the tick cost with
+  50, 200 and 500 ships in a throwaway POC on a poc/sim-scale branch that is
+  never merged, using the instrumented build
+  (Scripts/build-instrumented.sh); sketch the data layout (struct of arrays
+  vs. array of structs) and the scheduling of the coarse tick.
+
+  Done when: tick costs per ship count are recorded, a recommended structure
+  is written under Findings, and the follow-up tickets are named.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

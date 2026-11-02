@@ -1,0 +1,20 @@
+id: 66
+title: "Living economy"
+type: feature
+description: |
+  Part of the sandbox roadmap (Endless Sky style 2D flight and trading, plus X-series style simulated economy, fleets and factions). Phase 2, the X-series simulation layer.
+
+  Stations consume and produce goods through recipes, prices follow supply
+  and demand, and NPC traders move goods between systems. Children:
+  recipes (SKY-67), station production (SKY-68), dynamic prices (SKY-69), NPC
+  traders (SKY-70), tick-rate tiers (SKY-71), market history (SKY-72).
+
+  Done when every child is done and starving a station of an input visibly
+  raises its output's price and draws NPC traders to supply it.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

@@ -1,0 +1,19 @@
+id: 55
+title: "Jump between star systems"
+type: feature
+description: |
+  Part of SKY-48. A jump order to a neighbouring system (SKY-54): the ship
+  must be outside the system's jump radius; it aligns with the destination's
+  map direction, plays a short jump transition, and arrives at the edge of
+  the destination system, which replaces the current one. Reduce Motion
+  shortens the transition to a fade. Default jump effect art: SKY-87.
+
+  Done when: tests cover the jump-radius rule and the arrival position; a jump
+  both ways works on iOS and macOS with no frame-time spike beyond budget.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 48
+blocked_by: [54, 87]
+designs: []

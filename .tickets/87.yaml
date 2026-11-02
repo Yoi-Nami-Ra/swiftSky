@@ -1,0 +1,43 @@
+id: 87
+title: "Design: default sprites for systems, ships and effects"
+type: task
+description: |
+  Why it's needed: SKY-49 (star, planets, station), SKY-55 (jump effect),
+  SKY-62 (projectiles and hit flash), SKY-63 (NPC ship), SKY-64 (explosion,
+  loot canister) and SKY-76 (a second hull) need art; today only
+  design/sprites/ship.png and design/sprites/planet.png exist.
+
+  These are default, generic sprites so the features can be built and
+  played. Specialised art (per faction, per hull, per station type) comes in
+  later follow-up design tickets.
+
+  When it shows: whenever the feature that uses each sprite is on screen.
+
+  Built from: design/sprites/ship.png and planet.png (square transparent
+  top-down PNG, lit from the upper left) and design/backgrounds/space.jpg for
+  palette.
+
+  Needed files, each in design/sprites/:
+  1. star.png - a star disc with glow.
+  2. station.png - a generic space station.
+  3. npc-ship.png - a generic NPC ship, clearly distinct from ship.png.
+  4. hull-2.png - a second player hull for the shipyard (SKY-76).
+  5. projectile.png and hit.png - a small bolt and a hit flash.
+  6. explosion.png - an explosion (single frame or a small strip).
+  7. canister.png - a loot canister.
+  8. jump.png - a jump flash effect.
+  Sizes and pixel densities follow planet.png's spec (SKY-43).
+
+  Open questions: who supplies them (provided by the user, or generated
+  with an image tool or rendered by script) - decide before this moves to
+  ready; whether effects are single frames or sprite strips.
+
+  Done when: every file above exists in design/sprites/, is approved, and
+  this ticket's `designs` lists them.
+platform: macos
+status: refine
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

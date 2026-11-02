@@ -1,0 +1,17 @@
+id: 69
+title: "Set prices from supply and demand"
+type: feature
+description: |
+  Part of SKY-66. Replace SKY-53's fixed prices with prices derived from each
+  station's stock against its target level (scarce means dear), within a
+  floor and ceiling per commodity.
+
+  Done when: headless tests cover the price curve; selling a lot at one
+  station lowers its price there.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 66
+blocked_by: [68]
+designs: []

@@ -1,0 +1,21 @@
+id: 58
+title: "Basic combat"
+type: feature
+description: |
+  Part of the sandbox roadmap (Endless Sky style 2D flight and trading, plus X-series style simulated economy, fleets and factions). Phase 1.
+
+  Ships take damage, fire weapons, fight hostile NPCs, and earn loot and
+  bounties. Children: hull and shields (SKY-59), weapons and projectiles
+  (SKY-60), targeting (SKY-61), projectile and hit drawing (SKY-62), hostile
+  AI (SKY-63), destruction and loot (SKY-64), bounty missions (SKY-65). Art:
+  default sprites (SKY-87).
+
+  Done when every child is done and a fight with one hostile, from targeting
+  to collecting the loot, works on iOS and macOS within the frame budget.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

@@ -1,0 +1,17 @@
+id: 54
+title: "Model the galaxy map with jump lanes"
+type: feature
+description: |
+  Part of SKY-48. A galaxy of 3-5 star systems (SKY-49) with map positions,
+  joined by jump lanes, loaded from data. Route finding (shortest number of
+  jumps) between any two systems. Logic layer only.
+
+  Done when: headless tests cover loading, lane symmetry and routes,
+  including no route between disconnected systems.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: 48
+blocked_by: [49]
+designs: []

@@ -1,0 +1,17 @@
+id: 84
+title: "Apply reputation effects"
+type: feature
+description: |
+  Part of SKY-82. Reputation (SKY-83) decides whether a faction's ships are
+  hostile, whether its stations let the player dock (SKY-50) and the price
+  markup in its markets (SKY-53).
+
+  Done when: tests cover each threshold; a hostile faction refuses docking on
+  iOS and macOS.
+platform: macos
+status: idea
+phase: Backlog
+priority: medium
+parent: 82
+blocked_by: [50, 53, 63, 83]
+designs: []
