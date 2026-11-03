@@ -268,7 +268,10 @@ artifacts, keep them consistent with these templates.
   breakpoint resolves to no location, or when the app does not launch; the samples are read by hand
   against the spec's quickstart. iOS simulator only (arm64 registers, the simulator's
   `MTLSerializerRenderCommandEncoder`); not part of `verify.sh` or CI. A covered simulator window stops the
-  frames, and the samples part then waits.
+  frames, and the samples part then waits. `specs/021-ios-gpu-frame-capture/probe-macos.sh` (SKY-19) is its
+  macOS twin: scheme `swiftSky (macOS)`, launched with `open -n`, the same counts and pass/fail rules, and
+  samples that match any encoder class (the GPU driver's, `AGXG13XFamilyRenderContext` on an M1 Pro); Apple
+  silicon only, and a covered window stops its frames too. It closed 001's checks 4 and 5 on macOS.
 - `.claude/skills/speckit-*/` — the skill definitions backing each `/speckit.*` command, plus two
   project-authored variants that read the base skills at run time: `speckit-clarify-auto` (answers what the
   code, constitution and ticket settle, asks only the rest) and `speckit-implement-phased` (one `tasks.md`
