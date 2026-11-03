@@ -43,8 +43,8 @@ run on every push to `main` and every pull request, on a self-hosted runner on t
 makes the optimised build with the instrumentation, and `verify.sh` checks it has it and Release has not) and
 `specs/020-autopilot-rest-phase` (a ship at rest is never "against its motion" when the phase is named, so a
 re-order after arrival starts `aligning` or `burning`, not `flipping` or `braking`) and
-`specs/021-ios-gpu-frame-capture` (001's checks 4 and 5 closed on iOS by an lldb probe instead of a GPU
-capture; no code changes).
+`specs/021-ios-gpu-frame-capture` (001's checks 4 and 5 closed on iOS, and by SKY-19 on macOS, by an lldb
+probe instead of a GPU capture; no code changes).
 Layer libraries and tests live in the root `Package.swift`, and the two app targets live in
 `swiftSky.xcodeproj`, which has two build configurations, Debug and Release.
 `./Scripts/verify.sh` is the single checked-in verification command.
@@ -264,14 +264,17 @@ artifacts, keep them consistent with these templates.
 - `specs/021-ios-gpu-frame-capture/probe.sh` (021) — builds the Debug iOS app, launches it in the first booted
   simulator with `--no-ship --no-debug-overlay`, attaches lldb and counts Metal calls over 10 s (presents,
   draws, pipeline bindings, `setViewport:`, pipeline-state and buffer creation), then samples the bound
-  pipeline, vertex buffer and draw twice, 5 s apart. It exits 1 when a count breaks 001 check 4 or 5, when a
-  breakpoint resolves to no location, or when the app does not launch; the samples are read by hand
-  against the spec's quickstart. iOS simulator only (arm64 registers, the simulator's
-  `MTLSerializerRenderCommandEncoder`); not part of `verify.sh` or CI. A covered simulator window stops the
-  frames, and the samples part then waits. `specs/021-ios-gpu-frame-capture/probe-macos.sh` (SKY-19) is its
+  pipeline, vertex buffer and draw twice, 5 s apart, on the frame-loop thread. It exits 1, before the
+  samples, when a count breaks 001 check 4 or 5, when a breakpoint resolves to no location, or when the app
+  does not launch; the samples are read by hand against the spec's quickstart. iOS simulator only (arm64
+  registers, the simulator's `MTLSerializerRenderCommandEncoder`); not part of `verify.sh` or CI. A covered
+  simulator window stops the frames: during the counts that is a `no frame was presented` FAIL, during the
+  samples the samples part waits. `specs/021-ios-gpu-frame-capture/probe-macos.sh` (SKY-19) is its
   macOS twin: scheme `swiftSky (macOS)`, launched with `open -n`, the same counts and pass/fail rules, and
   samples that match any encoder class (the GPU driver's, `AGXG13XFamilyRenderContext` on an M1 Pro); Apple
-  silicon only, and a covered window stops its frames too. It closed 001's checks 4 and 5 on macOS.
+  silicon only, and a covered window stops its frames too. It finds, attaches to and stops only the app it
+  built (by its executable's path), never another `swiftSky` process. It closed 001's checks 4 and 5 on
+  macOS. The lldb runs and the checks both probes share are in `probe-common.sh`, which they source.
 - `.claude/skills/speckit-*/` — the skill definitions backing each `/speckit.*` command, plus two
   project-authored variants that read the base skills at run time: `speckit-clarify-auto` (answers what the
   code, constitution and ticket settle, asks only the rest) and `speckit-implement-phased` (one `tasks.md`
