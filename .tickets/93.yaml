@@ -1,0 +1,28 @@
+id: 93
+title: "Spike: how similar games handle cargo units"
+type: spike
+description: |
+  Question: how should cargo be measured and stored? SKY-52 assumes tons
+  and a hold of commodity amounts, but similar space trading titles differ:
+  mass (tons), volume (m³), abstract cargo units or slots, stack sizes,
+  containers that hold one commodity each, and whether some goods take
+  more room than others (passengers, vehicles, bulky or fragile goods).
+  The choice shapes the cargo hold (SKY-52), the market (SKY-53), ship mass
+  for outfitting (SKY-74), loot (SKY-64) and contraband scans (SKY-85).
+
+  Approach: survey how several comparable space trading and combat games
+  model cargo (unit, capacity, per-commodity size, mass effect on flight,
+  UI for the hold and the market), from their wikis, manuals and design
+  write-ups. Compare them on player clarity, depth, and cost in the logic
+  layer and the UI. No POC expected.
+
+  Done when: a comparison table of the surveyed games is written under
+  Findings, with a recommended cargo model (unit, capacity rule, whether
+  cargo mass affects flight), and SKY-52 updated or follow-up tickets named.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

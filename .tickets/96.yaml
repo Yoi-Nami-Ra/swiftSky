@@ -1,0 +1,36 @@
+id: 96
+title: "Add safety standings to station areas"
+type: feature
+description: |
+  Each station has one or more areas, and each area has a safety standing
+  that says two things:
+  - which actions are illegal in that area (for example firing weapons,
+    attacking a ship, carrying or trading contraband, ramming);
+  - how long it takes the local "police" to show up and stop the aggressor.
+
+  A high-security area has many illegal actions and a short response time;
+  a lawless one has few or none and no response. Committing an illegal
+  action in an area starts the response timer; when it runs out, police
+  ships arrive and stop the aggressor.
+
+  Builds on star systems and stations (SKY-49), combat (SKY-60, SKY-63) and
+  factions (SKY-83); contraband scans (SKY-85) can reuse the illegal-action
+  list. What happens near a station while the player is docked depends on
+  SKY-95.
+
+  Open questions: how an area is bounded (radius around the station or
+  named zones); the list of action types; what "stop the aggressor" means
+  (disable, destroy, fine, reputation loss); whether standing is set per
+  station, per faction or per system; how the player sees an area's
+  standing (HUD, docked screen, map).
+
+  Done when: areas carry a standing with an illegal-action list and a
+  response time, tests cover detecting an illegal action, the timer and the
+  police arrival, and the player can see the standing of the area they are in.
+platform: macos
+status: refine
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []
