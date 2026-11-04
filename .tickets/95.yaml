@@ -1,0 +1,36 @@
+id: 95
+title: "Spike: what pauses while the player is docked"
+type: spike
+description: |
+  Question: while the player is docked at a station (SKY-50, SKY-51), what
+  happens to the rest of the world? Options:
+  - Full pause: every AI ship's travel stops until the player leaves the
+    station again.
+  - Partial pause: travel stops only in the area of the station where the
+    player is docked; the rest of the galaxy keeps running.
+  - No pause: everything keeps running on its own while the player stays in
+    the station.
+
+  The choice affects the economy and NPC traders (SKY-68, SKY-70), the
+  coarse tick for distant systems (SKY-71, SKY-88), combat and threats near
+  the station (SKY-63, SKY-96), and how the docked screen reads to the
+  player. It is separate from the in-flight active pause (SKY-94).
+
+  Approach: for each option, list what the player gains and loses (safety
+  while trading, a living world, exploits such as waiting docked for prices
+  to move), what it costs in the simulation (one clock or several, what
+  "the station's area" is and how it is bounded, catching up on undock),
+  and how comparable games handle docking and time. No POC expected unless
+  partial pause needs one to show the area boundary works.
+
+  Done when: the three options are compared under Findings with a
+  recommendation, the definition of the station's area if partial pause is
+  chosen, and the follow-up tickets named (including any change to SKY-51's
+  "keeps running or pauses" note).
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []
