@@ -80,8 +80,9 @@ Sources/SwiftSkyRendering/
 └── Text/TextBuffer.swift                       # write(asciiBytes:) allocation-free
 Sources/SwiftSkyPlatform/GameSurfaceView.swift  # DebugCargoOption (--no-debug-cargo)
 Sources/SwiftSkyPlatform/FrameLoop.swift        # pass the option / list names to the overlay
+CLAUDE.md                                       # new spec and key locations (T020)
 Scripts/verify.sh                               # Release strings check for cargo labels; resource copy check if needed
-Tests/SwiftSkySimulationTests/                  # CargoHoldTests, CommodityListTests
+Tests/SwiftSkySimulationTests/                  # CargoHoldTests, CommodityListTests, ShipHoldTests
 Tests/SwiftSkyRenderingTests/                   # DebugOverlayCargoTests
 Tests/SwiftSkyPlatformTests/                    # DebugCargoOptionTests
 ```

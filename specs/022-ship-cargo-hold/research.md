@@ -27,7 +27,8 @@
   commodity" rejection. The hold holds no reference to the list.
 - Rationale: keeps the hold a pure inline value (FR-009) and independent of how ships are stored (D5);
   string lookup happens outside any per-frame path.
-- Max 16 commodities is enforced by list validation (error names the limit).
+- Max 16 commodities is enforced by list validation (error names the limit). `CargoHold.launch` has 16 slots
+  (see data-model); the list, not the hold, decides which ids exist.
 
 ## R4 Overlay cargo text without allocation
 - `TextBuffer.write(_: String)` is documented as not per-frame safe. Decision: the overlay pre-encodes
@@ -42,7 +43,8 @@
 ## R5 Toggle
 - Decision: `DebugCargoOption` beside `DebugShipOptions`, `--no-debug-cargo`, in the `#if
   SWIFTSKY_INSTRUMENTATION` block; sets a `showsCargo` flag on `DebugOverlay`. With `--no-debug-overlay`
-  there is nothing to show either way. Parsing is a pure struct, tested in the platform tests.
+  there is nothing to show either way. If the list fails to load at startup, the error is logged once, the
+  overlay gets an empty name table (amounts, if any, show with `?` names) and the game runs on. Parsing is a pure struct, tested in the platform tests.
 
 ## R6 Release strings check
 - Decision: extend the `strings` grep in `release_has_no_instrumentation` with the cargo labels (`hold    `,

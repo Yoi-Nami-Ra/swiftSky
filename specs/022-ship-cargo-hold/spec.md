@@ -31,7 +31,7 @@ the rules are proved by headless tests.
 Out of scope: buying, selling and prices changing with supply (SKY-53), docking and the docked screen
 (SKY-50, SKY-51), saving and loading the hold (SKY-57), any player-facing display of the hold, cargo
 that affects the ship's mass or thrust, and a keyed lookup of ship data with the cargo inside it (a
-separate ticket, filed by the coordinator; see D5 and FR-011).
+separate ticket, filed by the coordinator; see D5 and FR-013).
 
 ### Relationship to earlier specs
 
@@ -157,8 +157,7 @@ full) and on the argument's parsing; then, by hand, launch the app with and with
 - Adding exactly the free capacity succeeds (hold full, 0 t free); adding one ton more fails.
 - A hold with capacity 0 accepts no cargo and shows 0 / 0.
 - An amount large enough to overflow the integer arithmetic is rejected as over capacity, never wrapping.
-- A removal that would leave exactly 0 t of a commodity leaves it with no entry (or an entry of 0; both read
-  as 0 t).
+- A removal that would leave exactly 0 t of a commodity leaves it at 0 t (it is then not listed on the overlay).
 - Adding cargo changes nothing about the ship's position, velocity, heading or the autopilot.
 - A hold read before any cargo is added shows every commodity at 0 t.
 
@@ -192,7 +191,8 @@ full) and on the argument's parsing; then, by hand, launch the app with and with
   4 Hz, MUST add no per-frame allocation, MUST be absent from plain Release builds, and MUST NOT be exposed
   to assistive technology (D4).
 - **FR-011**: The overlay's cargo lines MUST be on by default, and the launch argument `--no-debug-cargo` MUST
-  hide them (Debug and instrumented Release builds only); the other overlay lines are unaffected (D4, D4a). The hold MUST NOT depend on how a ship is looked up or stored, so that a later keyed
+  hide them (Debug and instrumented Release builds only); the other overlay lines are unaffected (D4, D4a).
+- **FR-013**: The hold MUST NOT depend on how a ship is looked up or stored, so that a later keyed
   lookup of ship data needs no change to the hold's rules (D5).
 - **FR-012**: Nothing in the hold MUST change the ship's motion, the autopilot, or the planned path.
 

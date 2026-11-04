@@ -13,13 +13,13 @@ File shape: `{ "commodities": [ { "id": "water", "name": "Water", "basePrice": 1
 placeholders.
 
 ## CargoHold (plain value, inline)
-- `capacity: Int` (>= 0; init clamps a negative to 0), `commodityCount: Int` (0...16)
+- `capacity: Int` (>= 0; init clamps a negative to 0), `commodityCount: Int` (0...16, clamped). `.launch` is capacity 20 with `commodityCount = maxCommodities` (16): the hold cannot see the list, so it accepts any slot index; mapping an id to an index, and rejecting an id not in the list, is `CommodityList.index(ofID:)` returning `nil` at the caller (spec US2 scenario 2; tested in CommodityListTests). Tests of the unknown-index rule use `CargoHold(capacity:commodityCount:)` with a smaller count.
 - amounts: `InlineArray<16, Int>`, slots `>= commodityCount` always 0
 - derived: `used` (sum), `free` (capacity - used), `tons(of index)` (0 for unknown)
-- `mutating add(_ tons: Int, ofIndex:) -> CargoRejection?`, `mutating remove(...)` likewise; `nil` = accepted.
+- `mutating add(_ tons: Int, of index: Int) -> CargoRejection?`, `mutating remove(_:of:)` likewise; `nil` = accepted.
 - Order of checks: negative amount, unknown commodity, then add: over capacity (overflow-safe: `tons > free`),
-  remove: not enough stock. 0 t succeeds when the commodity is known... and for an unknown commodity with 0
-  t the unknown-commodity rule wins (documented in the contract).
+  remove: not enough stock. 0 t succeeds only when the commodity is known; for an unknown commodity with 0
+  t the unknown-commodity rule wins (also stated in contract C1).
 - Invariants: no amount < 0; `used <= capacity`; rejection leaves the value bit-equal.
 
 ## CargoRejection
