@@ -1,0 +1,27 @@
+id: 102
+title: "Describe CI as manual-only in CLAUDE.md"
+type: task
+description: |
+  Found in the PR #7 review (SKY-21). Commit 86c3176 made
+  `.github/workflows/verify.yml` run only on manual dispatch
+  (`workflow_dispatch`), but CLAUDE.md still says the `verify` job runs on
+  every push to `main` and every pull request (the 018 summary near line 41
+  and the CI bullet near line 254). So pull requests show no checks, and the
+  merge rule ("merge only when `verify / verify` passed for its current head")
+  now needs someone to start the run by hand.
+
+  - Update both CLAUDE.md passages: the workflow is started by hand from the
+    Actions tab, and the merge rule needs a passing run for the head.
+  - Decide whether 018's spec, plan and data model (which state the push and
+    pull-request triggers, FR-002) get a dated note or a superseding change;
+    record the decision in the ticket.
+
+  Done when: CLAUDE.md describes how CI is triggered today, and 018's docs
+  either note the change or a follow-up ticket says why not.
+platform: macos
+status: ready
+phase: Backlog
+priority: low
+parent: null
+blocked_by: []
+designs: []
