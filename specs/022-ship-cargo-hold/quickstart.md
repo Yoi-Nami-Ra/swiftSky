@@ -20,3 +20,8 @@
 - Check 4: DONE for an empty hold. Instrumented build launched with `open -n`, frame summaries over 10 s read `allocs=0 allocframes=0` with the cargo lines on. A non-empty hold was not shown live (no way to add cargo from the app yet); the write path is the same allocation-free calls.
 - Check 5: DONE. `verify.sh` Release strings check (now including `no-debug-cargo`, `hold    ` and ` t  free `) passes.
 - FR-010 (no accessibility element on the overlay): not inspected by hand.
+
+## Results (phase 5, close-out)
+
+- T019 stays open: checks 3 and FR-010 (the overlay's look, `--no-debug-cargo` hiding it, no accessibility element) were not done by a person. Everything else above is recorded as it was found; none of it claims those were verified.
+- Final `./Scripts/verify.sh` on the finished branch: see the phase report (T022).

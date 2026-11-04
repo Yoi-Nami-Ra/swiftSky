@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-04
 
-**Status**: Draft
+**Status**: Implemented; on-screen checks (T019: overlay look, `--no-debug-cargo`, accessibility) pending a person
 
 **Input**: User description: "SKY-52 — Add a cargo hold to the ship" (`.tickets/52.yaml`, parent SKY-48).
 The ship gets a cargo capacity (tons) and a hold of commodity amounts; the commodity list (name, id, base

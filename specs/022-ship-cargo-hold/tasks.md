@@ -77,9 +77,9 @@
 
 **Purpose**: Repository docs name the new spec, per project convention.
 
-- [ ] T020 Update the root CLAUDE.md: add `specs/022-ship-cargo-hold` to the "Built so far" list; add Key locations entries for `Commodity.swift`, `CargoHold.swift` and `Resources/commodities.json` (the one Foundation file in the logic layer, `Bundle.module`), the overlay's cargo lines and `DebugOverlayShip.Cargo`, `TextBuffer.write(asciiBytes:limit:)`, and `--no-debug-cargo` in the debug launch arguments list; amend any sentence saying the logic layer imports only Darwin or "declares no dependencies" if it now misleads in CLAUDE.md
-- [ ] T021 [P] Mark the spec's Status and the ticket result for SKY-52 per the SKY-21 pattern (record quickstart results; set Status in specs/022-ship-cargo-hold/spec.md and do not touch .tickets/: the coordinator handles ticket status)
-- [ ] T022 Final `./Scripts/verify.sh` on the finished branch, and `grep -rn "Darwin" Package.swift CLAUDE.md` to confirm no stale statement about logic-layer imports remains
+- [x] T020 Update the root CLAUDE.md: add `specs/022-ship-cargo-hold` to the "Built so far" list; add Key locations entries for `Commodity.swift`, `CargoHold.swift` and `Resources/commodities.json` (the one Foundation file in the logic layer, `Bundle.module`), the overlay's cargo lines and `DebugOverlayShip.Cargo`, `TextBuffer.write(asciiBytes:limit:)`, and `--no-debug-cargo` in the debug launch arguments list; amend any sentence saying the logic layer imports only Darwin or "declares no dependencies" if it now misleads in CLAUDE.md
+- [x] T021 [P] Mark the spec's Status and the ticket result for SKY-52 per the SKY-21 pattern (record quickstart results; set Status in specs/022-ship-cargo-hold/spec.md and do not touch .tickets/: the coordinator handles ticket status)
+- [x] T022 Final `./Scripts/verify.sh` on the finished branch, and `grep -rn "Darwin" Package.swift CLAUDE.md` to confirm no stale statement about logic-layer imports remains
 
 **Checkpoint**: Commit "SKY-52: document the cargo hold".
 
