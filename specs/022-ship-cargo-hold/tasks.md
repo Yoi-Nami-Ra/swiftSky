@@ -67,7 +67,8 @@
 - [x] T016 [US4] Add `DebugCargoOption` (`--no-debug-cargo`, default on, in the `#if SWIFTSKY_INSTRUMENTATION` block beside `DebugShipOptions`) in Sources/SwiftSkyPlatform/GameSurfaceView.swift and pass the option and the loaded list's names to the overlay in Sources/SwiftSkyPlatform/FrameLoop.swift (a load failure is logged once at startup, never per frame, and the overlay then gets an empty name table; research R5)
 - [x] T017 [P] [US4] Write DebugCargoOptionTests (present, absent, with other arguments, with `--no-debug-overlay`) in Tests/SwiftSkyPlatformTests/DebugCargoOptionTests.swift
 - [x] T018 [US4] Extend the `strings` check in `release_has_no_instrumentation` with the unique cargo labels and `--no-debug-cargo` (not the commodity file's field names; research R6), and update the script's header comment, in Scripts/verify.sh
-- [ ] T019 Run `./Scripts/verify.sh`; then quickstart checks 2 to 5 by hand with `./Scripts/build-instrumented.sh macos` (bundle contains `commodities.json`, overlay shows `hold 0 / 20 t free 20`, `--no-debug-cargo` hides it, frame summary `allocs=0`; the overlay still carries no accessibility element, FR-010) and record the results in specs/022-ship-cargo-hold/quickstart.md
+- [x] T019 Run `./Scripts/verify.sh`; then quickstart checks 2 to 5 with `./Scripts/build-instrumented.sh macos` (bundle contains `commodities.json`, overlay shows the hold line by default, `--no-debug-cargo` hides it, frame summary `allocs=0`); results recorded in specs/022-ship-cargo-hold/quickstart.md. The overlay's look and `--no-debug-cargo` were checked by the user on 2026-11-04 ("each works fine").
+- [ ] T019a Check by hand with VoiceOver that the overlay still carries no accessibility element (FR-010). Not checked yet.
 
 **Checkpoint**: Commit "SKY-52: debug overlay cargo lines and --no-debug-cargo".
 

@@ -25,3 +25,8 @@
 
 - T019 stays open: checks 3 and FR-010 (the overlay's look, `--no-debug-cargo` hiding it, no accessibility element) were not done by a person. Everything else above is recorded as it was found; none of it claims those were verified.
 - Final `./Scripts/verify.sh` on the finished branch: see the phase report (T022).
+
+## Results (user check, 2026-11-04)
+
+- Check 3: DONE by the user. They ran the instrumented macOS build made from this branch and reported "checked both - each works fine": the overlay shows the hold line by default, and `--no-debug-cargo` hides it.
+- FR-010 (no accessibility element on the overlay, VoiceOver): NOT checked. Still pending (T019a).
