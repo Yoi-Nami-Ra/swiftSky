@@ -1,0 +1,30 @@
+id: 100
+title: "Make the failure notice readable in light appearance"
+type: bug
+description: |
+  Found while verifying SKY-38 on the iPhone 17e simulator: with the system in
+  light appearance, RendererFailureNotice's heading and body draw in the
+  default (dark) label colour over the black window, so only the Quit button
+  is visible. In dark appearance the text shows. SKY-7 evidently ran in dark
+  appearance, so check 33 never saw it. This breaks 001 FR-025 (the notice
+  must be readable), the same requirement SKY-38 fixed for large text sizes.
+
+  Scope: make the notice readable in both appearances on iPhone and iPad, for
+  example by fixing the notice's colour scheme or giving it its own
+  background, without adding user-visible platform-UI pixels on the success
+  path (001 FR-001 / FR-004a: the black window background is the one allowed
+  exception). macOS forces dark appearance (NSRequiresAquaSystemAppearance =
+  false), so confirm it is unaffected and stays so.
+
+  Done when: in light and dark appearance, on the iPhone 17e and an iPad, at
+  the default and the largest accessibility text size, the heading, body and
+  Quit of the failure notice are all readable (Release build with the
+  fragment entry point renamed, as in 001 check 33), and the result is
+  recorded in the 001 quickstart.
+platform: ios
+status: ready
+phase: MVP
+priority: medium
+parent: null
+blocked_by: []
+designs: []

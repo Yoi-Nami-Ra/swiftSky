@@ -13,7 +13,7 @@ description: |
   (simctl, the iOS scheme, the simulator's MTLSerializerRenderCommandEncoder);
   the same breakpoints on a macOS launch, or a capture, would do here.
 platform: macos
-status: in-review
+status: done
 phase: MVP
 priority: medium
 parent: null
