@@ -120,5 +120,34 @@ struct DebugOverlayCargoTests {
         #expect(cargo.capacity == 20 && cargo.used == 4 && cargo.free == 16 && cargo.count == 16)
         #expect(cargo.amounts[1] == 4 && cargo.amounts[0] == 0)
     }
+
+    @Test("More than 16 names: only the first 16 are kept, and slot 15 shows the 16th")
+    func moreNamesThanSlots() {
+        let names = (0..<20).map { "N\($0)" }
+        let result = written(state { hold in _ = hold.add(2, of: 15) }, names: names)
+        let tail = Array(result.lines.drop { !$0.hasPrefix("hold") })
+        #expect(tail == ["hold    2 / 20 t  free 18", "  N15 2"])
+    }
+
+    @Test("Cargo snapshots differing in any field are not equal")
+    func cargoEquality() {
+        let base = DebugOverlayShip.Cargo(state { hold in _ = hold.add(3, of: 2) }.ship.hold)
+        #expect(base == DebugOverlayShip.Cargo(state { hold in _ = hold.add(3, of: 2) }.ship.hold))
+        var amount = base
+        amount.amounts[2] = 4
+        #expect(amount != base)
+        var used = base
+        used.used = 9
+        #expect(used != base)
+        var free = base
+        free.free = 0
+        #expect(free != base)
+        var count = base
+        count.count = 6
+        #expect(count != base)
+        var capacity = base
+        capacity.capacity = 21
+        #expect(capacity != base)
+    }
 }
 #endif

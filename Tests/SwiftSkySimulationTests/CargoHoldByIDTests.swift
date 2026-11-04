@@ -55,4 +55,36 @@ struct CargoHoldContractTests {
             try CommodityList.load(from: Bundle(for: TestBundleMarker.self))
         }
     }
+
+    @Test func bundledListOrderAndNamesArePinned() throws {
+        // The overlay prints names by slot index, so the order is part of the contract.
+        let list = try CommodityList.load()
+        #expect(list.commodities.map(\.id) == ["water", "food", "ore", "metals", "machinery", "electronics"])
+        #expect(list.commodities.map(\.name) == ["Water", "Food", "Ore", "Metals", "Machinery", "Electronics"])
+    }
+
+    @Test func shipInitsKeepTheHoldTheyAreGiven() {
+        let hold = CargoHold(capacity: 3, commodityCount: 2)
+        #expect(Ship(hold: hold).hold == hold)
+        let moving = Ship(
+            position: .zero, velocity: .zero, heading: 0, angularVelocity: 0, hold: hold
+        )
+        #expect(moving.hold == hold)
+    }
+
+    @Test func equalityComparesCapacityAndCount() {
+        #expect(CargoHold(capacity: 5) != CargoHold(capacity: 6))
+        #expect(CargoHold(capacity: 5, commodityCount: 3) != CargoHold(capacity: 5, commodityCount: 4))
+        #expect(CargoHold(capacity: 5, commodityCount: 3) == CargoHold(capacity: 5, commodityCount: 3))
+    }
+
+    @Test func removeChecksNegativeBeforeUnknown() {
+        var hold = CargoHold(capacity: 20, commodityCount: 3)
+        #expect(hold.remove(-1, of: 9) == .negativeAmount)
+    }
+
+    @Test func addChecksUnknownBeforeCapacity() {
+        var hold = CargoHold(capacity: 20, commodityCount: 3)
+        #expect(hold.add(Int.max, of: 9) == .unknownCommodity)
+    }
 }
