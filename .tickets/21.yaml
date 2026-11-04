@@ -12,6 +12,17 @@ description: |
     process left (`pgrep swiftSky` returns nothing).
 
   Record the results in the quickstart.
+
+  Result 2026-11-04: both checks PASS, recorded in 001's quickstart. Check 9:
+  the menu bar is swiftSky, Edit, View, Window and Help; there is no File menu,
+  so no New Window command. The Window menu holds only Minimize, Zoom and Bring
+  All to Front, read through lldb (Accessibility is not granted) and opened by
+  hand. SC-014 and FR-006c were reworded to what they meant: no Window menu
+  entry that opens or lists a window, not no Window menu. Check 10: closing the
+  window with its close button terminated the app (`terminate:` 29 ms after
+  the click) and `pgrep -x swiftSky` returned nothing. Not covered: ⌘W (there
+  is no Close item without a File menu) and FR-006d's FR-032 teardown ordering
+  on a window close, which this run does not show.
 platform: macos
 status: in-review
 phase: MVP
