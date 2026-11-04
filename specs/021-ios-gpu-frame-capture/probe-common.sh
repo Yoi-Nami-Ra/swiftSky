@@ -64,8 +64,18 @@ run_counts() {
   done
 }
 
-# Exits 1 when a COUNTS check failed. Called before the SAMPLES: with no frames their one-shot
-# breakpoints never fire and lldb would wait for ever.
+# launch_pid: the caller's `launch` (stop any copy this probe started, start the app, print its pid),
+# checked. errexit does not reach inside $( ), so a failed launch is caught here.
+launch_pid() {
+  local pid
+  pid=$(launch) || pid=
+  [[ $pid =~ ^[0-9]+$ ]] || { echo "FAIL: the app did not launch" >&2; exit 1; }
+  echo "$pid"
+}
+
+# Exits 1 when a COUNTS check failed. Called before the SAMPLES, which attach to the same process the
+# COUNTS checked: with no frames their one-shot breakpoints never fire and lldb would wait for ever. A
+# frame loop that stops between the two (the window covered after the COUNTS) still makes them wait.
 counts_verdict() {
   [ "$failures" -eq 0 ] || { echo "=== COUNTS FAILED ($failures)"; exit 1; }
 }
@@ -92,5 +102,5 @@ run_samples() {
     -o "script lldb.debugger.SetAsync(False)" \
     -o 'script print("--- sample 2")' "${SAMPLE[@]}" \
     -o "process detach" 2>&1 \
-    | grep -vE "^ {4,}0x|^->|^\s*$|^(libsystem|Metal|MetalSerializer)\`" || true
+    | grep -vE "^ {4,}0x|^->|^\s*$|^[A-Za-z0-9_.]+\`" || true
 }

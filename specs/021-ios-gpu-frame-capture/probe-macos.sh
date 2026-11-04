@@ -17,9 +17,11 @@
 # alone. Nothing in the app changes; breakpoints slow the frame rate while attached.
 set -euo pipefail
 
-# hw.optional.arm64 is 1 on Apple silicon even when this shell runs under Rosetta.
+# hw.optional.arm64 is 1 on Apple silicon even when this shell runs under Rosetta. Under Rosetta, xcrun
+# would start an x86_64 lldb, which cannot read the arm64 app's registers, so the probe re-runs natively.
 [ "$(sysctl -n hw.optional.arm64 2>/dev/null)" = 1 ] ||
   { echo "this probe reads arm64 registers; run it on Apple silicon" >&2; exit 2; }
+[ "$(sysctl -n sysctl.proc_translated 2>/dev/null)" != 1 ] || exec arch -arm64 /bin/bash "$0" "$@"
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$HERE/../.." && pwd)
@@ -27,7 +29,7 @@ WORK=$(mktemp -d)
 APP="$WORK/dd/Build/Products/Debug/swiftSky.app"
 BIN="$APP/Contents/MacOS/swiftSky"
 trap 'pkill -f "$BIN" 2>/dev/null || true; rm -rf "$WORK"' EXIT
-# shellcheck source=probe-common.sh
+# shellcheck source=SCRIPTDIR/probe-common.sh
 . "$HERE/probe-common.sh"
 
 xcodebuild -project "$ROOT/swiftSky.xcodeproj" -scheme "swiftSky (macOS)" -configuration Debug \
@@ -43,13 +45,6 @@ launch() {
   pgrep -nf "$BIN"
 }
 
-# errexit does not reach inside $( ), so a failed launch is caught here.
-launch_pid() {
-  local pid
-  pid=$(launch) || pid=
-  [[ $pid =~ ^[0-9]+$ ]] || { echo "FAIL: the app did not launch" >&2; exit 1; }
-  echo "$pid"
-}
 
 echo "=== xcode: $(xcodebuild -version | tr '\n' ' ')"
 echo "=== mac: $(sw_vers -productVersion) $(uname -m)"
@@ -62,8 +57,7 @@ counts_verdict
 echo "=== SAMPLES"
 # The encoder the call reaches is the GPU driver's, a different class per Mac model (AGXG13XFamilyRenderContext
 # on an M1 Pro); the debug layer's classes sit beside it in the same pattern. The first hit on the frame-loop
-# thread is the one sampled.
-PID=$(launch_pid)
+# thread is the one sampled, in the process the COUNTS checked.
 run_samples "$PID" '[A-Za-z0-9_]+'
 
 echo "=== COUNTS PASSED; read the SAMPLES against quickstart.md"

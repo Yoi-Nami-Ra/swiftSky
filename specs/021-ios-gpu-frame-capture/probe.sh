@@ -23,7 +23,7 @@ xcrun simctl boot "$UDID" 2>/dev/null || true
 BUNDLE=com.swiftsky.app
 WORK=$(mktemp -d)
 trap 'xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true; rm -rf "$WORK"' EXIT
-# shellcheck source=probe-common.sh
+# shellcheck source=SCRIPTDIR/probe-common.sh
 . "$HERE/probe-common.sh"
 
 xcodebuild -project "$ROOT/swiftSky.xcodeproj" -scheme "swiftSky (iOS)" -configuration Debug \
@@ -38,13 +38,6 @@ launch() {
   echo "${out##*: }"
 }
 
-# errexit does not reach inside $( ), so a failed launch is caught here.
-launch_pid() {
-  local pid
-  pid=$(launch) || pid=
-  [[ $pid =~ ^[0-9]+$ ]] || { echo "FAIL: the app did not launch on $UDID" >&2; exit 1; }
-  echo "$pid"
-}
 
 echo "=== xcode: $(xcodebuild -version | tr '\n' ' ')"
 xcrun simctl list devices | grep "$UDID" | sed 's/^ */=== simulator: /'
@@ -55,7 +48,6 @@ run_counts "$PID"
 counts_verdict
 
 echo "=== SAMPLES"
-PID=$(launch_pid)
 run_samples "$PID" 'MTLSerializerRenderCommandEncoder'
 
 echo "=== COUNTS PASSED; read the SAMPLES against quickstart.md"

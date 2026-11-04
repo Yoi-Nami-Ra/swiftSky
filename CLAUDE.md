@@ -264,7 +264,8 @@ artifacts, keep them consistent with these templates.
 - `specs/021-ios-gpu-frame-capture/probe.sh` (021) — builds the Debug iOS app, launches it in the first booted
   simulator with `--no-ship --no-debug-overlay`, attaches lldb and counts Metal calls over 10 s (presents,
   draws, pipeline bindings, `setViewport:`, pipeline-state and buffer creation), then samples the bound
-  pipeline, vertex buffer and draw twice, 5 s apart, on the frame-loop thread. It exits 1, before the
+  pipeline, vertex buffer and draw twice, 5 s apart, on the frame-loop thread of the process the counts
+  checked. It exits 1, before the
   samples, when a count breaks 001 check 4 or 5, when a breakpoint resolves to no location, or when the app
   does not launch; the samples are read by hand against the spec's quickstart. iOS simulator only (arm64
   registers, the simulator's `MTLSerializerRenderCommandEncoder`); not part of `verify.sh` or CI. A covered
