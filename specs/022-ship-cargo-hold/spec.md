@@ -31,7 +31,7 @@ the rules are proved by headless tests.
 Out of scope: buying, selling and prices changing with supply (SKY-53), docking and the docked screen
 (SKY-50, SKY-51), saving and loading the hold (SKY-57), any player-facing display of the hold, cargo
 that affects the ship's mass or thrust, and a keyed lookup of ship data with the cargo inside it (a
-separate, later ticket; see FR-011).
+separate ticket, filed by the coordinator; see D5 and FR-011).
 
 ### Relationship to earlier specs
 
@@ -50,6 +50,9 @@ Decisions given by the user for this ticket (not assumptions):
 - **D3**: The default capacity is 20 tons.
 - **D4**: The debug overlay is in scope: it shows the current ship's cargo (used and free), behind a toggle
   that switches it on and off.
+- **D4a**: The toggle is a launch argument, like `--no-debug-overlay` and `--no-ship`: the cargo lines are on by
+  default, and `--no-debug-cargo` hides them. It exists in Debug and instrumented Release builds only; there
+  is no runtime control.
 - **D5**: A keyed lookup of ship data with the cargo inside it is wanted eventually but is another ticket,
   out of scope here. The hold stays simple and is not shaped so as to block such a lookup later.
 
@@ -59,6 +62,7 @@ Decisions given by the user for this ticket (not assumptions):
 
 - Q: How many commodities does the bundled file start with, and who sets their names and prices? → A: A short placeholder list (about 5 to 8); real names, prices and balance belong to the market ticket _(assumed — SKY-48 and SKY-53 split: this ticket only needs the list to exist; FR-008 validates it)_
 - Q: Is a rejected add or remove an error that stops the game, or a returned result? → A: A returned result naming the reason; the hold is unchanged and nothing is logged _(assumed — constitution principle V Simplicity and 004's pattern of values sanitised at the boundary, no throwing in the per-tick logic layer)_
+- Q: How is the cargo toggle switched, and what is its default? → A: A launch argument `--no-debug-cargo`, cargo lines on by default, Debug and instrumented Release only (D4a)
 - Q: Does the overlay's cargo text have to meet the same allocation rule as the other overlay lines? → A: Yes, zero per-frame allocation, checked by the existing allocation counter _(assumed — 015 FR-014, 011 check 25)_
 
 ## User Scenarios & Testing *(mandatory)*
@@ -130,13 +134,13 @@ every price positive. Tests on a malformed file check that it is rejected clearl
 ### User Story 4 - See the hold on the debug overlay (Priority: P2)
 
 On a Debug or instrumented Release build, the debug overlay shows the used and free capacity of the
-ship's hold, and the amount of each commodity held. A toggle switches these cargo lines on and off.
+ship's hold, and the amount of each commodity held. A launch argument (`--no-debug-cargo`) hides these cargo lines; they are on by default.
 
 **Why this priority**: Required by the ticket's "done when"; it is the only way to see the hold before
 the market exists.
 
 **Independent Test**: Headless tests on the overlay's cargo text for known holds (empty, partly filled,
-full) and on the toggle's state; then, by hand, launch the app and see the lines appear and disappear.
+full) and on the argument's parsing; then, by hand, launch the app with and without `--no-debug-cargo`.
 
 **Acceptance Scenarios**:
 
@@ -144,7 +148,7 @@ full) and on the toggle's state; then, by hand, launch the app and see the lines
    `0 / 20` used and 20 free tons.
 2. **Given** a hold with cargo, **When** the overlay refreshes, **Then** the used and free tons and the
    non-zero commodity amounts match the ship's hold as of the latest tick.
-3. **Given** the cargo lines are switched off, **When** the overlay is drawn, **Then** no cargo line is
+3. **Given** the app was launched with `--no-debug-cargo`, **When** the overlay is drawn, **Then** no cargo line is
    shown and the other overlay lines are unchanged.
 4. **Given** a plain Release build, **Then** none of the cargo overlay's strings are present.
 
@@ -187,8 +191,8 @@ full) and on the toggle's state; then, by hand, launch the app and see the lines
   completed tick (as 015's values are, never an interpolated one). It MUST be refreshed at the overlay's
   4 Hz, MUST add no per-frame allocation, MUST be absent from plain Release builds, and MUST NOT be exposed
   to assistive technology (D4).
-- **FR-011**: A toggle MUST switch the overlay's cargo lines on and off; the other overlay lines are
-  unaffected (D4). The hold MUST NOT depend on how a ship is looked up or stored, so that a later keyed
+- **FR-011**: The overlay's cargo lines MUST be on by default, and the launch argument `--no-debug-cargo` MUST
+  hide them (Debug and instrumented Release builds only); the other overlay lines are unaffected (D4, D4a). The hold MUST NOT depend on how a ship is looked up or stored, so that a later keyed
   lookup of ship data needs no change to the hold's rules (D5).
 - **FR-012**: Nothing in the hold MUST change the ship's motion, the autopilot, or the planned path.
 
@@ -214,7 +218,7 @@ full) and on the toggle's state; then, by hand, launch the app and see the lines
 - **SC-004**: The bundled commodity file loads with at least one commodity, and every malformed-file case in
   the tests is rejected with a message naming the problem.
 - **SC-005**: On a Debug build, the overlay's used and free tons match the ship's hold at the last refresh;
-  switching the toggle off removes every cargo line and switching it on restores them.
+  launching with `--no-debug-cargo` removes every cargo line, and without it they are shown.
 - **SC-006**: A plain Release build contains none of the cargo overlay's strings, and the instrumented
   Release build's allocation counter still reports zero allocations per frame with the cargo lines on.
 - **SC-007**: The ship's motion tests and the autopilot tests pass unchanged.
@@ -225,9 +229,6 @@ full) and on the toggle's state; then, by hand, launch the app and see the lines
 - The starter commodity list is short (about 5 to 8 commodities with placeholder names and prices); the
   real balance is SKY-53's and later work.
 - Prices are whole numbers of credits (no fractions).
-- The toggle is a launch argument for Debug and instrumented Release builds, in the same way as the other
-  debug arguments (`--no-debug-overlay`, `--no-ship`); the cargo lines are on by default, and the argument
-  turns them off. A runtime control is not needed.
 - A rejected operation reports a reason value; it does not crash and does not log.
 - The hold does not exist for the player yet: there is no way in the running game to change it, so the
   overlay normally shows an empty hold until SKY-53.
