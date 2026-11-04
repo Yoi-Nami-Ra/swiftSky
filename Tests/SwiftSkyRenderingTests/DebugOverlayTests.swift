@@ -256,7 +256,7 @@ struct DebugOverlayTests {
         let snapshot = DebugOverlayShip(SimulationState(tickCount: 7, ship: ship))
         #expect(snapshot == DebugOverlayShip(
             position: Vector2(x: 3, y: -4), velocity: Vector2(x: 1, y: 2), heading: 1, angularVelocity: -0.5,
-            order: nil
+            order: nil, cargo: DebugOverlayShip.Cargo(ship.hold)
         ))
     }
 

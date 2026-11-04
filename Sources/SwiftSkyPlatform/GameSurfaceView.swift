@@ -1,8 +1,10 @@
 import CoreText
 import Metal
 import QuartzCore
+import OSLog
 import SwiftUI
 import SwiftSkyRendering
+import SwiftSkySimulation
 
 #if os(macOS)
 import AppKit
@@ -139,6 +141,20 @@ public struct GameSurfaceView: View {
             let debugMode = DebugTextMode(arguments: arguments)
             renderer.debugTextPattern = debugMode.pattern
             renderer.debugOverlay = debugMode.overlay
+            if debugMode == .overlay {
+                // The commodity names for the overlay's cargo lines. A load failure is logged once, here,
+                // and the overlay shows `?` for names (022 research R5).
+                var names: [String] = []
+                do {
+                    names = try CommodityList.load().commodities.map(\.name)
+                } catch {
+                    Logger(subsystem: "com.swiftsky.app", category: "frame")
+                        .error("commodity list unavailable: \(String(describing: error), privacy: .public)")
+                }
+                let overlay = DebugOverlay(commodityNames: names)
+                overlay.showsCargo = DebugCargoOption(arguments: arguments).showsCargo
+                renderer.debugOverlay = overlay
+            }
             let shipOptions = DebugShipOptions(arguments: arguments)
             renderer.drawsShip = !shipOptions.hidesShip
             var setup = Setup(device: device, renderer: renderer)
@@ -261,6 +277,19 @@ struct DebugShipOptions: Equatable {
         spins = arguments.contains(Self.spinArgument)
         hidesShip = arguments.contains(Self.noShipArgument)
         interpolates = !arguments.contains(Self.noInterpolationArgument)
+    }
+}
+
+/// `--no-debug-cargo` (022 contract C4): the overlay's cargo lines are left out and every other line is
+/// unchanged. On by default. Debug and instrumented Release builds only, like the other debug arguments:
+/// in plain Release the type and its string do not exist.
+struct DebugCargoOption: Equatable {
+    static let noCargoArgument = "--no-debug-cargo"
+
+    var showsCargo: Bool
+
+    init(arguments: [String]) {
+        showsCargo = !arguments.contains(Self.noCargoArgument)
     }
 }
 
