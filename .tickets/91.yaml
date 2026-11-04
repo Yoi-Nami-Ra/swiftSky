@@ -1,0 +1,29 @@
+id: 91
+title: "Spike: measure SwiftUI main-thread stalls on a device"
+type: spike
+description: |
+  Question: in SKY-89's SwiftUI POC (poc/ui-approach-swiftui, 372fd4c), the
+  main thread's worst stretch with the docked screen open reached 273 ms
+  once while idle, and up to 202 ms while tapping, scrolling and changing
+  the text size, all on the iOS simulator. The Metal POC stayed under
+  25 ms. Do these stalls happen on a real iPhone and iPad, and what causes
+  them (SwiftUI layout, the once-a-second snapshot publish, Dynamic Type
+  relayout, or the simulator itself)?
+
+  Approach: run the POC's instrumented build (Scripts/build-instrumented.sh)
+  on a device with --debug-docked. Read mainworst=/mainover= from the frame
+  summaries, screen closed and open, idle and interacting, and trace any
+  stall over the frame budget with Instruments (Time Profiler, SwiftUI).
+  No product changes; any POC code stays on the POC branch.
+
+  Done when: the stall figures on a device are under Findings, each stall
+  over budget has a named cause, and there is a recommendation for SKY-92
+  and SKY-51 (for example the publish rate, or what to avoid in views).
+platform: ios
+status: ready
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []
+quest: main

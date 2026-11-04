@@ -7,8 +7,10 @@ description: |
   such as outfitter and mission board plug in here). The simulation keeps
   running or pauses as the plan decides.
 
-  Waits on the UI approach spike (SKY-89): SwiftUI over the Metal surface or
-  Metal-drawn.
+  UI approach (SKY-89, done): a SwiftUI view over the Metal surface. It
+  builds on SKY-92's snapshot channel and screen intents, and needs spec 001
+  amended (SKY-90). The POC on poc/ui-approach-swiftui (372fd4c) is a
+  starting point.
 
   Done when: the screen opens on docking and closes on Leave on iOS and macOS,
   works with VoiceOver and Dynamic Type, and fits iPad Split View.
@@ -17,5 +19,5 @@ status: ready
 phase: Backlog
 priority: medium
 parent: 48
-blocked_by: [50, 89]
+blocked_by: [50, 89, 92]
 designs: []

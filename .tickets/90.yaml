@@ -1,0 +1,27 @@
+id: 90
+title: "Amend spec 001 to allow platform-UI management screens"
+type: task
+description: |
+  SKY-89 recommends building management screens (docked SKY-51, market
+  SKY-53, galaxy map SKY-56, outfitter SKY-75) as SwiftUI views over the
+  Metal surface. Spec 001 forbids that today: FR-001 and FR-007 say no
+  user-visible content comes from platform-UI views, and SC-002's code audit
+  (quickstart check 41) checks for it.
+
+  Amend 001 so that management screens may be SwiftUI views over the
+  surface, while the HUD and everything drawn in the game world stay in
+  Metal. Update the audit to match, and the comment in
+  Sources/SwiftSkyPlatform/GameSurfaceView.swift that calls UI-view drawing
+  forbidden. The constitution already names SwiftUI for menus (Principle IV),
+  so it should need no change; confirm that.
+
+  Done when: 001's spec and quickstart allow the screens, the audit checks
+  the new rule, and verify.sh passes.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []
+quest: side

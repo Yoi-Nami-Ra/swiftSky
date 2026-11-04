@@ -4,8 +4,10 @@ type: feature
 description: |
   Part of SKY-48. A map screen with the systems and lanes (SKY-54), the
   current system, and the plotted route. Selecting a system plots the route;
-  the ship then jumps along it one lane at a time (SKY-55). Uses the UI
-  approach from SKY-89.
+  the ship then jumps along it one lane at a time (SKY-55). The screen's
+  controls and lists are SwiftUI over the Metal surface (SKY-89), on
+  SKY-92's snapshot channel; whether the map itself is drawn in Metal or
+  SwiftUI is decided in its plan.
 
   Done when: the map opens and closes on iOS and macOS, a route can be
   plotted and flown, and the screen works with VoiceOver.

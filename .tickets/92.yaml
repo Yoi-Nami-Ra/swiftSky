@@ -1,0 +1,33 @@
+id: 92
+title: "Add a loop-to-main snapshot channel and screen intents"
+type: feature
+description: |
+  SKY-89's SwiftUI approach needs data to flow from the frame loop to the
+  main thread, which nothing does today: SimulationState is private to
+  FrameLoop, and SurfaceEvent only carries input from main to the loop.
+  Build the general mechanism once, before SKY-51:
+
+  - a small Sendable snapshot of what an open screen shows, published from
+    the loop at a low rate to a main-thread @Observable model;
+  - screen intents (leave, trade and so on) posted as SurfaceEvent cases
+    through the loop's existing event queue, so data still flows one way
+    (Principle I);
+  - screen state (docked or not) in the logic layer, not in FrameLoop;
+  - the surface hidden from VoiceOver while a screen is open.
+
+  The POC (poc/ui-approach-swiftui, 372fd4c) shows one way to do it.
+  Publishing allocates, so keep it outside the counted stretch, or make it
+  allocation-free, and say which. Take the publish rate from SKY-91's
+  findings.
+
+  Done when: a screen can be opened from the logic layer and shows live
+  data from a snapshot, its intents reach the simulation, it has tests, and
+  the allocation counter still reads allocs=0 on frames without input.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []
+quest: side
