@@ -21,15 +21,22 @@ public struct RendererFailureNotice: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("swiftSky cannot start")
-                .font(.headline)
+        VStack(spacing: 16) {
+            // The text scrolls, so at the largest Dynamic Type sizes in landscape (SKY-38) the whole
+            // message can still be read; Quit sits outside the scroll view and stays reachable.
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("swiftSky cannot start")
+                        .font(.headline)
 
-            Text(error.userFacingDescription)
-                .font(.body)
-                // No line limit and fixed vertical size so large Dynamic Type sizes wrap rather than
-                // truncate — a truncated error message is no message at all.
-                .fixedSize(horizontal: false, vertical: true)
+                    Text(error.userFacingDescription)
+                        .font(.body)
+                        // No line limit, so large Dynamic Type sizes wrap rather than truncate: a
+                        // truncated error message is no message at all.
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
 
             HStack {
                 Spacer()
@@ -38,7 +45,11 @@ public struct RendererFailureNotice: View {
             }
         }
         .padding(24)
+        #if os(macOS)
+        // A window has no natural width; keep it wide enough to read. iOS fills the screen instead,
+        // and a fixed minimum there is what clipped the text in landscape (SKY-38).
         .frame(minWidth: 320)
+        #endif
         .accessibilityElement(children: .contain)
         .accessibilityLabel("swiftSky cannot start")
         .accessibilityValue(error.userFacingDescription)
