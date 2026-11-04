@@ -30,8 +30,8 @@ the rules are proved by headless tests.
 
 Out of scope: buying, selling and prices changing with supply (SKY-53), docking and the docked screen
 (SKY-50, SKY-51), saving and loading the hold (SKY-57), any player-facing display of the hold, cargo
-that affects the ship's mass or thrust, and a keyed lookup of ship data with the cargo inside it (SKY-99,
-a separate ticket; see D5 and FR-013).
+that affects the ship's mass or thrust, and a keyed lookup of ship data with the cargo inside it (a separate
+follow-up ticket, not yet on main; see D5 and FR-013).
 
 ### Relationship to earlier specs
 
@@ -53,8 +53,8 @@ Decisions given by the user for this ticket (not assumptions):
 - **D4a**: The toggle is a launch argument, like `--no-debug-overlay` and `--no-ship`: the cargo lines are on by
   default, and `--no-debug-cargo` hides them. It exists in Debug and instrumented Release builds only; there
   is no runtime control.
-- **D5**: A keyed lookup of ship data with the cargo inside it is wanted eventually but is another ticket (SKY-99),
-  out of scope here. The hold stays simple and is not shaped so as to block such a lookup later.
+- **D5**: A keyed lookup of ship data with the cargo inside it is wanted eventually but is another ticket, still to be
+  filed on main (drafted as SKY-99 on the unmerged `claude/sky-21-menus-close`, whose number may change), out of scope here. The hold stays simple and is not shaped so as to block such a lookup later.
 
 ## Clarifications
 
