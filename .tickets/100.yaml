@@ -13,12 +13,17 @@ description: |
   example by fixing the notice's colour scheme or giving it its own
   background, without adding user-visible platform-UI pixels on the success
   path (001 FR-001 / FR-004a: the black window background is the one allowed
-  exception). macOS forces dark appearance (NSRequiresAquaSystemAppearance =
-  false), so confirm it is unaffected and stays so.
+  exception). macOS is likely affected too: `NSRequiresAquaSystemAppearance =
+  false` does not force dark appearance, it lets the app follow the system
+  (only `true` forces light), and on macOS the notice sits on the same black
+  background with default label colours. SKY-8's macOS check 33 PASS does not
+  record the appearance (this Mac runs in dark). Check macOS in light
+  appearance and fix it there too if it shows the same fault.
 
   Done when: in light and dark appearance, on the iPhone 17e and an iPad, at
-  the default and the largest accessibility text size, the heading, body and
-  Quit of the failure notice are all readable (Release build with the
+  the default and the largest accessibility text size, and on macOS in light
+  and dark appearance, the heading, body and Quit of the failure notice are
+  all readable (Release build with the
   fragment entry point renamed, as in 001 check 33), and the result is
   recorded in the 001 quickstart.
 platform: ios
