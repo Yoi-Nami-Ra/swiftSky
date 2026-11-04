@@ -1,8 +1,8 @@
-# Quickstart: iOS GPU Frame Capture Check
+# Quickstart: GPU Frame Capture Check (iOS; macOS by SKY-19)
 
-The procedure for 001's checks 4 and 5 on iOS. It runs unattended in under 10 minutes. What each
-observation proves is in [research.md](research.md) R2 and R3; the fields and expected values are in
-[data-model.md](data-model.md).
+The procedure for 001's checks 4 and 5 on iOS, and on macOS (SKY-19). It runs unattended in under 10
+minutes. What each observation proves is in [research.md](research.md) R2 and R3; the fields and expected
+values are in [data-model.md](data-model.md).
 
 ## Run
 
@@ -12,6 +12,17 @@ specs/021-ios-gpu-frame-capture/probe.sh
 
 It uses the first booted simulator (pass a UDID to choose another), builds the Debug iOS app, launches
 it with `--no-ship --no-debug-overlay`, attaches lldb and prints two parts.
+
+On macOS (SKY-19), on Apple silicon, run its twin instead:
+
+```bash
+specs/021-ios-gpu-frame-capture/probe-macos.sh
+```
+
+It builds the Debug macOS app, launches it with `open -n` and the same arguments, and prints the same two
+parts, read the same way below. Keep its window uncovered while it runs. The calls land on the GPU
+driver's encoder (`AGXG13XFamilyRenderContext` on an M1 Pro), so its samples match any encoder class
+on the frame-loop thread. Both probes share their lldb runs and checks, in `probe-common.sh`.
 
 ## Read the output
 
@@ -27,7 +38,7 @@ with one `name locations hits` line per breakpoint):
   backtrace; name the caller in the record.
 
 The probe checks these itself: it prints a `FAIL:` line for each one that does not hold and exits 1
-(also when the app does not launch). Exit 0 means the counts passed; the samples are read by hand.
+before the samples (also when the app does not launch). Exit 0 means the counts passed; the samples are read by hand.
 
 **SAMPLES** (two, 5 s apart, on thread `com.swiftsky.frameLoop`):
 
@@ -56,6 +67,7 @@ It must still pass; the feature changes no code.
 ## If lldb cannot attach or break
 
 The probe exits 1 (`FAIL: … resolved to no location (or lldb did not attach)`). If the SAMPLES part
-hangs, no frame is being encoded: the simulator window is covered or the failure notice is shown.
+hangs, no frame is being encoded: the simulator window (on macOS, the app's window) is covered or the
+failure notice is shown.
 Stop and report it. The fallback is the hand capture in Xcode's GPU debugger (Debug navigator ›
 Capture GPU Workload), which the developer decides on.

@@ -195,4 +195,5 @@ observed and how, and its summary of open checks no longer lists their iOS half.
   is the only draw in the pass.
 - The macOS half of checks 4 and 5 is SKY-19 and is not done here. The probe is iOS-simulator only (`simctl`,
   the iOS scheme, the simulator's `MTLSerializerRenderCommandEncoder`); macOS needs its own variant of
-  the same breakpoints, or a capture.
+  the same breakpoints, or a capture. (Since done by SKY-19: `probe-macos.sh`, recorded in
+  capture-notes.md.)

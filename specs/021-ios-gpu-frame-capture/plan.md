@@ -37,7 +37,8 @@ stays green because no code changes
 **Constraints**: No change to `Sources/` (spec FR-008); no capture files or screenshots committed
 (FR-005); the observation is made with lldb, unattended (FR-002)
 
-**Scale/Scope**: Two quickstart checks, iOS only; macOS is SKY-19
+**Scale/Scope**: Two quickstart checks, iOS only; macOS is SKY-19 (since done: `probe-macos.sh`, with the
+shared part of both probes moved to `probe-common.sh`)
 
 ## Constitution Check
 
@@ -64,6 +65,8 @@ specs/021-ios-gpu-frame-capture/
 ├── data-model.md        # Phase 1: the probe run and the check record
 ├── quickstart.md        # Phase 1: running the probe and reading its output
 ├── probe.sh             # The lldb probe (build, launch, attach, count, sample)
+├── probe-macos.sh       # Its macOS twin (SKY-19)
+├── probe-common.sh      # The lldb runs and checks both probes share (SKY-19)
 ├── capture-notes.md     # The observed values, filled from the probe output
 ├── checklists/
 │   └── requirements.md  # Spec quality checklist

@@ -201,6 +201,31 @@ attaches after launch, so the one-time creation at initialisation (`Renderer.swi
 `FullscreenQuad`) is shown by the code, and its constancy by the observation. The full output is summarised
 in [`capture-notes.md`](../021-ios-gpu-frame-capture/capture-notes.md).
 
+**Check 4 — PASS on macOS (2026-11-04, SKY-19).** MacBook Pro 18,1 (Apple M1 Pro), macOS 27.2, Xcode 27.0
+(27A266a), Debug build launched with `--no-ship --no-debug-overlay`. Verified with lldb attached to the running
+app, as on iOS, by [`specs/021-ios-gpu-frame-capture/probe-macos.sh`](../021-ios-gpu-frame-capture/probe-macos.sh),
+following spec 021's [quickstart](../021-ios-gpu-frame-capture/quickstart.md); no Xcode GPU capture was taken.
+The colour is not evidence here, for the reason given under the iOS record. Over 10 seconds of frames the
+breakpoints counted 253 `presentDrawable:` calls, 254 `drawPrimitives:vertexStart:vertexCount:` calls and 254
+`setRenderPipelineState:` calls: one quad draw per presented frame (the probe allows one either way for a frame
+cut by the 10 s window). `setViewport:` was hit 0 times, so the default viewport, the whole drawable, is used.
+Both samples, on thread `com.swiftsky.frameLoop`, bound the pipeline labelled `swiftSky.fullscreenQuad` and the
+vertex buffer labelled `swiftSky.quadVertices` (offset 0, index 0, length 32 bytes) holding `-1 -1 1 -1 -1 1 1 1`,
+and drew primitive type 4 (triangle strip), vertex start 0, vertex count 4.
+That every frame binds the same two objects follows from the equal counts and from `Renderer.swift` lines
+194–196, as on iOS. The calls land on the GPU driver's own encoder, `AGXG13XFamilyRenderContext` on this Mac,
+which the probe's class-agnostic breakpoints match. An earlier run on 2026-11-03 (macOS 26.7, the probe's
+first revision) gave the same verdict. Both runs are summarised in
+[`capture-notes.md`](../021-ios-gpu-frame-capture/capture-notes.md).
+
+**Check 5 — PASS on macOS (2026-11-04, SKY-19).** Same probe run as check 4, one launch of the app, same machine,
+Xcode and arguments. Over 10 seconds of frames, breakpoints on every class implementing
+`newRenderPipelineStateWithDescriptor:` (63 locations, all resolved) and `newBufferWithBytes:`/`newBufferWithLength:`
+(63 locations, all resolved) were hit 0 times. Two samples 5 seconds apart, in the process the counts checked, bound
+the same objects: pipeline `swiftSky.fullscreenQuad` at 0x0000007976bdd800 and vertex buffer `swiftSky.quadVertices`
+at 0x000000797801c000 in both. The creation at initialisation is shown by the code (`Renderer.swift`, `init`), and
+its constancy by the observation, as on iOS.
+
 ### Window and scene behaviour
 
 | # | Check | Expected | Criterion |
@@ -777,15 +802,13 @@ Check 29's race half and its mid-drag stall half passed on 2026-10-01 (012); one
 the end of live resize keeps it open (SKY-37).
 Check 2 passed on 2026-10-05 and is no longer open: iOS in the simulator (SKY-16), macOS from a
 screen recording (SKY-17).
-Checks 4 and 5 passed on iOS in the simulator on 2026-10-18 (SKY-18), verified with lldb rather than the
-GPU debugger, and remain open for macOS (SKY-19).
+Checks 4 and 5 passed on iOS in the simulator on 2026-10-18 (SKY-18) and on macOS on 2026-11-04 (SKY-19),
+verified with lldb rather than the GPU debugger, and are no longer open.
 Checks 7 and 8 passed on 2026-11-04 (SKY-20): window resizing was dragged by hand and the sizes were
 sampled. They are no longer open.
 
 | # | Check | Why it is still open |
 |---|-------|----------------------|
-| 4 | GPU frame capture shows a draw call | iOS passed (SKY-18, lldb); macOS needs a macOS variant of the probe or a capture (SKY-19) |
-| 5 | Pipeline state built once | iOS passed (SKY-18, lldb); macOS needs a macOS variant of the probe or a capture (SKY-19) |
 | 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |
 | 29 | Continuous resize under TSan | Races PASS; stalls PASS mid-drag; one system-side stall at the end of live resize (SKY-37) |
