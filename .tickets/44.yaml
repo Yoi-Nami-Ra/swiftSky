@@ -19,7 +19,7 @@ description: |
     destination?), whether indicators differ by object type, how many can
     show at once, and what happens when two point the same way.
 platform: macos
-status: idea
+status: refine
 phase: Backlog
 priority: medium
 parent: null
