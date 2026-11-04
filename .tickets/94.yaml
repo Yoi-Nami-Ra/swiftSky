@@ -1,0 +1,31 @@
+id: 94
+title: "Add active pause on the spacebar"
+type: feature
+description: |
+  An active pause: pressing the pause key (Space by default) stops the
+  game and pressing it again resumes it. While paused the simulation does
+  not tick (no ship motion, no autopilot, no AI travel), but the screen
+  keeps drawing and the player can still look around and issue orders,
+  which take effect on resume. A clear on-screen "Paused" indicator shows
+  the state.
+
+  Only available outside a station: while docked (SKY-50, SKY-51) the key
+  does nothing. What the rest of the world does while the player is docked
+  is decided separately by the pause-scope spike (SKY-95).
+
+  The key is a default, so the binding should be stored where a later
+  key-remapping setting can change it. iOS has no spacebar: an on-screen
+  pause control (or a hardware keyboard's Space) is needed there.
+
+  Done when: Space pauses and resumes on macOS (and with a hardware
+  keyboard on iOS), there is an on-screen pause control on iOS, tests cover
+  that no simulation tick runs while paused and that orders given while
+  paused apply on resume, the indicator is announced by VoiceOver, and
+  pausing is refused while docked.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []
