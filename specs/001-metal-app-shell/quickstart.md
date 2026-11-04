@@ -714,7 +714,7 @@ committed), simulator in dark appearance, `content_size accessibility-extra-extr
 - **Portrait — not reachable.** The Info.plist allows `UIInterfaceOrientationLandscapeLeft` and `…Right` only,
   on iPhone and iPad, so the app cannot be shown in portrait. A quarter-turn on the 17e left it in landscape.
 - **Found while testing, not changed here:** in light appearance the notice text is black on the black window
-  (`MetalSurfaceView.configureWindowBackground`) and only the blue Quit shows. Filed as SKY-96.
+  (`MetalSurfaceView.configureWindowBackground`) and only the blue Quit shows. Filed as SKY-100.
 - **macOS re-check — PASS (2026-11-04, done by hand by the user).** The macOS Release build with the renamed entry
   point, at the default and the minimum window size: no clipping, and Quit exits. (Not automated:
   `screencapture` is refused and Accessibility is not granted.)
