@@ -28,6 +28,6 @@ status: ready
 phase: Backlog
 priority: medium
 parent: null
-blocked_by: []
+blocked_by: [90, 91]
 designs: []
 quest: side
