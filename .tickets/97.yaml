@@ -26,8 +26,8 @@ description: |
   Done when: the close path drains before teardown by construction, a log
   line shows it, and the quickstart records FR-006d's ordering half.
 platform: macos
-status: ready
-phase: Backlog
+status: refine
+phase: MVP
 priority: medium
 parent: null
 blocked_by: []
