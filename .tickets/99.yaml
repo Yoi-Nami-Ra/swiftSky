@@ -21,6 +21,6 @@ platform: macos
 status: refine
 phase: Backlog
 priority: medium
-parent: 48
+parent: null
 blocked_by: []
 designs: []
