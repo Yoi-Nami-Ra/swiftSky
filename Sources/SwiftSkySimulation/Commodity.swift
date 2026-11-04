@@ -96,3 +96,22 @@ public struct CommodityList: Sendable, Equatable {
     }
 }
 
+extension CargoHold {
+    /// Adds `tons` of the commodity with this `id`, which must be in `list` (022 FR-004, US2 scenario 2).
+    /// The checks run in the order negative, unknown id, then `add(_:of:)`'s own; a rejection leaves the
+    /// hold unchanged. Callers holding an id use this, so an id outside the list is always
+    /// `unknownCommodity`, even on the 16-slot launch hold.
+    public mutating func add(_ tons: Int, of id: String, in list: CommodityList) -> CargoRejection? {
+        if tons < 0 { return .negativeAmount }
+        guard let index = list.index(ofID: id) else { return .unknownCommodity }
+        return add(tons, of: index)
+    }
+
+    /// Removes `tons` of the commodity with this `id`, which must be in `list` (022 FR-005). Same check
+    /// order as `add(_:of:in:)`.
+    public mutating func remove(_ tons: Int, of id: String, in list: CommodityList) -> CargoRejection? {
+        if tons < 0 { return .negativeAmount }
+        guard let index = list.index(ofID: id) else { return .unknownCommodity }
+        return remove(tons, of: index)
+    }
+}

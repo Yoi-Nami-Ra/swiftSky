@@ -14,7 +14,9 @@ File shape: `{ "commodities": [ { "id": "water", "name": "Water", "basePrice": 1
 placeholders.
 
 ## CargoHold (plain value, inline)
-- `capacity: Int` (>= 0; init clamps a negative to 0), `commodityCount: Int` (0...16, clamped). `.launch` is capacity 20 with `commodityCount = maxCommodities` (16): the hold cannot see the list, so it accepts any slot index; mapping an id to an index, and rejecting an id not in the list, is `CommodityList.index(ofID:)` returning `nil` at the caller (spec US2 scenario 2; tested in CommodityListTests). Tests of the unknown-index rule use `CargoHold(capacity:commodityCount:)` with a smaller count.
+- `capacity: Int` (>= 0; init clamps a negative to 0), `commodityCount: Int` (0...16, clamped). `.launch` is capacity 20 with `commodityCount = maxCommodities` (16): the hold cannot see the list, so it accepts any slot index; mapping an id to an index, and rejecting an id not in the list, is `CommodityList.index(ofID:)` returning `nil` at the caller. `add(_:of id:in list:)` / `remove(_:of:in:)` do that
+  mapping and return `unknownCommodity` for an id not in the list (spec FR-004, FR-005, US2 scenario 2; tested in
+  CargoHoldByIDTests). Tests of the unknown-index rule use `CargoHold(capacity:commodityCount:)` with a smaller count.
 - amounts: `InlineArray<16, Int>`, slots `>= commodityCount` always 0
 - derived: `used` (sum), `free` (capacity - used), `tons(of index)` (0 for unknown)
 - `mutating add(_ tons: Int, of index: Int) -> CargoRejection?`, `mutating remove(_:of:)` likewise; `nil` = accepted.

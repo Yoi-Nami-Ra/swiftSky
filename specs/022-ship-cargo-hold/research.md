@@ -29,7 +29,9 @@
 - Rationale: keeps the hold a pure inline value (FR-009) and independent of how ships are stored (D5);
   string lookup happens outside any per-frame path.
 - Max 16 commodities is enforced by list validation (error names the limit). `CargoHold.launch` has 16 slots
-  (see data-model); the list, not the hold, decides which ids exist.
+  (see data-model); the list, not the hold, decides which ids exist. A caller with an id uses
+  `CargoHold.add(_:of:in:)` / `remove(_:of:in:)` (in `Commodity.swift`), which reject an id not in the list
+  with `unknownCommodity`, so FR-004 and FR-005 hold on the launch hold too (022 review).
 
 ## R4 Overlay cargo text without allocation
 - `TextBuffer.write(_: String)` is documented as not per-frame safe. Decision: the overlay pre-encodes

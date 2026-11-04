@@ -2,7 +2,8 @@
 
 ## C1 Hold API (logic layer, internal to the project)
 `CargoHold(capacity: Int, commodityCount: Int)`, `.launch`, `used`, `free`, `capacity`, `tons(of:)`,
-`add(_:of:) -> CargoRejection?`, `remove(_:of:) -> CargoRejection?`. Rejection never mutates; 0 t on a known
+`add(_:of:) -> CargoRejection?`, `remove(_:of:) -> CargoRejection?`, and the id-checked
+`add(_:of id:in list:)` / `remove(_:of:in:)`, which return `unknownCommodity` for an id not in the list. Rejection never mutates; 0 t on a known
 commodity returns `nil`, 0 t on an unknown one returns `unknownCommodity`; no throw, no log. Overflow (`Int.max`) is `overCapacity`.
 
 ## C2 Commodity file

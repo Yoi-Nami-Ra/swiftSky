@@ -22,7 +22,9 @@ public struct CargoHold: Sendable, Equatable {
     /// The capacity of the launch ship's hold, in tons.
     public static let defaultCapacity = 20
 
-    /// The launch hold: capacity 20, empty, accepting any slot index.
+    /// The launch hold: capacity 20, empty, accepting any slot index. The index API cannot see the
+    /// commodity list, so a caller with an id uses `add(_:of:in:)` / `remove(_:of:in:)`, which reject an
+    /// id that is not in the list (022 FR-004, FR-005).
     public static let launch = CargoHold(capacity: defaultCapacity, commodityCount: maxCommodities)
 
     /// The total tons the hold can carry (never below zero).
