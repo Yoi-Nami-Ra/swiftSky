@@ -53,6 +53,14 @@ Decisions given by the user for this ticket (not assumptions):
 - **D5**: A keyed lookup of ship data with the cargo inside it is wanted eventually but is another ticket,
   out of scope here. The hold stays simple and is not shaped so as to block such a lookup later.
 
+## Clarifications
+
+### Session 2026-11-04
+
+- Q: How many commodities does the bundled file start with, and who sets their names and prices? → A: A short placeholder list (about 5 to 8); real names, prices and balance belong to the market ticket _(assumed — SKY-48 and SKY-53 split: this ticket only needs the list to exist; FR-008 validates it)_
+- Q: Is a rejected add or remove an error that stops the game, or a returned result? → A: A returned result naming the reason; the hold is unchanged and nothing is logged _(assumed — constitution principle V Simplicity and 004's pattern of values sanitised at the boundary, no throwing in the per-tick logic layer)_
+- Q: Does the overlay's cargo text have to meet the same allocation rule as the other overlay lines? → A: Yes, zero per-frame allocation, checked by the existing allocation counter _(assumed — 015 FR-014, 011 check 25)_
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Load and unload cargo within the capacity (Priority: P1)
