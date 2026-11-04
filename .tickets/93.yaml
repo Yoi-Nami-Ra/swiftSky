@@ -1,0 +1,34 @@
+id: 93
+title: "Drain the frame loop on macOS termination"
+type: bug
+description: |
+  Found in the PR #7 review (SKY-21). On macOS the FR-032 drain (loop stopped
+  and drained before graphics resources are released) depends only on
+  SwiftUI's `.onDisappear` in `GameSurfaceView.swift`. `SurfaceEvent.willTerminate`
+  is declared and handled (`FrameLoop.swift`, `post(_:)` and the event switch),
+  but nothing ever posts it, and nothing observes
+  `NSApplication.willTerminateNotification`. If `onDisappear` does not run
+  before the process exits, `stopAndDrain()` is never called and the loop
+  thread can be mid-frame while graphics resources go away.
+
+  FR-006d requires a window close to follow the FR-032 ordering. SKY-21's
+  check 10 showed the quit but not the ordering (the app logs nothing at
+  teardown), and 001's check 31 covered only quits sent by Apple event.
+
+  - Post `.willTerminate` from `NSApplication.willTerminateNotification` (and
+    decide whether iOS needs the scene-disconnect equivalent), or show that
+    `onDisappear` always runs first on both the close-button and the
+    `terminate:` paths and delete the unused event.
+  - Make the ordering observable in Debug and instrumented Release builds (a
+    log line when the drain completes) and record it in 001's quickstart for a
+    window close.
+
+  Done when: the close path drains before teardown by construction, a log
+  line shows it, and the quickstart records FR-006d's ordering half.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []
