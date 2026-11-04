@@ -7,7 +7,9 @@ description: |
   menus couldn't be inspected or the window closed by automation.
 
   - Check 9: open the File and Window menus and confirm there is no New Window
-    command and no Window menu entry, as the check specifies.
+    command and no Window menu entry, as the check specified then (reworded on
+    2026-11-04 to no Window menu entry that opens or lists a window; see the
+    result below).
   - Check 10: close the window and confirm the app quits, with no windowless
     process left (`pgrep swiftSky` returns nothing).
 
@@ -15,7 +17,7 @@ description: |
 
   Result 2026-11-04: both checks PASS, recorded in 001's quickstart. Check 9:
   the menu bar is swiftSky, Edit, View, Window and Help; there is no File menu,
-  so no New Window command. The Window menu holds only Minimize, Zoom and Bring
+  so no New Window command. The Window menu holds Minimize, Zoom and Bring
   All to Front, read through lldb (Accessibility is not granted) and opened by
   hand. SC-014 and FR-006c were reworded to what they meant: no Window menu
   entry that opens or lists a window, not no Window menu. Check 10: closing the

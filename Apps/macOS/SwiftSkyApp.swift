@@ -10,7 +10,10 @@ import SwiftSkyPlatform
 ///   * no New Window command, and no Window menu entry that opens or lists a window (FR-006c)
 ///   * closing the window terminates the app (FR-006d)
 ///
-/// All three are `Window`'s documented behaviour, so none of them needs custom code. `WindowGroup` with
+/// None of them needs custom code. The first and third are `Window`'s documented behaviour. The second
+/// is observed, not documented: Apple's `Window` page says the Windows menu lists singleton windows, yet
+/// with this as the primary scene none was listed on macOS 27.2 (001 quickstart, check 9). An OS update
+/// could change that, so re-run check 9 after one. `WindowGroup` with
 /// `.commandsRemoved()` would have suppressed the menu item but left the app running with no window and
 /// no way to get one back — a dead end that would then have needed explicit termination logic
 /// (research.md R7).
