@@ -16,11 +16,11 @@
 
 **Independent Test**: `swift test --filter CommodityListTests`; then both app targets still build (verify.sh).
 
-- [ ] T001 Create the starter list of 6 placeholder commodities (`{ "commodities": [ { "id", "name", "basePrice" } ] }`, ids unique, prices positive whole credits) in Sources/SwiftSkySimulation/Resources/commodities.json
-- [ ] T002 Add `resources: [.copy("Resources/commodities.json")]` to the `SwiftSkySimulation` target and update the header comments (logic layer imports Foundation in one loader file only; still no package dependencies; decision recorded for SKY-52) in Package.swift
-- [ ] T003 [US3] Implement `Commodity`, `CommodityList` (`init(decoding: Data) throws`, `load()` via `Bundle.module`, `index(ofID:)`, `subscript`, `count`, 1...16 entries) and `CommodityListError` (`fileMissing`, `malformed(reason)`, `empty`, `tooMany(max)`, `duplicateID`, `emptyName`, `emptyID`, `nonPositivePrice`; no partial list) in Sources/SwiftSkySimulation/Commodity.swift; this is the only logic-layer file importing Foundation (research R1, R3)
-- [ ] T004 [P] [US3] Write CommodityListTests: bundled file loads (non-empty, unique ids, positive prices), `index(ofID:)` (known id gives its index, an id not in the list gives `nil`: US2 scenario 2), and one test per malformed case (bad JSON, empty list, 17 entries, duplicate id, empty id, empty name, zero and negative price) in Tests/SwiftSkySimulationTests/CommodityListTests.swift
-- [ ] T005 Run `swift test --filter CommodityListTests`, then `./Scripts/verify.sh` (explicit-dependency import check accepts Foundation, no resource warnings, both app builds find the bundle; research R1 risks) and fix any failure
+- [x] T001 Create the starter list of 6 placeholder commodities (`{ "commodities": [ { "id", "name", "basePrice" } ] }`, ids unique, prices positive whole credits) in Sources/SwiftSkySimulation/Resources/commodities.json
+- [x] T002 Add `resources: [.copy("Resources/commodities.json")]` to the `SwiftSkySimulation` target and update the header comments (logic layer imports Foundation in one loader file only; still no package dependencies; decision recorded for SKY-52) in Package.swift
+- [x] T003 [US3] Implement `Commodity`, `CommodityList` (`init(decoding: Data) throws`, `load()` via `Bundle.module`, `index(ofID:)`, `subscript`, `count`, 1...16 entries) and `CommodityListError` (`fileMissing`, `malformed(reason)`, `empty`, `tooMany(max)`, `duplicateID`, `emptyName`, `emptyID`, `nonPositivePrice`; no partial list) in Sources/SwiftSkySimulation/Commodity.swift; this is the only logic-layer file importing Foundation (research R1, R3)
+- [x] T004 [P] [US3] Write CommodityListTests: bundled file loads (non-empty, unique ids, positive prices), `index(ofID:)` (known id gives its index, an id not in the list gives `nil`: US2 scenario 2), and one test per malformed case (bad JSON, empty list, 17 entries, duplicate id, empty id, empty name, zero and negative price) in Tests/SwiftSkySimulationTests/CommodityListTests.swift
+- [x] T005 Run `swift test --filter CommodityListTests`, then `./Scripts/verify.sh` (explicit-dependency import check accepts Foundation, no resource warnings, both app builds find the bundle; research R1 risks) and fix any failure
 
 **Checkpoint**: Commit "SKY-52: commodity list and bundled data file".
 

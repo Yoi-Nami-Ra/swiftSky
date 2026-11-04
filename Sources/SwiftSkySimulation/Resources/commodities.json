@@ -1,0 +1,10 @@
+{
+  "commodities": [
+    { "id": "water", "name": "Water", "basePrice": 10 },
+    { "id": "food", "name": "Food", "basePrice": 25 },
+    { "id": "ore", "name": "Ore", "basePrice": 40 },
+    { "id": "metals", "name": "Metals", "basePrice": 75 },
+    { "id": "machinery", "name": "Machinery", "basePrice": 120 },
+    { "id": "electronics", "name": "Electronics", "basePrice": 200 }
+  ]
+}
