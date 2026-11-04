@@ -714,10 +714,10 @@ committed), simulator in dark appearance, `content_size accessibility-extra-extr
 - **Portrait — not reachable.** The Info.plist allows `UIInterfaceOrientationLandscapeLeft` and `…Right` only,
   on iPhone and iPad, so the app cannot be shown in portrait. A quarter-turn on the 17e left it in landscape.
 - **Found while testing, not changed here:** in light appearance the notice text is black on the black window
-  (`MetalSurfaceView.configureWindowBackground`) and only the blue Quit shows. Neither SKY-7 nor SKY-38 covers it.
-- **macOS — not re-checked by SKY-38.** The macOS Release build with the renamed entry point builds, but
-  `screencapture` is refused (no Screen Recording) and Accessibility is not granted, so the default and minimum
-  window sizes need a human look.
+  (`MetalSurfaceView.configureWindowBackground`) and only the blue Quit shows. Filed as SKY-96.
+- **macOS re-check — PASS (2026-11-04, done by hand by the user).** The macOS Release build with the renamed entry
+  point, at the default and the minimum window size: no clipping, and Quit exits. (Not automated:
+  `screencapture` is refused and Accessibility is not granted.)
 
 **Check 33, macOS — PASS (2026-10-02, SKY-8).** Release build with the fragment shader entry point renamed
 to `swiftsky_quad_fragment_RENAMED_SKY8` (reverted after the build); it logged
@@ -831,7 +831,7 @@ sampled. They are no longer open.
 | 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |
 | 29 | Continuous resize under TSan | Races PASS; stalls PASS mid-drag; one system-side stall at the end of live resize (SKY-37) |
-| 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type PASS after SKY-38 (landscape only; app has no portrait), VoiceOver needs a device (SKY-39); macOS: PASS (SKY-8), re-check after SKY-38 needs a human |
+| 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type PASS after SKY-38 (landscape only; app has no portrait), VoiceOver needs a device (SKY-39); macOS: PASS (SKY-8), re-checked by hand after SKY-38: PASS |
 | 36, 37 | VoiceOver on the surface, Reduce Motion | iOS: 37 PASS, 36 needs a device (SKY-39); macOS: both PASS (SKY-8) |
 
 The common blocker for most of these is that Accessibility (UI scripting) and Screen Recording
