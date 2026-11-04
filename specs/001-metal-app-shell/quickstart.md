@@ -257,6 +257,27 @@ sizes in the first run, then the full-screen round trip in a second run.
   black was checked by eye only, because Screen Recording is not granted, so `screencapture -l` returned
   `could not create image from window`.
 
+**Checks 9 and 10 — PASS (2026-11-04, SKY-21).** macOS 27.2 on a MacBook Pro (M1 Pro). The instrumented
+Release build (`./Scripts/build-instrumented.sh macos`) was launched with
+`open -n swiftSky.app --args --no-ship --no-debug-overlay`. Accessibility is not granted, so the menus were
+read through lldb instead (attached to the running app, `NSApp.mainMenu` walked item by item on the main
+thread), and the developer opened the menus and closed the window by hand.
+
+- **Check 9:** the menu bar is swiftSky, Edit, View, Window and Help. **There is no File menu**, so no New
+  Window command exists anywhere. The Window menu holds only Minimize (⌘M), Zoom and Bring All to Front:
+  no item opens a window, and there is no entry for the window itself. `NSApp.windows` held exactly one
+  window, `swiftSky`. lldb read the View menu as empty, because AppKit adds its items (Enter Full Screen)
+  only when the menu opens; the developer opened View and Window by hand and saw nothing that opens a
+  window. SwiftUI's `Window` scene (`Apps/macOS/SwiftSkyApp.swift`) gives all of this without custom code.
+- **Check 10:** the developer closed the window with its close button. The system log shows the click
+  (`performClick:` → `sendAction:`) at 14:01:03.057, then AppKit's `terminate:` at 14:01:03.086 and
+  `Termination complete` at 14:01:03.110. Afterwards `pgrep -x swiftSky` returned nothing: no windowless
+  process remained.
+- **Not covered:** with no File menu there is no Close (⌘W) item either, so ⌘W was not tested as a way to
+  close the window. FR-006d asks only that closing the window quits the app. The app logs nothing of its
+  own at teardown, so this run does not show the FR-032 ordering (loop stopped and drained before graphics
+  are released).
+
 **Check 11 — PASS (2026-07-28).** Verified by putting the *device* in portrait and observing that the
 app refuses to follow. The simulator's persisted device orientation was set to Portrait, confirmed by
 capturing the home screen first:
@@ -806,10 +827,11 @@ Checks 4 and 5 passed on iOS in the simulator on 2026-10-18 (SKY-18) and on macO
 verified with lldb rather than the GPU debugger, and are no longer open.
 Checks 7 and 8 passed on 2026-11-04 (SKY-20): window resizing was dragged by hand and the sizes were
 sampled. They are no longer open.
+Checks 9 and 10 passed on 2026-11-04 (SKY-21): the menus were read through lldb and by eye, and the
+window was closed by hand. They are no longer open.
 
 | # | Check | Why it is still open |
 |---|-------|----------------------|
-| 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |
 | 29 | Continuous resize under TSan | Races PASS; stalls PASS mid-drag; one system-side stall at the end of live resize (SKY-37) |
 | 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type FAIL (SKY-38), VoiceOver needs a device (SKY-39); macOS: PASS (SKY-8) |

@@ -13,7 +13,7 @@ description: |
 
   Record the results in the quickstart.
 platform: macos
-status: ready
+status: in-review
 phase: MVP
 priority: medium
 parent: null
