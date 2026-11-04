@@ -700,6 +700,25 @@ renamed to `swiftsky_quad_fragment_RENAMED_SKY7`; change reverted after the buil
 - **VoiceOver — NOT VERIFIED.** The iOS simulator has no VoiceOver and no physical device was available;
   moved to SKY-39.
 
+**Check 33, iOS Dynamic Type — PASS after SKY-38 (2026-11-04).** `RendererFailureNotice` now holds the heading and
+body in a `ScrollView` with Quit pinned below it, and the 320 pt minimum width applies on macOS only. Release
+build with the fragment entry point renamed to `swiftsky_quad_fragment_RENAMED_SKY38` (change reverted, not
+committed), simulator in dark appearance, `content_size accessibility-extra-extra-extra-large`.
+
+- **iPhone 17e (smallest installed; deployment target iOS 26.0), landscape — PASS.** The heading and the first body
+  lines are fully visible with a margin at the left and top edge, nothing cut off. Dragging the text up scrolls to
+  the last line ("may be incomplete."), with the scroll indicator showing. Quit stays on screen at the bottom
+  right throughout, and tapping it ends the process.
+- **iPad Air 11-inch (M4), landscape — PASS.** At the same size the whole heading and body fit without
+  scrolling and nothing is clipped. Tapping Quit ends the process.
+- **Portrait — not reachable.** The Info.plist allows `UIInterfaceOrientationLandscapeLeft` and `…Right` only,
+  on iPhone and iPad, so the app cannot be shown in portrait. A quarter-turn on the 17e left it in landscape.
+- **Found while testing, not changed here:** in light appearance the notice text is black on the black window
+  (`MetalSurfaceView.configureWindowBackground`) and only the blue Quit shows. Neither SKY-7 nor SKY-38 covers it.
+- **macOS — not re-checked by SKY-38.** The macOS Release build with the renamed entry point builds, but
+  `screencapture` is refused (no Screen Recording) and Accessibility is not granted, so the default and minimum
+  window sizes need a human look.
+
 **Check 33, macOS — PASS (2026-10-02, SKY-8).** Release build with the fragment shader entry point renamed
 to `swiftsky_quad_fragment_RENAMED_SKY8` (reverted after the build); it logged
 `renderer initialisation failed code=shader_function_missing` at Error level and showed the notice. Observed
@@ -812,7 +831,7 @@ sampled. They are no longer open.
 | 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |
 | 29 | Continuous resize under TSan | Races PASS; stalls PASS mid-drag; one system-side stall at the end of live resize (SKY-37) |
-| 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type FAIL (SKY-38), VoiceOver needs a device (SKY-39); macOS: PASS (SKY-8) |
+| 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type PASS after SKY-38 (landscape only; app has no portrait), VoiceOver needs a device (SKY-39); macOS: PASS (SKY-8), re-check after SKY-38 needs a human |
 | 36, 37 | VoiceOver on the surface, Reduce Motion | iOS: 37 PASS, 36 needs a device (SKY-39); macOS: both PASS (SKY-8) |
 
 The common blocker for most of these is that Accessibility (UI scripting) and Screen Recording
