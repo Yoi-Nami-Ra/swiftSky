@@ -5,7 +5,8 @@
 
 ## CommodityList
 Ordered, validated `[Commodity]` (1...16). `load()` reads the bundled file; `init(decoding: Data)` is the
-testable path. Errors (`CommodityListError`): `fileMissing`, `malformed(reason)`, `empty`,
+testable path, and `load(from: Bundle)` tests `fileMissing`. A missing resource bundle is a `fatalError` in
+SwiftPM's `Bundle.module`, not `fileMissing`. Errors (`CommodityListError`): `fileMissing`, `malformed(reason)`, `empty`,
 `tooMany(max)`, `duplicateID(id)`, `emptyName(id)`, `emptyID`, `nonPositivePrice(id)`. No partial list.
 `index(ofID:) -> Int?`, `subscript(index)`, `count`.
 

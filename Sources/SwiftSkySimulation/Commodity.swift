@@ -79,10 +79,20 @@ public struct CommodityList: Sendable, Equatable {
     }
 
     /// Loads the list from the bundled `commodities.json`.
+    ///
+    /// A missing `commodities.json` inside the resource bundle throws `.fileMissing`. A missing resource
+    /// bundle does not throw: SwiftPM's generated `Bundle.module` stops the process with `fatalError`
+    /// before this code runs, as it does for the rendering layer's `ship.png`.
     public static func load() throws(CommodityListError) -> CommodityList {
-        guard let url = Bundle.module.url(forResource: "commodities", withExtension: "json"),
+        try load(from: .module)
+    }
+
+    /// Loads `commodities.json` from `bundle`. The testable path for `.fileMissing`.
+    static func load(from bundle: Bundle) throws(CommodityListError) -> CommodityList {
+        guard let url = bundle.url(forResource: "commodities", withExtension: "json"),
               let data = try? Data(contentsOf: url)
         else { throw .fileMissing }
         return try CommodityList(decoding: data)
     }
 }
+

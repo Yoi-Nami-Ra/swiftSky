@@ -45,7 +45,10 @@
 - Decision: `DebugCargoOption` beside `DebugShipOptions`, `--no-debug-cargo`, in the `#if
   SWIFTSKY_INSTRUMENTATION` block; sets a `showsCargo` flag on `DebugOverlay`. With `--no-debug-overlay`
   there is nothing to show either way. If the list fails to load at startup, the error is logged once, the
-  overlay gets an empty name table (amounts, if any, show with `?` names) and the game runs on. Parsing is a pure struct, tested in the platform tests.
+  overlay gets an empty name table (amounts, if any, show with `?` names) and the game runs on. That covers a
+  missing or bad `commodities.json` inside the resource bundle. A missing resource bundle is not recoverable:
+  SwiftPM's generated `Bundle.module` calls `fatalError` when it finds no bundle, as it already does for the
+  rendering layer's `ship.png` (022 review). Parsing is a pure struct, tested in the platform tests.
 
 ## R6 Release strings check
 - Decision: extend the `strings` grep in `release_has_no_instrumentation` with the cargo labels (`hold    `,

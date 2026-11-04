@@ -142,8 +142,9 @@ public struct GameSurfaceView: View {
             renderer.debugTextPattern = debugMode.pattern
             renderer.debugOverlay = debugMode.overlay
             if debugMode == .overlay {
-                // The commodity names for the overlay's cargo lines. A load failure is logged once, here,
-                // and the overlay shows `?` for names (022 research R5).
+                // The commodity names for the overlay's cargo lines. A missing or bad commodities.json is
+                // logged once, here, and the overlay shows `?` for names; a missing resource bundle stops
+                // the process in `Bundle.module` (022 research R5).
                 var names: [String] = []
                 do {
                     names = try CommodityList.load().commodities.map(\.name)
