@@ -2,7 +2,7 @@
 
 No code entities. Two records describe what the feature reads and writes.
 
-## Probe run (read from `probe.sh` output; summarised in capture-notes.md)
+## Probe run (read from `probe.sh` output, or `probe-macos.sh` on macOS since SKY-19; summarised in capture-notes.md)
 
 | Field | From | Check | Expected |
 |-------|------|-------|----------|
