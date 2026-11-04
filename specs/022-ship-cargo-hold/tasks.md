@@ -47,9 +47,9 @@
 
 **Independent Test**: simulation tests, including all existing motion and autopilot tests unchanged (SC-007).
 
-- [ ] T010 [US1] Add `var hold: CargoHold` to `Ship` with `hold: CargoHold = .launch` on both initialisers (the launch one taking `limits:` and the mid-flight one), included in Equatable; `limits` stays `let`; motion and autopilot code does not read it (research R7) in Sources/SwiftSkySimulation/Ship.swift
-- [ ] T011 [P] [US1] Write ShipHoldTests: launch ship has capacity 20 and is empty, `state.ship.hold.add(...)` mutates in place, ships differing only in hold are not equal, adding cargo leaves position, velocity, heading, autopilot and planned path bit-equal after identical ticks (FR-012, FR-013: the hold takes an index and knows nothing of ship storage; use StateBits) in Tests/SwiftSkySimulationTests/ShipHoldTests.swift
-- [ ] T012 Check that `SimulationState` size stays small (no per-frame or per-copy regression; record the new size next to 010's ~4.2 KB figure in specs/022-ship-cargo-hold/research.md R2) and run `./Scripts/verify.sh`; existing motion and autopilot tests must pass without edits
+- [x] T010 [US1] Add `var hold: CargoHold` to `Ship` with `hold: CargoHold = .launch` on both initialisers (the launch one taking `limits:` and the mid-flight one), included in Equatable; `limits` stays `let`; motion and autopilot code does not read it (research R7) in Sources/SwiftSkySimulation/Ship.swift
+- [x] T011 [P] [US1] Write ShipHoldTests: launch ship has capacity 20 and is empty, `state.ship.hold.add(...)` mutates in place, ships differing only in hold are not equal, adding cargo leaves position, velocity, heading, autopilot and planned path bit-equal after identical ticks (FR-012, FR-013: the hold takes an index and knows nothing of ship storage; use StateBits) in Tests/SwiftSkySimulationTests/ShipHoldTests.swift
+- [x] T012 Check that `SimulationState` size stays small (no per-frame or per-copy regression; record the new size next to 010's ~4.2 KB figure in specs/022-ship-cargo-hold/research.md R2) and run `./Scripts/verify.sh`; existing motion and autopilot tests must pass without edits
 
 **Checkpoint**: Commit "SKY-52: ship carries a cargo hold".
 

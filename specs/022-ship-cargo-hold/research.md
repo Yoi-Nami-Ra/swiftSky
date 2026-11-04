@@ -20,6 +20,7 @@
   the renderer's copy; the inline array copies bytes. A running `used` sum is not stored; it is derived
   (16 adds), so no field can drift from the amounts (FR-007).
 - Alternatives: `Dictionary<String, Int>` (heap, string keys); `[Int]` (heap).
+- Measured (phase 3, T012): `MemoryLayout<CargoHold>.size` 144 bytes, `Ship` 216, `SimulationState` 4,393 bytes (010's figure was ~4.2 KB); still a plain inline value, no heap.
 
 ## R3 Commodity identity
 - Decision: the file's stable string `id` is validated and mapped by `CommodityList.index(ofID:)` to an
