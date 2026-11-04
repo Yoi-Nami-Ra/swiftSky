@@ -232,7 +232,7 @@ its constancy by the observation, as on iOS.
 |---|-------|----------|-----------|
 | 7 | Resize the macOS window through its full range, including full screen | Black fills exactly; no letterboxing, stretching, or non-black frames | SC-006 |
 | 8 | Drag a resize handle inward past 640×360 | Window stops shrinking at the minimum | FR-006a |
-| 9 | Open the File and Window menus | **No** New Window command, no Window menu entry | SC-014, FR-006c |
+| 9 | Open the File and Window menus | **No** New Window command, no Window menu entry that opens or lists a window | SC-014, FR-006c |
 | 10 | Close the window | App quits; no windowless process remains (`pgrep swiftSky` returns nothing) | FR-006d |
 | 11 | Rotate iOS device to portrait | App stays landscape, does not rotate | FR-006b |
 | 12 | Put the iOS app in Split View on iPad | Surface fills whatever size it is given, including portrait-shaped | FR-006b |
@@ -264,19 +264,26 @@ read through lldb instead (attached to the running app, `NSApp.mainMenu` walked 
 thread), and the developer opened the menus and closed the window by hand.
 
 - **Check 9:** the menu bar is swiftSky, Edit, View, Window and Help. **There is no File menu**, so no New
-  Window command exists anywhere. The Window menu holds only Minimize (⌘M), Zoom and Bring All to Front:
-  no item opens a window, and there is no entry for the window itself. `NSApp.windows` held exactly one
-  window, `swiftSky`. lldb read the View menu as empty, because AppKit adds its items (Enter Full Screen)
-  only when the menu opens; the developer opened View and Window by hand and saw nothing that opens a
+  Window command exists anywhere. The Window menu holds only Minimize (⌘M), Zoom and Bring All to Front,
+  as lldb read it: no item opens a window, and lldb found no entry for the window itself.
+  `NSApp.windows` held exactly one window, `swiftSky`. lldb read the View menu as empty, because AppKit
+  adds its items (Enter Full Screen) only when the menu opens, so the lldb walk alone cannot rule out an
+  item added the same way; the developer opened View and Window by hand and saw nothing that opens a
   window. SwiftUI's `Window` scene (`Apps/macOS/SwiftSkyApp.swift`) gives all of this without custom code.
+  The standard Window menu is kept, as the HIG expects. SC-014 and FR-006c used to say the Window menu
+  is absent; they were reworded on 2026-11-04 (SKY-21) to what they meant: no Window menu entry that
+  opens or lists a window.
 - **Check 10:** the developer closed the window with its close button. The system log shows the click
   (`performClick:` → `sendAction:`) at 14:01:03.057, then AppKit's `terminate:` at 14:01:03.086 and
   `Termination complete` at 14:01:03.110. Afterwards `pgrep -x swiftSky` returned nothing: no windowless
   process remained.
 - **Not covered:** with no File menu there is no Close (⌘W) item either, so ⌘W was not tested as a way to
-  close the window. FR-006d asks only that closing the window quits the app. The app logs nothing of its
-  own at teardown, so this run does not show the FR-032 ordering (loop stopped and drained before graphics
-  are released).
+  close the window. Check 10 asks only that closing the window quits the app, but FR-006d also requires
+  the FR-032 teardown ordering (loop stopped and drained before graphics are released). The app logs
+  nothing of its own at teardown, so this run does not show that ordering, and it is still unverified
+  for a window close: check 31 covered only quits sent by Apple event. In the code, the drain on close
+  depends only on SwiftUI's `.onDisappear` (`GameSurfaceView.swift`); nothing posts
+  `SurfaceEvent.willTerminate`.
 
 **Check 11 — PASS (2026-07-28).** Verified by putting the *device* in portrait and observing that the
 app refuses to follow. The simulator's persisted device orientation was set to Portrait, confirmed by
@@ -828,7 +835,8 @@ verified with lldb rather than the GPU debugger, and are no longer open.
 Checks 7 and 8 passed on 2026-11-04 (SKY-20): window resizing was dragged by hand and the sizes were
 sampled. They are no longer open.
 Checks 9 and 10 passed on 2026-11-04 (SKY-21): the menus were read through lldb and by eye, and the
-window was closed by hand. They are no longer open.
+window was closed by hand. They are no longer open. FR-006d's teardown-ordering half (FR-032 on a window
+close) is not shown by check 10 and stays unverified.
 
 | # | Check | Why it is still open |
 |---|-------|----------------------|

@@ -7,7 +7,7 @@ import SwiftSkyPlatform
 /// choice is `Window` rather than `WindowGroup`, and it is doing three jobs at once:
 ///
 ///   * exactly one window can exist (FR-006c)
-///   * no New Window command or Window menu entry appears (FR-006c)
+///   * no New Window command, and no Window menu entry that opens or lists a window (FR-006c)
 ///   * closing the window terminates the app (FR-006d)
 ///
 /// All three are `Window`'s documented behaviour, so none of them needs custom code. `WindowGroup` with
