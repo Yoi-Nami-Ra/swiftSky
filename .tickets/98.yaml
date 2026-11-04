@@ -1,0 +1,26 @@
+id: 98
+title: "Add Close (⌘W) to the macOS menus"
+type: feature
+description: |
+  Found in the PR #7 review (SKY-21). The macOS app has no File menu, because
+  SwiftUI's `Window` scene adds none, so there is no Close item and ⌘W does
+  nothing. From the keyboard the window can be closed only with ⌘Q or by
+  reaching the close button with Full Keyboard Access. Most Mac apps offer ⌘W,
+  and the constitution's Accessibility & Platform UX principle asks for HIG
+  behaviour.
+
+  - Add a Close command (⌘W) that closes the one window, for example through
+    `.commands` with `CommandGroup(replacing: .saveItem)` (where Close lives) or a File
+    menu that holds only Close. It must not bring back New Window (FR-006c, SC-014).
+  - Confirm ⌘W ends in the same termination as the close button (FR-006d),
+    and add it to 001's check 10 or a new check.
+
+  Done when: ⌘W closes the window and quits the app, no New Window command
+  appears, and the quickstart records it.
+platform: macos
+status: ready
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

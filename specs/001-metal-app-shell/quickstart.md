@@ -232,8 +232,8 @@ its constancy by the observation, as on iOS.
 |---|-------|----------|-----------|
 | 7 | Resize the macOS window through its full range, including full screen | Black fills exactly; no letterboxing, stretching, or non-black frames | SC-006 |
 | 8 | Drag a resize handle inward past 640×360 | Window stops shrinking at the minimum | FR-006a |
-| 9 | Open the File and Window menus | **No** New Window command, no Window menu entry | SC-014, FR-006c |
-| 10 | Close the window | App quits; no windowless process remains (`pgrep swiftSky` returns nothing) | FR-006d |
+| 9 | Open the File and Window menus | **No** New Window command, no Window menu entry that opens or lists a window | SC-014, FR-006c |
+| 10 | Close the window | App quits; no windowless process remains (`pgrep -x swiftSky` returns nothing) | FR-006d |
 | 11 | Rotate iOS device to portrait | App stays landscape, does not rotate | FR-006b |
 | 12 | Put the iOS app in Split View on iPad | Surface fills whatever size it is given, including portrait-shaped | FR-006b |
 | 13 | Minimise or fully occlude the macOS window | Frame production stops; resumes when visible | FR-008 |
@@ -256,6 +256,39 @@ sizes in the first run, then the full-screen round trip in a second run.
   saw only black: no letterboxing, no stretching and no non-black frame, mid-drag or in full screen. The
   black was checked by eye only, because Screen Recording is not granted, so `screencapture -l` returned
   `could not create image from window`.
+
+**Checks 9 and 10 — PASS (2026-11-04, SKY-21).** macOS 27.2 on a MacBook Pro (M1 Pro). The instrumented
+Release build (`./Scripts/build-instrumented.sh macos`) was launched with
+`open -n swiftSky.app --args --no-ship --no-debug-overlay`. Accessibility is not granted, so the menus were
+read through lldb instead (attached to the running app, `NSApp.mainMenu` walked item by item on the main
+thread), and the developer opened the menus and closed the window by hand.
+
+- **Check 9:** the menu bar is swiftSky, Edit, View, Window and Help. **There is no File menu**, so no New
+  Window command exists anywhere. The Window menu holds Minimize (⌘M), Zoom and Bring All to Front as
+  lldb read it, before the menu was opened: no item opens a window, and lldb found no entry for the
+  window itself. AppKit may add more items when the menu opens (since macOS 15, the tiling items such as
+  Fill, Center and Move & Resize); none of them opens a window.
+  `NSApp.windows` held exactly one window, `swiftSky`. lldb read the View menu as empty, because AppKit
+  adds its items (Enter Full Screen) only when the menu opens, so the lldb walk alone cannot rule out an
+  item added the same way; the developer opened View and Window by hand and saw nothing that opens a
+  window. The swiftSky menu's About swiftSky opens the standard About panel, a system panel rather than a
+  game window, which SC-014 does not count. SwiftUI's `Window` scene (`Apps/macOS/SwiftSkyApp.swift`)
+  gives all of this without custom code, but the absent window entry is observed, not documented:
+  Apple's `Window` page says the Windows menu lists singleton windows. Re-run this check after an OS
+  update. The standard Window menu is kept, as the HIG expects. SC-014 and FR-006c used to say the Window menu
+  is absent; they were reworded on 2026-11-04 (SKY-21) to what they meant: no Window menu entry that
+  opens or lists a window.
+- **Check 10:** the developer closed the window with its close button. The system log shows the click
+  (`performClick:` → `sendAction:`) at 14:01:03.057, then AppKit's `terminate:` at 14:01:03.086 and
+  `Termination complete` at 14:01:03.110. Afterwards `pgrep -x swiftSky` returned nothing: no windowless
+  process remained.
+- **Not covered:** with no File menu there is no Close (⌘W) item either, so ⌘W was not tested as a way to
+  close the window (SKY-98). Check 10 asks only that closing the window quits the app, but FR-006d also requires
+  the FR-032 teardown ordering (loop stopped and drained before graphics are released). The app logs
+  nothing of its own at teardown, so this run does not show that ordering, and it is still unverified
+  for a window close: check 31 covered only quits sent by Apple event. In the code, the drain on close
+  depends only on SwiftUI's `.onDisappear` (`GameSurfaceView.swift`); nothing posts
+  `SurfaceEvent.willTerminate`. SKY-97 tracks it.
 
 **Check 11 — PASS (2026-07-28).** Verified by putting the *device* in portrait and observing that the
 app refuses to follow. The simulator's persisted device orientation was set to Portrait, confirmed by
@@ -806,17 +839,21 @@ Checks 4 and 5 passed on iOS in the simulator on 2026-10-18 (SKY-18) and on macO
 verified with lldb rather than the GPU debugger, and are no longer open.
 Checks 7 and 8 passed on 2026-11-04 (SKY-20): window resizing was dragged by hand and the sizes were
 sampled. They are no longer open.
+Checks 9 and 10 passed on 2026-11-04 (SKY-21): the menus were read through lldb and by eye, and the
+window was closed by hand. Check 9 is no longer open. Check 10 stays open for FR-006d's teardown-ordering
+half (FR-032 on a window close), which it does not show.
 
 | # | Check | Why it is still open |
 |---|-------|----------------------|
-| 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
+| 10 | Close-to-quit: FR-032 ordering on a window close | Quit PASS; the teardown ordering is not shown, and the drain depends only on `.onDisappear` (SKY-97) |
 | 12 | iPad Split View | Needs an interactive dock drag |
 | 29 | Continuous resize under TSan | Races PASS; stalls PASS mid-drag; one system-side stall at the end of live resize (SKY-37) |
 | 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type FAIL (SKY-38), VoiceOver needs a device (SKY-39); macOS: PASS (SKY-8) |
 | 36, 37 | VoiceOver on the surface, Reduce Motion | iOS: 37 PASS, 36 needs a device (SKY-39); macOS: both PASS (SKY-8) |
 
-The common blocker for most of these is that Accessibility (UI scripting) and Screen Recording
-permission are not granted to this session, so nothing can drive or capture the UI:
+Most of these now wait on a device (SKY-39), a system-side stall (SKY-37) or a code change (SKY-38,
+SKY-97). The earlier common blocker, which the closed checks were worked around by hand and with lldb,
+was that Accessibility (UI scripting) and Screen Recording permission are not granted to this session, so nothing can drive or capture the UI:
 AppleScript returns `-1743`, `screencapture` returns `could not create image from display`, and the
 simulator-control MCP cannot load at all because
 `SimulatorKit.framework` is missing from the Xcode 27.0 Beta 4 bundle. `xcrun simctl` has no

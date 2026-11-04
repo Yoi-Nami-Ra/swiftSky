@@ -238,10 +238,15 @@ a violating reference, confirm the build fails, revert it, and record the eviden
   rotate into portrait. It MUST nonetheless tolerate arbitrary surface dimensions, since iPad
   multitasking can present sizes that match no device orientation.
 - **FR-006c**: The app MUST support exactly one window/scene, and the platform's multi-window
-  affordances MUST be explicitly disabled — no New Window command or Window menu entry on macOS, and
-  no multi-window support declared on iPadOS. Exactly one Simulation State, one renderer, and one
-  Render Surface exist at any time. Left at the platform default the app would accept a second window
-  and behave undefinedly, so this must be turned off deliberately rather than assumed absent.
+  affordances MUST be explicitly disabled — no New Window command on macOS and no Window menu entry
+  that opens or lists a window (the standard window-management items, such as Minimize, Zoom, the
+  tiling items and Bring All to Front, stay), and no multi-window support declared on iPadOS. Exactly
+  one Simulation State, one renderer, and one Render Surface exist at any time. Left at the platform
+  default the app would accept a second window and behave undefinedly, so this must be turned off
+  deliberately rather than assumed absent. On macOS the deliberate step is the single `Window` scene
+  (research R7). Its Window-menu half is observed platform behaviour, not documented (Apple documents
+  that the Windows menu lists singleton windows), so quickstart check 9 is re-run after OS updates.
+  *(Reworded 2026-11-04, SKY-21: it used to say no Window menu entry at all.)*
 - **FR-006d**: On macOS, closing the window MUST terminate the app. Window lifetime equals app
   lifetime, so no windowless running state exists. Termination MUST follow the FR-032 teardown
   ordering — the loop stopped and drained before graphics resources are released — since closing the
@@ -468,8 +473,10 @@ requirement and FR-031's frame-boundary rule.
   resulting state across 10 consecutive headless runs, and the same sequence fed as one long elapsed
   span versus many short ones yields the same tick count (subject to the FR-021b clamp). Feeding a
   10-second elapsed span advances exactly 4 ticks, not 600.
-- **SC-014**: No second window can be opened by any means — the New Window command and Window menu
-  are absent on macOS, and the app offers no multi-window option on iPadOS.
+- **SC-014**: No second game window or scene can be opened by any means (system panels such as the
+  About panel are not game windows) — on macOS the New Window command is absent and the Window menu
+  holds no entry that opens or lists a window (its standard window-management items stay), and the
+  app offers no multi-window option on iPadOS. *(Reworded 2026-11-04, SKY-21.)*
 - **SC-015**: The project builds clean under strict concurrency checking with zero warnings, and a
   sustained run under thread and address sanitisers reports zero data races and zero memory errors on
   both platforms.

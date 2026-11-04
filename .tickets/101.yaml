@@ -1,0 +1,28 @@
+id: 101
+title: "Correct the NSRequiresAquaSystemAppearance notes"
+type: task
+description: |
+  Found in the PR #7 review (SKY-21). Two notes say the macOS Info.plist's
+  `NSRequiresAquaSystemAppearance = false` forces dark appearance:
+  `Sources/SwiftSkyPlatform/MetalSurfaceView.swift:277` (the doc comment on
+  `configureWindowBackground`) and 001's quickstart (line ~375, "only forces
+  *dark* appearance"). It does not: `false` only stops the app opting out of
+  Dark Mode, so the app follows the system appearance; only `true` forces
+  light (Aqua). The quickstart itself records the title bar going light in
+  light appearance (line ~160). The wrong belief already scoped macOS out of
+  SKY-100 once.
+
+  - Reword both notes: the window background follows the system appearance
+    (dark grey in dark, light in light), so neither is black, which is why
+    `configureWindowBackground` sets it to black (FR-004).
+  - No behaviour change; comments and quickstart prose only.
+
+  Done when: neither note claims the key forces an appearance, and
+  `git grep -n "forces dark"` finds nothing in Sources, Apps or specs.
+platform: macos
+status: ready
+phase: Backlog
+priority: low
+parent: null
+blocked_by: []
+designs: []
