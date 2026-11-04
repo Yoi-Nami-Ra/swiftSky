@@ -1,0 +1,26 @@
+id: 99
+title: "Look up ship data, cargo included, by key"
+type: feature
+description: |
+  Split out of SKY-52 while answering its clarify questions. SKY-52 gives the
+  one ship a simple cargo hold (whole tons, default capacity 20, commodity list
+  from a bundled data file in the logic target). The user wants ship data,
+  with the cargo hold inside it, reached through a keyed lookup rather than a
+  single hard-wired ship, but not as part of SKY-52.
+
+  Scope to settle in refinement: what the key is (a ship id), where the table
+  lives (SimulationState), how it stays free of per-tick heap allocation
+  (constitution Principle III; a Dictionary in the state may allocate), and how
+  the debug overlay keeps showing the current ship's cargo through it. Later
+  tickets that need more than one ship (SKY-63, SKY-74, SKY-78) would build on it.
+
+  Done when: ship data, cargo included, is held in and read through a keyed
+  lookup in the logic layer, headless tests cover lookup, insert and a missing
+  key, and the allocation counter still reads allocs=0 on frames without input.
+platform: macos
+status: refine
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []

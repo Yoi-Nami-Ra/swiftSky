@@ -22,7 +22,7 @@ description: |
   sizes were sampled with CGWindowListCopyWindowInfo; the drags were done by
   hand.
 platform: macos
-status: in-review
+status: done
 phase: MVP
 priority: medium
 parent: null
