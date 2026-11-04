@@ -13,8 +13,16 @@ description: |
 
   Can be done in the same session as SKY-5 (continuous resize under TSan).
   Record the results in the quickstart.
+
+  Result 2026-11-04: both checks PASS, recorded in 001's quickstart. Check 8:
+  every inward drag stopped at a 640×392 pt window frame, which is a 640×360
+  content area plus the 32 pt title bar. Check 7: the window went from 640×392
+  to 1757×983 by dragging, then into full screen at 1920×1080, and stayed
+  black throughout, checked by eye (Screen Recording is not granted). The
+  sizes were sampled with CGWindowListCopyWindowInfo; the drags were done by
+  hand.
 platform: macos
-status: ready
+status: in-review
 phase: MVP
 priority: medium
 parent: null

@@ -239,6 +239,24 @@ its constancy by the observation, as on iOS.
 | 13 | Minimise or fully occlude the macOS window | Frame production stops; resumes when visible | FR-008 |
 | 14 | Check Xcode's run destination list | Exactly two destinations; no Mac Catalyst, no "Designed for iPad" | SC-018, FR-016a |
 
+**Checks 7 and 8 — PASS (2026-11-04, SKY-20).** macOS 27.2 on a MacBook Pro (M1 Pro) with an external
+1920×1080 display. The instrumented Release build (`./Scripts/build-instrumented.sh macos`) was launched with
+`open -n swiftSky.app --args --no-ship --no-debug-overlay`, so the surface was plain black. The developer
+dragged the window by hand: Accessibility is not granted, so nothing could drive the window. A sampler read
+the window's frame from `CGWindowListCopyWindowInfo` every 50 ms and logged every new size: 162 distinct
+sizes in the first run, then the full-screen round trip in a second run.
+
+- **Check 8:** about 20 inward drags, by a corner and by single edges, all stopped at a **640×392 pt** window
+  frame and never went below it. `NSWindow.frameRect(forContentRect:styleMask:)` gives exactly 640×392 for a
+  640×360 content area with the titled, resizable style (a 32 pt title bar). The content minimum is
+  therefore exactly 640×360, as FR-006a requires, and the aspect ratio stayed free (640×392 to 640×448 at
+  the minimum width).
+- **Check 7:** the window went from 640×392 up to 1757×983 by dragging, then into full screen at
+  **1920×1080**, the whole external display, and back to 640×392. The developer watched the whole run and
+  saw only black: no letterboxing, no stretching and no non-black frame, mid-drag or in full screen. The
+  black was checked by eye only, because Screen Recording is not granted, so `screencapture -l` returned
+  `could not create image from window`.
+
 **Check 11 — PASS (2026-07-28).** Verified by putting the *device* in portrait and observing that the
 app refuses to follow. The simulator's persisted device orientation was set to Portrait, confirmed by
 capturing the home screen first:
@@ -786,10 +804,11 @@ Check 2 passed on 2026-10-05 and is no longer open: iOS in the simulator (SKY-16
 screen recording (SKY-17).
 Checks 4 and 5 passed on iOS in the simulator on 2026-10-18 (SKY-18) and on macOS on 2026-11-04 (SKY-19),
 verified with lldb rather than the GPU debugger, and are no longer open.
+Checks 7 and 8 passed on 2026-11-04 (SKY-20): window resizing was dragged by hand and the sizes were
+sampled. They are no longer open.
 
 | # | Check | Why it is still open |
 |---|-------|----------------------|
-| 7, 8 | Resize range, minimum size | Needs interactive window dragging |
 | 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |
 | 29 | Continuous resize under TSan | Races PASS; stalls PASS mid-drag; one system-side stall at the end of live resize (SKY-37) |
