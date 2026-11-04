@@ -63,7 +63,8 @@ specs/022-ship-cargo-hold/
 ├── data-model.md
 ├── quickstart.md
 ├── contracts/cargo-and-overlay.md
-└── tasks.md        (/speckit-tasks, not created here)
+├── checklists/requirements.md
+└── tasks.md
 ```
 
 ### Source Code

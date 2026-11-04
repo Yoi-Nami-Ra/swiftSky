@@ -192,9 +192,9 @@ full) and on the argument's parsing; then, by hand, launch the app with and with
   to assistive technology (D4).
 - **FR-011**: The overlay's cargo lines MUST be on by default, and the launch argument `--no-debug-cargo` MUST
   hide them (Debug and instrumented Release builds only); the other overlay lines are unaffected (D4, D4a).
+- **FR-012**: Nothing in the hold MUST change the ship's motion, the autopilot, or the planned path.
 - **FR-013**: The hold MUST NOT depend on how a ship is looked up or stored, so that a later keyed
   lookup of ship data needs no change to the hold's rules (D5).
-- **FR-012**: Nothing in the hold MUST change the ship's motion, the autopilot, or the planned path.
 
 ### Key Entities
 
