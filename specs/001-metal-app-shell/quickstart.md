@@ -792,17 +792,23 @@ reverted, not committed), dark appearance, `content_size accessibility-extra-ext
 **Check 33, light and dark appearance — PASS after SKY-100 (2026-11-05).** In light appearance the notice's heading
 and body used the dark default label colour on the black background, so only Quit showed; on iOS the black also
 covered only the notice's own height, and the rest of the window was the white system background (the app's
-`.background(.black)` is sized to `GameSurfaceView`, which was sized to the notice). `RendererFailureNotice` now
-fills the space it is given (`.frame(maxWidth: .infinity, maxHeight: .infinity)`) and sets
-`.environment(\.colorScheme, .dark)` on itself only; the rest of the app and the menus still follow the system.
-Neither change touches the success path (FR-001 / FR-004a). Release builds with the fragment entry point renamed to
-`swiftsky_quad_fragment_RENAMED_SKY100` (change reverted, not committed).
+`.background(.black)` is sized to `GameSurfaceView`, which was sized to the notice). macOS has the same
+dependency: the black window background is set by `MetalSurfaceView`, which the failure path never builds.
+`RendererFailureNotice` now fills the space it is given (`.frame(maxWidth: .infinity, maxHeight: .infinity)`),
+draws its own `.background(.black)` there, and sets `.environment(\.colorScheme, .dark)` on itself only; the rest
+of the app and the menus still follow the system. None of this touches the success path (FR-001 / FR-004a).
+Release builds with the fragment entry point renamed to `swiftsky_quad_fragment_RENAMED_SKY100` (change reverted,
+not committed). The runs below were made before the PR review moved the black into the notice and the
+accessibility modifiers ahead of the frame; the colours and layout drawn are the same.
 
 - **iPhone 17e (iOS 27.3), landscape — PASS** in light and dark, at `content_size large` and
   `accessibility-extra-extra-extra-large`: white heading and body, blue Quit, black over the whole screen. At the
   largest size the body scrolls under Quit, as after SKY-38. Checked from `simctl io screenshot` captures.
 - **iPad Air 11-inch (M4) (iOS 27.3) — PASS** in the same four cases. The simulator was in portrait and the app ran
-  full screen in portrait; landscape was covered for layout by SKY-38.
+  full screen in portrait, although the Info.plist allows landscape only on iPad. That contradicts "Portrait
+  device orientation — not reachable" above (observed by turning the 17e, not an iPad): iPadOS 27 does not seem
+  to hold the app to it, which is outside SKY-100 and needs its own ticket. Landscape was covered for layout by
+  SKY-38.
 - **macOS — PASS, checked by hand by the user** (`screencapture` is refused): one instance launched with
   `-NSRequiresAquaSystemAppearance YES`, which forces light appearance for that app only, and one in the system's
   dark appearance. Heading, body and Quit are readable in both.
@@ -923,7 +929,7 @@ half (FR-032 on a window close), which it does not show.
 | 10 | Close-to-quit: FR-032 ordering on a window close | Quit PASS; the teardown ordering is not shown, and the drain depends only on `.onDisappear` (SKY-97) |
 | 12 | iPad Split View | Needs an interactive dock drag |
 | 29 | Continuous resize under TSan | Races PASS; stalls PASS mid-drag; one system-side stall at the end of live resize (SKY-37) |
-| 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type PASS after SKY-38 (17e, 17 Pro both landscape orientations, iPad Air; iPhone SE and iPad tall-window not run), VoiceOver needs a device (SKY-39); macOS: PASS (SKY-8), re-checked by hand after SKY-38: PASS |
+| 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type PASS after SKY-38 (17e, 17 Pro both landscape orientations, iPad Air; iPhone SE and iPad tall-window not run), VoiceOver needs a device (SKY-39); macOS: PASS (SKY-8), re-checked by hand after SKY-38: PASS; light and dark appearance: PASS after SKY-100 (17e, iPad Air, macOS) |
 | 36, 37 | VoiceOver on the surface, Reduce Motion | iOS: 37 PASS, 36 needs a device (SKY-39); macOS: both PASS (SKY-8) |
 
 Most of these now wait on a device (SKY-39), a system-side stall (SKY-37) or a code change (SKY-38,
