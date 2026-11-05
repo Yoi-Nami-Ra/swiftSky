@@ -10,7 +10,7 @@ description: |
   appears in its system and produces goods.
 platform: macos
 status: idea
-phase: Backlog
+phase: Phase3
 priority: medium
 parent: 77
 blocked_by: [68]

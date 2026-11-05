@@ -22,7 +22,7 @@ description: |
   added for this.
 platform: macos
 status: done
-phase: MVP
+phase: Phase0
 priority: low
 parent: 22
 blocked_by: []

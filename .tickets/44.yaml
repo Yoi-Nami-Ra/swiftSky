@@ -20,7 +20,7 @@ description: |
     show at once, and what happens when two point the same way.
 platform: macos
 status: refine
-phase: Open space
+phase: Phase1
 priority: medium
 parent: null
 blocked_by: []

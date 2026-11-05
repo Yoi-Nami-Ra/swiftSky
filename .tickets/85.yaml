@@ -9,7 +9,7 @@ description: |
   Done when: tests cover scan chance, fine and confiscation.
 platform: macos
 status: idea
-phase: Backlog
+phase: Phase3
 priority: medium
 parent: 82
 blocked_by: [52, 83]

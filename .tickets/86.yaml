@@ -9,7 +9,7 @@ description: |
   without relying on colour alone.
 platform: macos
 status: idea
-phase: Backlog
+phase: Phase3
 priority: medium
 parent: 82
 blocked_by: [56, 83]

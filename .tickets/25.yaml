@@ -25,7 +25,7 @@ description: |
   Default tolerances: 1 unit and 1 unit/s.
 platform: macos
 status: done
-phase: MVP
+phase: Phase0
 priority: high
 parent: 22
 blocked_by: [24]

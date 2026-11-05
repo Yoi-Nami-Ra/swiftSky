@@ -24,7 +24,7 @@ description: |
   per-frame allocation. Default refresh rate: 4 Hz.
 platform: macos
 status: done
-phase: MVP
+phase: Phase0
 priority: medium
 parent: 22
 blocked_by: [28]

@@ -21,7 +21,7 @@ description: |
   cargo mass affects flight), and SKY-52 updated or follow-up tickets named.
 platform: macos
 status: ready
-phase: Trade loop
+phase: Phase1
 priority: medium
 parent: null
 blocked_by: []

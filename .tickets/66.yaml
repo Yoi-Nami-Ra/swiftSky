@@ -13,7 +13,7 @@ description: |
   raises its output's price and draws NPC traders to supply it.
 platform: macos
 status: idea
-phase: Sandbox
+phase: Phase2
 priority: medium
 parent: null
 blocked_by: []

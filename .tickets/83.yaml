@@ -11,7 +11,7 @@ description: |
   allied and enemy factions.
 platform: macos
 status: idea
-phase: Backlog
+phase: Phase3
 priority: medium
 parent: 82
 blocked_by: [57]

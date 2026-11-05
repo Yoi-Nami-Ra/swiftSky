@@ -20,7 +20,7 @@ description: |
   resizes.
 platform: macos
 status: done
-phase: MVP
+phase: Phase0
 priority: high
 parent: 22
 blocked_by: [23, 24]

@@ -15,7 +15,7 @@ description: |
   summaries allocs=0 allocframes=0, recorded in 001's check 25.
 platform: macos
 status: done
-phase: MVP
+phase: Phase0
 priority: medium
 parent: null
 blocked_by: []

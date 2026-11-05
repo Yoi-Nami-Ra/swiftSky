@@ -13,7 +13,7 @@ description: |
   acceleration and turn rate.
 platform: macos
 status: idea
-phase: Sandbox
+phase: Phase2
 priority: medium
 parent: null
 blocked_by: []

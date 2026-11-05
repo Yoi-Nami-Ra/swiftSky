@@ -18,7 +18,7 @@ description: |
   with text updating every frame.
 platform: macos
 status: done
-phase: MVP
+phase: Phase0
 priority: medium
 parent: 22
 blocked_by: []

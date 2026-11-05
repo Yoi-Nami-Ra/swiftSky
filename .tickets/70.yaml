@@ -10,7 +10,7 @@ description: |
   leaving in the player's system on iOS and macOS within the frame budget.
 platform: macos
 status: idea
-phase: Sandbox
+phase: Phase2
 priority: medium
 parent: 66
 blocked_by: [55, 69]

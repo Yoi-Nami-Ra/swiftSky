@@ -24,7 +24,7 @@ description: |
   - The background (SKY-35) is fixed to the screen, so it doesn't zoom.
 platform: macos
 status: refine
-phase: Open space
+phase: Phase1
 priority: medium
 parent: null
 blocked_by: []

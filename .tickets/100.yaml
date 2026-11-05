@@ -28,7 +28,7 @@ description: |
   recorded in the 001 quickstart.
 platform: ios
 status: done
-phase: MVP
+phase: Phase0
 priority: medium
 parent: null
 blocked_by: []

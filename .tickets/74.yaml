@@ -11,7 +11,7 @@ description: |
   mass means less acceleration.
 platform: macos
 status: idea
-phase: Sandbox
+phase: Phase2
 priority: medium
 parent: 73
 blocked_by: [52, 59, 60, 99]

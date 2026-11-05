@@ -27,7 +27,7 @@ description: |
   line shows it, and the quickstart records FR-006d's ordering half.
 platform: macos
 status: refine
-phase: MVP
+phase: Phase0
 priority: medium
 parent: null
 blocked_by: []

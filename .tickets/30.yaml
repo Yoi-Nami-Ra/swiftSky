@@ -18,7 +18,7 @@ description: |
   clears on arrival — on both platforms.
 platform: macos
 status: done
-phase: MVP
+phase: Phase0
 priority: medium
 parent: 22
 blocked_by: [12, 23, 26, 27]

@@ -29,7 +29,7 @@ description: |
   police arrival, and the player can see the standing of the area they are in.
 platform: macos
 status: refine
-phase: Backlog
+phase: Phase3
 priority: medium
 parent: null
 blocked_by: [49, 63, 83, 95]

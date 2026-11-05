@@ -15,7 +15,7 @@ description: |
   baselines are measured on Apple silicon only.
 platform: macos
 status: dropped
-phase: MVP
+phase: Phase0
 priority: high
 parent: null
 blocked_by: []

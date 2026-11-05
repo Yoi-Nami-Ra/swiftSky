@@ -14,7 +14,7 @@ description: |
   the same breakpoints on a macOS launch, or a capture, would do here.
 platform: macos
 status: done
-phase: MVP
+phase: Phase0
 priority: medium
 parent: null
 blocked_by: []

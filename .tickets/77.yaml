@@ -11,7 +11,7 @@ description: |
   Done when every child is done.
 platform: macos
 status: idea
-phase: Backlog
+phase: Phase3
 priority: medium
 parent: null
 blocked_by: []

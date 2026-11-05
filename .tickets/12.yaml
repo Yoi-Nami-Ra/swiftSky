@@ -54,7 +54,7 @@ description: |
     platforms, and frame times stay within budget.
 platform: macos
 status: done
-phase: MVP
+phase: Phase0
 priority: medium
 parent: 22
 blocked_by: []

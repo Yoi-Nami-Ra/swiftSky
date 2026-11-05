@@ -17,7 +17,7 @@ description: |
   resize running on the main thread (012 research R12–R14).
 platform: macos
 status: done
-phase: MVP
+phase: Phase0
 priority: medium
 parent: null
 blocked_by: []

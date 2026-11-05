@@ -25,7 +25,7 @@ description: |
   Re-run 001 check 33's Dynamic Type part and record it in the quickstart.
 platform: ios
 status: done
-phase: MVP
+phase: Phase0
 priority: medium
 parent: null
 blocked_by: []

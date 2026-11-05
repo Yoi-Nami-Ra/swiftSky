@@ -27,7 +27,7 @@ description: |
   on a window close, which this run does not show.
 platform: macos
 status: done
-phase: MVP
+phase: Phase0
 priority: medium
 parent: null
 blocked_by: []

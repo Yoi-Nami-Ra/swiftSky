@@ -18,7 +18,7 @@ description: |
   relaunch, credits kept) works on iOS and macOS.
 platform: macos
 status: idea
-phase: Trade loop
+phase: Phase1
 priority: medium
 parent: null
 blocked_by: []

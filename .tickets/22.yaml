@@ -35,7 +35,7 @@ description: |
   their own tickets and don't hold this one).
 platform: macos
 status: done
-phase: MVP
+phase: Phase0
 priority: high
 parent: null
 blocked_by: []

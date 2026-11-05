@@ -21,7 +21,7 @@ description: |
   and SKY-51 (for example the publish rate, or what to avoid in views).
 platform: ios
 status: ready
-phase: Trade loop
+phase: Phase1
 priority: medium
 parent: null
 blocked_by: []

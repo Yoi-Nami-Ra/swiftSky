@@ -10,7 +10,7 @@ description: |
   in the quickstart. The macOS run is SKY-17.
 platform: ios
 status: done
-phase: MVP
+phase: Phase0
 priority: medium
 parent: null
 blocked_by: []

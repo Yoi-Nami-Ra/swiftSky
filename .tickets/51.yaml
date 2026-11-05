@@ -16,7 +16,7 @@ description: |
   works with VoiceOver and Dynamic Type, and fits iPad Split View.
 platform: macos
 status: ready
-phase: Trade loop
+phase: Phase1
 priority: medium
 parent: 48
 blocked_by: [50, 89, 92, 95]

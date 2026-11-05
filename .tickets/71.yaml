@@ -15,7 +15,7 @@ description: |
   systems simulated.
 platform: macos
 status: idea
-phase: Sandbox
+phase: Phase2
 priority: medium
 parent: 66
 blocked_by: [70, 88]
