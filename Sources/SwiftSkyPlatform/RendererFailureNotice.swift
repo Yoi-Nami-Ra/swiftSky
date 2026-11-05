@@ -42,6 +42,16 @@ public struct RendererFailureNotice: View {
             }
         }
         .padding(24)
+        // Fill the space the app gives it, still centred, so the iOS app's `.background(.black)` (sized
+        // to this view) covers the whole screen. Sized to its content, the notice was a black band and
+        // the rest of the window showed the system background: white in light appearance (SKY-100).
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // The notice sits on black (that background on iOS, the black window background on macOS),
+        // never on a system background that follows the appearance. In light appearance the default
+        // label colour is dark, so the heading and body vanished and only Quit showed (SKY-100). Dark
+        // colours, for the notice only, keep it readable in either appearance; the rest of the app,
+        // menus included, still follows the system.
+        .environment(\.colorScheme, .dark)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("swiftSky cannot start")
         .accessibilityValue(error.userFacingDescription)

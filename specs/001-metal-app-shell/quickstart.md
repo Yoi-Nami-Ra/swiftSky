@@ -789,6 +789,25 @@ reverted, not committed), dark appearance, `content_size accessibility-extra-ext
   point, at the default and the minimum window size: no clipping, and Quit exits. (Not automated:
   `screencapture` is refused and Accessibility is not granted.)
 
+**Check 33, light and dark appearance — PASS after SKY-100 (2026-11-05).** In light appearance the notice's heading
+and body used the dark default label colour on the black background, so only Quit showed; on iOS the black also
+covered only the notice's own height, and the rest of the window was the white system background (the app's
+`.background(.black)` is sized to `GameSurfaceView`, which was sized to the notice). `RendererFailureNotice` now
+fills the space it is given (`.frame(maxWidth: .infinity, maxHeight: .infinity)`) and sets
+`.environment(\.colorScheme, .dark)` on itself only; the rest of the app and the menus still follow the system.
+Neither change touches the success path (FR-001 / FR-004a). Release builds with the fragment entry point renamed to
+`swiftsky_quad_fragment_RENAMED_SKY100` (change reverted, not committed).
+
+- **iPhone 17e (iOS 27.3), landscape — PASS** in light and dark, at `content_size large` and
+  `accessibility-extra-extra-extra-large`: white heading and body, blue Quit, black over the whole screen. At the
+  largest size the body scrolls under Quit, as after SKY-38. Checked from `simctl io screenshot` captures.
+- **iPad Air 11-inch (M4) (iOS 27.3) — PASS** in the same four cases. The simulator was in portrait and the app ran
+  full screen in portrait; landscape was covered for layout by SKY-38.
+- **macOS — PASS, checked by hand by the user** (`screencapture` is refused): one instance launched with
+  `-NSRequiresAquaSystemAppearance YES`, which forces light appearance for that app only, and one in the system's
+  dark appearance. Heading, body and Quit are readable in both.
+- Not re-checked here: Quit ending the process (unchanged; PASS under SKY-38 and SKY-8) and VoiceOver (SKY-39).
+
 **Check 33, macOS — PASS (2026-10-02, SKY-8).** Release build with the fragment shader entry point renamed
 to `swiftsky_quad_fragment_RENAMED_SKY8` (reverted after the build); it logged
 `renderer initialisation failed code=shader_function_missing` at Error level and showed the notice. Observed
