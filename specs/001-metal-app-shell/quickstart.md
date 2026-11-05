@@ -701,9 +701,9 @@ renamed to `swiftsky_quad_fragment_RENAMED_SKY7`; change reverted after the buil
   moved to SKY-39.
 
 **Check 33, iOS Dynamic Type — PASS after SKY-38 (2026-11-04).** `RendererFailureNotice` now holds the heading and
-body in a `ScrollView` with Quit pinned below it, and the 320 pt minimum width applies on macOS only. Release
-build with the fragment entry point renamed to `swiftsky_quad_fragment_RENAMED_SKY38` (change reverted, not
-committed), simulator in dark appearance, `content_size accessibility-extra-extra-extra-large`.
+body in a `ScrollView` with Quit pinned below it. Release build with the fragment entry point renamed to
+`swiftsky_quad_fragment_RENAMED_SKY38` (change reverted, not committed), simulator in dark appearance,
+`content_size accessibility-extra-extra-extra-large`.
 
 - **iPhone 17e (smallest installed; deployment target iOS 26.0), landscape — PASS.** The heading and the first body
   lines are fully visible with a margin at the left and top edge, nothing cut off. Dragging the text up scrolls to
@@ -711,8 +711,34 @@ committed), simulator in dark appearance, `content_size accessibility-extra-extr
   right throughout, and tapping it ends the process.
 - **iPad Air 11-inch (M4), landscape — PASS.** At the same size the whole heading and body fit without
   scrolling and nothing is clipped. Tapping Quit ends the process.
-- **Portrait — not reachable.** The Info.plist allows `UIInterfaceOrientationLandscapeLeft` and `…Right` only,
-  on iPhone and iPad, so the app cannot be shown in portrait. A quarter-turn on the 17e left it in landscape.
+- **Portrait device orientation — not reachable.** The Info.plist allows `UIInterfaceOrientationLandscapeLeft` and
+  `…Right` only, on iPhone and iPad, so the device cannot turn the app to portrait. A quarter-turn on the 17e left
+  it in landscape. This does not cover iPad multitasking: `UIRequiresFullScreen` is absent, so Split View, Slide
+  Over and resized windows can still hand the app a tall, narrow window (see check 12). That case is below.
+
+**Check 33, iOS Dynamic Type — re-run after the PR #8 review fixes (2026-11-05).** Three changes: the scroll view is
+capped at the message's own height and does not bounce, so a message that fits stays one centred block with Quit;
+the `.frame(minWidth: 320)` is gone on both platforms (it never took effect: every landscape iPhone is wider, and
+the macOS window's content minimum is already 640 pt); and the iOS app no longer applies `.ignoresSafeArea()` to
+the whole `GameSurfaceView`, so the notice stays inside the safe area. That last one is the actual cause of the
+original "leading letters cut off at the left" in SKY-7: the notice inherited the app-level `.ignoresSafeArea()`,
+and its 24 pt padding is less than the landscape Dynamic Island inset. The Metal surface still fills the screen,
+since `GameSurfaceView` applies `.ignoresSafeArea()` to it, and the black background extends under the insets by
+default. Release build with the fragment entry point renamed to `swiftsky_quad_fragment_RENAMED_REVIEW8` (change
+reverted, not committed), dark appearance, `content_size accessibility-extra-extra-extra-large`.
+
+- **iPhone 17 Pro, landscape, both orientations — PASS.** The Dynamic Island is where SKY-7 found the clipping.
+  With the island on either side, the text starts clear of it (about 86 pt from that edge: the inset plus the
+  padding) and nothing is cut off. Dragging scrolls to the last line ("may be incomplete."), Quit stays at the
+  bottom right, and tapping it ends the process (exit status 0).
+- **Surface still edge to edge (Debug build, normal launch) — PASS.** The ship at the world origin is drawn at the
+  centre of the whole 874×402 pt screen, and a tap at view (600, 250) logs `world=(163, -49)`, so the surface's
+  origin is the screen's top-left corner. The same tap on the PR head before these fixes logged the same world
+  point.
+- **iPhone SE (3rd generation), the smallest iPhone iOS 26 supports (667×375 pt landscape) — NOT RUN.** A simulator
+  was created (iOS 27.0 runtime), but access to it was not granted during this run.
+- **iPad, tall narrow window (Split View / Slide Over / resized window) — NOT RUN.** Blocked with check 12: setting
+  up the window needs an interactive drag.
 - **Found while testing, not changed here:** in light appearance the notice text is black on the black window
   (`MetalSurfaceView.configureWindowBackground`) and only the blue Quit shows. Filed as SKY-100.
 - **macOS re-check — PASS (2026-11-04, done by hand by the user).** The macOS Release build with the renamed entry
@@ -831,7 +857,7 @@ sampled. They are no longer open.
 | 9, 10 | Menus, close-to-quit | Needs menu inspection / window close; Accessibility permission denied |
 | 12 | iPad Split View | Needs an interactive dock drag |
 | 29 | Continuous resize under TSan | Races PASS; stalls PASS mid-drag; one system-side stall at the end of live resize (SKY-37) |
-| 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type PASS after SKY-38 (landscape only; app has no portrait), VoiceOver needs a device (SKY-39); macOS: PASS (SKY-8), re-checked by hand after SKY-38: PASS |
+| 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type PASS after SKY-38 (17e, 17 Pro both landscape orientations, iPad Air; iPhone SE and iPad tall-window not run), VoiceOver needs a device (SKY-39); macOS: PASS (SKY-8), re-checked by hand after SKY-38: PASS |
 | 36, 37 | VoiceOver on the surface, Reduce Motion | iOS: 37 PASS, 36 needs a device (SKY-39); macOS: both PASS (SKY-8) |
 
 The common blocker for most of these is that Accessibility (UI scripting) and Screen Recording
