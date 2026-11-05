@@ -26,7 +26,7 @@ description: |
   is no Close item without a File menu) and FR-006d's FR-032 teardown ordering
   on a window close, which this run does not show.
 platform: macos
-status: in-review
+status: qa
 phase: MVP
 priority: medium
 parent: null

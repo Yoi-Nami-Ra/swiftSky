@@ -24,7 +24,7 @@ description: |
   scrolling if needed), nothing is clipped at any edge, and Quit still exits.
   Re-run 001 check 33's Dynamic Type part and record it in the quickstart.
 platform: ios
-status: in-review
+status: qa
 phase: MVP
 priority: medium
 parent: null
