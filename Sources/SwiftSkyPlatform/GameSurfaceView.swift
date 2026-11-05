@@ -43,10 +43,11 @@ public struct GameSurfaceView: View {
         // construction still happens on the main thread before the loop starts (contracts/frame-loop.md).
         //
         // There is deliberately no third "not built yet" branch. An earlier version had one and filled
-        // it with `Color.black`, which is a platform-UI view painting a user-visible pixel — exactly
-        // what FR-001/FR-007 forbid and what SC-002's audit looks for. The pre-first-frame appearance
-        // is the OS's job instead (FR-004a): the iOS launch screen and the black macOS window
-        // background set in `MetalSurfaceView`.
+        // it with `Color.black`, which is a platform-UI view painting the game surface — exactly what
+        // 001 FR-001/FR-007 forbid and what SC-002's audit looks for. (Management screens over the
+        // surface are allowed by FR-007a, from `Screens/` only; the surface itself never is.)
+        // The pre-first-frame appearance is the OS's job instead (FR-004a): the iOS launch screen
+        // and the black macOS window background set in `MetalSurfaceView`.
         switch host.setup {
         case .success(let ready):
             MetalSurface(device: ready.device) { layer in

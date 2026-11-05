@@ -347,7 +347,7 @@ No Catalyst row, no "Designed for" row. The remaining macOS and tvOS rows all ca
 | 17 | Add `import SwiftSkyPlatform` to a file in `SwiftSkyRendering`, build | **Build fails.** Revert. Record the error here. | SC-009 |
 | 18 | Grep `Sources/SwiftSkySimulation` for `import`, `actor`, `NSLock` | No matches | FR-012c |
 | 19 | Grep `Sources/SwiftSkyRendering` for `NSView`, `UIView`, `SwiftUI`, `NSWindow` | No matches | FR-010 |
-| 41 | Audit the platform layer for drawing | No background colours, no `draw(_:)`/`drawRect` overrides, and no SwiftUI drawing primitives anywhere in `Sources/SwiftSkyPlatform/` except `RendererFailureNotice.swift` | SC-002, FR-001, FR-007 |
+| 41 | Audit the platform layer for drawing | No background colours, no `draw(_:)`/`drawRect` overrides, and no SwiftUI drawing primitives anywhere in `Sources/SwiftSkyPlatform/` except `RendererFailureNotice.swift` and the management screens in `Sources/SwiftSkyPlatform/Screens/` (FR-007a). Every view in `Screens/` is a management screen shown over the surface, never drawing into the game world | SC-002, FR-001, FR-007, FR-007a |
 | 42 | Grep all three layers for mutable global state | No `static var`, `nonisolated(unsafe)`, or top-level `var` in any layer; no render-side interpolation in `Sources/SwiftSkyRendering/` | FR-015, FR-021c |
 
 **Check 18 — PASS (2026-07-27).** Zero code matches for `^import`, `actor`, `@MainActor`, `NSLock`,
@@ -386,6 +386,17 @@ inspected and neither user-visible drawing:
 | `MetalSurfaceView.swift:157` `window?.backgroundColor = .black` | The window, not a view — FR-004a's named exception, taken literally. |
 
 Zero SwiftUI drawing primitives, zero `draw(_:)`/`drawRect` overrides, zero view background colours.
+
+**Check 41 — PASS after the FR-007a amendment (2026-11-05, SKY-90).** The rule now also allows
+SwiftUI management screens, but only in `Sources/SwiftSkyPlatform/Screens/`; anything drawn outside
+that folder and `RendererFailureNotice.swift` still fails the check. The folder does not exist yet.
+Re-run: grep for `backgroundColor|NSColor|UIColor|draw\(|\.background\(|Rectangle\(|Color\.|Text\(|Image\(|\.overlay\(|Shape|Canvas`
+across `Sources/SwiftSkyPlatform/`, excluding `RendererFailureNotice.swift` and `Screens/`, finds the
+same two code matches as before — `MetalSurfaceView.swift:48` `metalLayer.backgroundColor = nil` and
+`MetalSurfaceView.swift:280` `window?.backgroundColor = .black`, with the verdicts above — plus two
+doc comments (`MetalSurfaceView.swift:16`, `GameSurfaceView.swift:46`) that describe drawing nothing.
+When the first screen lands, the audit also reads each view in `Screens/` to confirm it is shown over
+the surface and draws nothing at world positions.
 
 
 > **SC-009 evidence — PASS (2026-07-27).** All three forbidden directions fail the build.

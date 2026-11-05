@@ -18,7 +18,7 @@ description: |
   Done when: 001's spec and quickstart allow the screens, the audit checks
   the new rule, and verify.sh passes.
 platform: macos
-status: ready
+status: in-progress
 phase: Backlog
 priority: medium
 parent: null

@@ -45,6 +45,10 @@ menus, no settings, no audio.
 - Q: What happens when a drawable cannot be acquired for a frame? → A: Skip the frame and continue; accumulated time is retained so no simulation time is lost. Never fatal, never user-visible
 - Q: Is the simulation an actor, or plain values owned by the loop? → A: Plain value types advanced by a pure function; the loop provides isolation, the logic layer has no concurrency model
 
+### Amendment 2026-11-05 (SKY-90)
+
+- Q: May later features build management screens (docked, market, galaxy map, outfitter) as SwiftUI views, as SKY-89 recommends? → A: Yes — a second narrow exception to FR-001 and FR-007 (FR-007a). Management screens may be SwiftUI views shown over the rendering surface; the HUD and everything drawn in the game world stay in the rendering pipeline. The constitution needs no change: its Technology section already names SwiftUI for menus, settings and chrome, and Principle IV already covers their accessibility. This feature itself still builds no such screen.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Player launches the app on macOS and sees a black window (Priority: P1)
@@ -202,7 +206,9 @@ a violating reference, confirm the build fails, revert it, and record the eviden
 
 - **FR-001**: Every pixel the user sees in the app's content area MUST be produced by the 2D
   rendering pipeline drawing and presenting a frame. No visible pixel may come from a platform-UI
-  view, background colour, image asset, or launch placeholder.
+  view, background colour, image asset, or launch placeholder. The two exceptions are the
+  renderer-failure notice (FR-024) and, in later features, management screens (FR-007a); while
+  neither is shown, every visible pixel comes from the pipeline.
 - **FR-002**: The rendered result for this feature MUST be a uniformly black surface, with no other
   content of any kind.
 - **FR-002a**: That surface MUST be produced by an actual draw call — a full-screen quad rendered
@@ -252,9 +258,17 @@ a violating reference, confirm the build fails, revert it, and record the eviden
   ordering — the loop stopped and drained before graphics resources are released — since closing the
   window can happen mid-draw.
 - **FR-007**: The platform-UI layer MUST be limited to app lifecycle, window/scene creation, hosting
-  the rendering surface, and the renderer-failure notice defined in FR-024. Apart from that notice it
-  MUST NOT draw any user-visible content. No menus, controls, labels, or chrome beyond the
-  platform-standard window frame and system menu bar are permitted in this feature.
+  the rendering surface, the renderer-failure notice defined in FR-024, and the management screens
+  allowed by FR-007a. Apart from those it MUST NOT draw any user-visible content. No menus, controls,
+  labels, or chrome beyond the platform-standard window frame and system menu bar are permitted in
+  this feature.
+- **FR-007a** *(amended 2026-11-05, SKY-90)*: Later features MAY build management screens — screens
+  the player uses to manage the game rather than fly it, such as docked, market, galaxy map and
+  outfitter — as SwiftUI views shown over the rendering surface. They MUST NOT draw into or under the
+  game world: the HUD and everything drawn at world positions (ships, paths, markers, backgrounds,
+  the debug overlay) stay in the rendering pipeline. Their source MUST live in
+  `Sources/SwiftSkyPlatform/Screens/`, so that SC-002's audit can tell them apart, and they MUST meet
+  Principle IV (Dynamic Type, VoiceOver, platform conventions).
 - **FR-008**: The app MUST stop producing frames when its content is not visible (backgrounded,
   minimised, occluded, or its scene disconnected) and resume when it becomes visible again.
 - **FR-009**: The rendering surface MUST expose an accessible description to assistive technology so
@@ -334,7 +348,7 @@ a violating reference, confirm the build fails, revert it, and record the eviden
   for Principle III's before/after measurements in later features.
 - **FR-021e**: That instrumentation MUST be compiled into debug and profiling builds only, MUST be
   provably absent from release builds, and MUST emit to the log — never to the rendered surface or any
-  platform-UI view (FR-001, FR-007 remain absolute).
+  platform-UI view (FR-001, FR-007; FR-007a's screens are not a place for it either).
 - **FR-021f**: The instrumentation itself MUST NOT allocate on the per-frame path, so that measuring
   the frame budget does not perturb it.
 
@@ -351,8 +365,8 @@ a violating reference, confirm the build fails, revert it, and record the eviden
 
 - **FR-024**: When the rendering pipeline cannot be initialised, the app MUST present a minimal
   platform-UI notice stating the reason in human-readable terms, and MUST terminate once the user
-  dismisses it. This notice is the only user-visible content the platform-UI layer may draw
-  (exception to FR-007). It MUST be text-only — no graphics, no branding, no recovery controls beyond
+  dismisses it. Apart from FR-007a's management screens, this notice is the only user-visible
+  content the platform-UI layer may draw (exception to FR-007). It MUST be text-only — no graphics, no branding, no recovery controls beyond
   dismissal.
 - **FR-025**: The failure notice MUST be readable by assistive technology and MUST respect Dynamic
   Type, so the one path where the user needs to read something is not the one path that is
@@ -434,7 +448,8 @@ requirement and FR-031's frame-boundary rule.
   launch on the baseline device, and no observer sees a non-black frame at any point.
 - **SC-002**: Whenever the app is running normally, 100% of visible pixels in its content area
   originate from the rendering pipeline; a code audit finds zero user-visible content drawn by
-  platform-UI views other than the FR-024 failure notice.
+  platform-UI views other than the FR-024 failure notice and FR-007a's management screens in
+  `Sources/SwiftSkyPlatform/Screens/`.
 - **SC-003**: The app holds its frame budget (60 fps → 16.6 ms per frame, or the display's native
   rate) over a 60-second idle session on the baseline device of each platform, with zero dropped frames
   and zero skipped frames as those terms are defined in FR-027c. An idle session involves no resizing or
@@ -504,7 +519,7 @@ requirement and FR-031's frame-boundary rule.
   without one of them (or AppKit on macOS), so one is required — and per the user's instruction and
   the constitution, that one is SwiftUI. Its role is strictly limited to lifecycle, window/scene
   hosting, and the renderer-failure notice; in normal operation it draws nothing the user sees
-  (FR-007, FR-024). UIKit and AppKit are not used as UI frameworks,
+  (FR-007, FR-024). Later features may add management screens (FR-007a, amended 2026-11-05). UIKit and AppKit are not used as UI frameworks,
   though the minimal view-hosting bridge SwiftUI needs in order to embed a rendering surface
   necessarily touches the platform view type.
 - **"Clean architecture" is interpreted as the constitution's three-layer split** with

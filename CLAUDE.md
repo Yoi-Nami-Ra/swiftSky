@@ -47,6 +47,9 @@ re-order after arrival starts `aligning` or `burning`, not `flipping` or `brakin
 probe instead of a GPU capture; no code changes) and
 `specs/022-ship-cargo-hold` (the ship gets a cargo capacity and a hold of commodity amounts, the commodity list
 from a bundled data file; the debug overlay shows the hold; nothing adds cargo yet).
+001 was amended by SKY-90 (FR-007a): management screens (docked, market, galaxy map, outfitter) may be
+SwiftUI views shown over the surface, with their source in `Sources/SwiftSkyPlatform/Screens/` only, so
+001 check 41's audit can tell them apart; the HUD and everything drawn in the game world stay in Metal.
 Layer libraries and tests live in the root `Package.swift`, and the two app targets live in
 `swiftSky.xcodeproj`, which has two build configurations, Debug and Release.
 `./Scripts/verify.sh` is the single checked-in verification command.
