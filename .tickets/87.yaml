@@ -36,7 +36,7 @@ description: |
   this ticket's `designs` lists them.
 platform: macos
 status: refine
-phase: Backlog
+phase: Trade loop
 priority: medium
 parent: null
 blocked_by: []

@@ -52,7 +52,7 @@ description: |
     platforms, and frame times stay within budget.
 platform: macos
 status: ready
-phase: Backlog
+phase: Open space
 priority: medium
 parent: null
 blocked_by: []

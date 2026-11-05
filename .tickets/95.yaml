@@ -29,7 +29,7 @@ description: |
   "keeps running or pauses" note).
 platform: macos
 status: ready
-phase: Backlog
+phase: Trade loop
 priority: medium
 parent: null
 blocked_by: []

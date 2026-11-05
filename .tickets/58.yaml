@@ -14,7 +14,7 @@ description: |
   to collecting the loot, works on iOS and macOS within the frame budget.
 platform: macos
 status: idea
-phase: Backlog
+phase: Combat
 priority: medium
 parent: null
 blocked_by: []

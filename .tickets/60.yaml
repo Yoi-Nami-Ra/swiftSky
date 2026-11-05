@@ -11,7 +11,7 @@ description: |
   expiry, hits and the pool limit.
 platform: macos
 status: ready
-phase: Backlog
+phase: Combat
 priority: medium
 parent: 58
 blocked_by: [59]

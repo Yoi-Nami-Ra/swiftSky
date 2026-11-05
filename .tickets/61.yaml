@@ -12,7 +12,7 @@ description: |
   macOS; tests cover the hit test that picks a ship over a move order.
 platform: macos
 status: ready
-phase: Backlog
+phase: Combat
 priority: medium
 parent: 58
 blocked_by: [50, 60]

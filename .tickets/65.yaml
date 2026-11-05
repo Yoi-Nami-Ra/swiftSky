@@ -11,7 +11,7 @@ description: |
   player died); one bounty can be done end to end on iOS and macOS.
 platform: macos
 status: ready
-phase: Backlog
+phase: Combat
 priority: medium
 parent: 58
 blocked_by: [51, 63, 64]

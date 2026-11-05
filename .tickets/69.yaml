@@ -10,7 +10,7 @@ description: |
   station lowers its price there.
 platform: macos
 status: idea
-phase: Backlog
+phase: Sandbox
 priority: medium
 parent: 66
 blocked_by: [68]

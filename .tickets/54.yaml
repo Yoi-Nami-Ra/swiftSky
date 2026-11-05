@@ -10,7 +10,7 @@ description: |
   including no route between disconnected systems.
 platform: macos
 status: ready
-phase: Backlog
+phase: Trade loop
 priority: medium
 parent: 48
 blocked_by: [49]

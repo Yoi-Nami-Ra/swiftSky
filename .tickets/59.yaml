@@ -10,7 +10,7 @@ description: |
   recharge delay and rate.
 platform: macos
 status: ready
-phase: Backlog
+phase: Combat
 priority: medium
 parent: 58
 blocked_by: []

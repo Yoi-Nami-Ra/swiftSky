@@ -1,6 +1,7 @@
 tag: SKY
 name: "swiftSky"
 platforms: [ios, ipad, macos]
+phases: [MVP, Open space, Trade loop, Combat, Sandbox, Backlog]
 start: |                            # prompt run by `/tickets start <key>`
   * analyze {key} - show short summary of what should be done
      * if the ticket does not need the speckit flow (e.g. a small fix, config or docs change), say so here

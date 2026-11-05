@@ -27,7 +27,7 @@ description: |
   fragment entry point renamed, as in 001 check 33), and the result is
   recorded in the 001 quickstart.
 platform: ios
-status: in-review
+status: done
 phase: MVP
 priority: medium
 parent: null

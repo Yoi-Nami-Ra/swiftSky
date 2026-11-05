@@ -9,7 +9,7 @@ description: |
   Done when: the trend shows on iOS and macOS and is readable by VoiceOver.
 platform: macos
 status: idea
-phase: Backlog
+phase: Sandbox
 priority: medium
 parent: 66
 blocked_by: [69]

@@ -19,7 +19,7 @@ description: |
   key, and the allocation counter still reads allocs=0 on frames without input.
 platform: macos
 status: refine
-phase: Backlog
+phase: Combat
 priority: medium
 parent: null
 blocked_by: []

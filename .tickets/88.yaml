@@ -17,7 +17,7 @@ description: |
   is written under Findings, and the follow-up tickets are named.
 platform: macos
 status: ready
-phase: Backlog
+phase: Sandbox
 priority: medium
 parent: null
 blocked_by: []

@@ -24,7 +24,7 @@ description: |
   pausing is refused while docked.
 platform: macos
 status: ready
-phase: Backlog
+phase: Trade loop
 priority: medium
 parent: null
 blocked_by: [50]

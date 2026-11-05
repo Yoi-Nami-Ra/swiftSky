@@ -13,7 +13,7 @@ description: |
   plotted and flown, and the screen works with VoiceOver.
 platform: macos
 status: ready
-phase: Backlog
+phase: Trade loop
 priority: medium
 parent: 48
 blocked_by: [54, 55, 89]

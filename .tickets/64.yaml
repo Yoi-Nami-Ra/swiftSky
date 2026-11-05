@@ -11,7 +11,7 @@ description: |
   a hostile and collecting its loot works on iOS and macOS.
 platform: macos
 status: ready
-phase: Backlog
+phase: Combat
 priority: medium
 parent: 58
 blocked_by: [52, 57, 59, 87]

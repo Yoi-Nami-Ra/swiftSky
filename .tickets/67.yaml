@@ -8,7 +8,7 @@ description: |
   Done when: headless tests cover loading recipes and rejecting invalid ones.
 platform: macos
 status: idea
-phase: Backlog
+phase: Sandbox
 priority: medium
 parent: 66
 blocked_by: []

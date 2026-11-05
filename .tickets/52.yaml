@@ -11,7 +11,7 @@ description: |
   used and free capacity.
 platform: macos
 status: qa
-phase: Backlog
+phase: Trade loop
 priority: medium
 parent: 48
 blocked_by: []

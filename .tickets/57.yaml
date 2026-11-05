@@ -11,7 +11,7 @@ description: |
   quitting and relaunching keeps the state on iOS and macOS.
 platform: macos
 status: ready
-phase: Backlog
+phase: Trade loop
 priority: medium
 parent: 48
 blocked_by: [53, 55]

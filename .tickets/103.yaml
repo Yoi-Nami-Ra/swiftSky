@@ -22,7 +22,7 @@ description: |
   correctly there.
 platform: ipad
 status: refine
-phase: Backlog
+phase: MVP
 priority: medium
 parent: null
 blocked_by: []
