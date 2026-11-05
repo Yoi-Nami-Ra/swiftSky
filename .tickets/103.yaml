@@ -1,0 +1,29 @@
+id: 103
+title: "iPad: app runs in portrait despite landscape-only Info.plist"
+type: bug
+description: |
+  Found during SKY-100 (PR 10): on the iPad Air 11-inch (M4) simulator,
+  iOS 27.3, with the simulator in portrait, swiftSky ran full screen in
+  portrait. `Apps/iOS/Info.plist` allows only
+  `UIInterfaceOrientationLandscapeLeft` and `…Right` under
+  `UISupportedInterfaceOrientations~ipad` (001 FR-006b). The 001
+  quickstart's "Portrait device orientation — not reachable" was observed
+  by turning the iPhone 17e, not an iPad, so it never covered this.
+
+  Scope: find out whether iPadOS 27 windowing ignores the orientation list
+  (`UIRequiresFullScreen` is absent, so the app gets resizable windows),
+  decide whether FR-006b can still hold on iPad or must be amended, then
+  fix it or amend the spec. Related: SKY-6 (Split View at 1/3 width), which
+  covers the tall, narrow window case.
+
+  Done when: in portrait on an iPad, the app is either held to landscape
+  as FR-006b says, or FR-006b is amended and the 001 quickstart records
+  what the iPad does and that the surface and the failure notice lay out
+  correctly there.
+platform: ipad
+status: refine
+phase: Backlog
+priority: medium
+parent: null
+blocked_by: []
+designs: []
