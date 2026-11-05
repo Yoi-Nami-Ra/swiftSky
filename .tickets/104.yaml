@@ -1,0 +1,41 @@
+id: 104
+title: "Spike: can iPadOS 27 hold the app to landscape"
+type: spike
+description: |
+  Question: on iPadOS 27, with `UIRequiresFullScreen` absent (deprecated,
+  so it stays absent), the app ran full screen in portrait on the iPad Air
+  11-inch (M4) simulator although `Apps/iOS/Info.plist` lists only
+  landscape-left and landscape-right under
+  `UISupportedInterfaceOrientations~ipad` (SKY-103, 001 FR-006b). Does
+  iPadOS 27 windowing ignore that list, and is there a supported way to
+  hold the app to landscape (for example
+  `UIWindowScene.requestGeometryUpdate` with a landscape mask, or a
+  scene-level setting) that does not rely on the deprecated key? If there
+  is none, what does the iPad do instead (full-screen portrait, resizable
+  window, which sizes)?
+
+  Approach: reproduce on the iPad Air 11-inch (M4) and the iPad mini
+  (A20 Pro) simulators, both installed on iOS 27.2 (the ticket's "27.3"
+  does not match an installed runtime), in portrait and landscape, noting
+  the iOS version, the window size and whether the window can be resized.
+  Try the candidate ways to hold landscape in a throwaway POC kept out of
+  the shipped code (a `poc/ipad-landscape` branch that is never merged,
+  or a scratch folder; say which under Findings). Read Apple's current
+  documentation for the orientation keys and scene geometry on iPadOS 26
+  and later. Simulator evidence is enough; a physical iPad is not
+  required. No product changes: whatever has to land in the app belongs
+  to SKY-103.
+
+  Done when: Findings state, with evidence (screenshots, logs, the iOS
+  version), what the iPad does with the current plist, which ways to hold
+  landscape work or not, the POC's location and verdict, and a
+  recommendation for SKY-103: enforce landscape in code or plist, or
+  amend FR-006b to accept any iPad window shape.
+platform: ipad
+status: ready
+phase: Phase0
+priority: medium
+parent: null
+blocked_by: []
+designs: []
+quest: side

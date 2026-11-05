@@ -2,33 +2,61 @@ id: 97
 title: "Drain the frame loop on macOS termination"
 type: bug
 description: |
-  Found in the PR #7 review (SKY-21). On macOS the FR-032 drain (loop stopped
-  and drained before graphics resources are released) depends only on
-  SwiftUI's `.onDisappear` in `GameSurfaceView.swift`. `SurfaceEvent.willTerminate`
-  is declared and handled (`FrameLoop.swift`, `post(_:)` and the event switch),
-  but nothing ever posts it, and nothing observes
-  `NSApplication.willTerminateNotification`. If `onDisappear` does not run
-  before the process exits, `stopAndDrain()` is never called and the loop
-  thread can be mid-frame while graphics resources go away.
+  Found in the PR #7 review (SKY-21). FR-006d requires a window close on macOS
+  to follow the FR-032 ordering: the frame loop is stopped and drained before
+  graphics resources are released. SKY-21's check 10 showed the quit but not
+  the ordering, and 001's check 31 covered only quits sent by Apple event.
 
-  FR-006d requires a window close to follow the FR-032 ordering. SKY-21's
-  check 10 showed the quit but not the ordering (the app logs nothing at
-  teardown), and 001's check 31 covered only quits sent by Apple event.
+  **Already in place**
+  - `FrameLoop.stopAndDrain()` cancels the loop thread and waits up to 1 s on
+    the main thread for the drain. It is idempotent (a second call returns at
+    once), so two triggers can both call it safely.
+  - `SurfaceEvent.willTerminate` is declared, and `FrameLoop.post(_:)` routes it
+    to `stopAndDrain()`.
+  - `.onDisappear { host.stopAndDrain() }` in `GameSurfaceView.swift` is
+    today's only trigger. Nothing posts `.willTerminate`, and nothing observes
+    `NSApplication.willTerminateNotification`.
 
-  - Post `.willTerminate` from `NSApplication.willTerminateNotification` (and
-    decide whether iOS needs the scene-disconnect equivalent), or show that
-    `onDisappear` always runs first on both the close-button and the
-    `terminate:` paths and delete the unused event.
-  - Make the ordering observable in Debug and instrumented Release builds (a
-    log line when the drain completes) and record it in 001's quickstart for a
-    window close.
+  **Scope**
+  1. On macOS only, observe `NSApplication.willTerminateNotification` and post
+     `.willTerminate` to the loop (through the existing event path in the
+     platform layer). Keep `.onDisappear`: whichever runs first drains, the
+     other is a no-op.
+  2. Make the drain observable in Debug and instrumented Release builds
+     (`SWIFTSKY_INSTRUMENTATION`): one `Logger` line (subsystem
+     `com.swiftsky.app`, category `frame`) written inside `stopAndDrain()`
+     after the wait. It says whether the loop drained or the 1 s wait timed
+     out, and the elapsed time. It is written on the main thread, outside any
+     counted allocation stretch, and absent from plain Release (`verify.sh`'s
+     Release strings check must still pass).
+  3. Check the window-close path by hand and record the result in 001's
+     quickstart: close the window with its close button and read the line
+     with `/usr/bin/log` (Accessibility is not granted, so no automation, as in
+     SKY-21). Update check 10's "not covered" note and 001's results table to
+     say FR-006d's ordering half is shown, and note the termination-path
+     result next to check 31.
 
-  Done when: the close path drains before teardown by construction, a log
-  line shows it, and the quickstart records FR-006d's ordering half.
+  **Out of scope**
+  - iOS scene disconnect (`UIScene.didDisconnectNotification`). iOS has no
+    graceful-termination callback, and its `onDisappear` drain stays covered by
+    001's iOS checks.
+  - Closing the window with Cmd-W: SKY-98.
+  - Removing `.onDisappear` or `.willTerminate`.
+
+  **Done when**
+  - Both drain triggers exist on macOS, and a window close and a `terminate:`
+    each produce the drain log line before the process exits, showing
+    "drained" (not timed out).
+  - If a unit test of the observer wiring is practical without a Metal device
+    (platform tests must never create one), it is added. Otherwise the
+    quickstart run is the evidence.
+  - 001's quickstart records FR-006d's ordering half with the log excerpt, and
+    `./Scripts/verify.sh` passes.
 platform: macos
-status: refine
+status: ready
 phase: Phase0
 priority: medium
 parent: null
 blocked_by: []
 designs: []
+quest: side

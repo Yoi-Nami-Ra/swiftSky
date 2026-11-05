@@ -10,6 +10,10 @@ description: |
   On an iPad, drag a second app in from the dock, then drag the divider to 1/3
   width so the surface is portrait-shaped. Confirm the surface fills it and
   stays uniformly black. Record the result in the quickstart.
+
+  Related: SKY-103 covers the iPad running full screen in portrait despite
+  the landscape-only Info.plist. This ticket covers only the tall, narrow
+  Split View window.
 platform: ipad
 status: ready
 phase: Backlog
