@@ -20,7 +20,7 @@ description: |
   Record results in each spec's quickstart. The macOS VoiceOver run is SKY-8.
 platform: ios
 status: ready
-phase: MVP
+phase: Backlog
 priority: medium
 parent: null
 blocked_by: []
