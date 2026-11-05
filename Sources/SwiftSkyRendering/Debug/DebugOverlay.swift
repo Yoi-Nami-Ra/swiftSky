@@ -66,6 +66,49 @@ public struct DebugOverlayShip: Sendable, Equatable {
         }
     }
 
+    /// The cargo hold as of the same tick (022): plain values, so the overlay never holds the ship.
+    public struct Cargo: Sendable, Equatable {
+        public var capacity: Int
+        public var used: Int
+        public var free: Int
+        public var count: Int
+        /// Tons per commodity index; slots from `count` on are 0.
+        public var amounts: InlineArray<16, Int>
+
+        public init(capacity: Int, used: Int, free: Int, count: Int, amounts: InlineArray<16, Int>) {
+            self.capacity = capacity
+            self.used = used
+            self.free = free
+            self.count = count
+            self.amounts = amounts
+        }
+
+        public init(_ hold: CargoHold) {
+            capacity = hold.capacity
+            used = hold.used
+            free = hold.free
+            count = hold.commodityCount
+            var amounts = InlineArray<16, Int>(repeating: 0)
+            var index = 0
+            while index < CargoHold.maxCommodities {
+                amounts[index] = hold.tons(of: index)
+                index += 1
+            }
+            self.amounts = amounts
+        }
+
+        public static func == (lhs: Cargo, rhs: Cargo) -> Bool {
+            guard lhs.capacity == rhs.capacity, lhs.used == rhs.used, lhs.free == rhs.free,
+                  lhs.count == rhs.count else { return false }
+            var index = 0
+            while index < 16 {
+                if lhs.amounts[index] != rhs.amounts[index] { return false }
+                index += 1
+            }
+            return true
+        }
+    }
+
     /// World units.
     public var position: Vector2
 
@@ -81,7 +124,18 @@ public struct DebugOverlayShip: Sendable, Equatable {
     /// `nil` without an order.
     public var order: Order?
 
-    public init(position: Vector2, velocity: Vector2, heading: Double, angularVelocity: Double, order: Order?) {
+    /// The hold, or `nil` to write no cargo lines (the memberwise default).
+    public var cargo: Cargo?
+
+    public init(
+        position: Vector2,
+        velocity: Vector2,
+        heading: Double,
+        angularVelocity: Double,
+        order: Order?,
+        cargo: Cargo? = nil
+    ) {
+        self.cargo = cargo
         self.position = position
         self.velocity = velocity
         self.heading = heading
@@ -97,6 +151,7 @@ public struct DebugOverlayShip: Sendable, Equatable {
         velocity = ship.velocity
         heading = ship.heading
         angularVelocity = ship.angularVelocity
+        cargo = Cargo(ship.hold)
         if let destination = state.autopilot.order?.destination,
            let phase = state.autopilot.phase,
            let distance = state.distanceRemaining {
@@ -125,6 +180,17 @@ public final class DebugOverlay {
     /// The ship and order at the last snapshot, written under the frame statistics (015). `nil` writes
     /// the six frame-statistic lines only.
     public var ship: DebugOverlayShip?
+
+    /// `false` for `--no-debug-cargo`: every cargo line is left out (022).
+    public var showsCargo = true
+
+    /// Commodity names as ASCII, encoded once at construction: slot `i` is
+    /// `nameBytes[i * nameColumns ..< i * nameColumns + nameLengths[i]]`. A slot with no name holds `?`.
+    private let nameBytes: ContiguousArray<UInt8>
+    private let nameLengths: ContiguousArray<Int>
+
+    /// The most columns of a commodity name the overlay shows.
+    static let nameColumns = 10
 
     /// Each label is exactly eight columns, so every value starts in the same column.
     static let meanLabel: StaticString = "mean    "
@@ -177,7 +243,25 @@ public final class DebugOverlay {
         return (degrees * 100).rounded(.toNearestOrAwayFromZero) <= -18_000 ? 180 : degrees
     }
 
-    public init() {}
+    /// - Parameter commodityNames: the list's names in index order (022). Non-ASCII becomes `?` and a
+    ///   name is cut to ten columns. Empty, or shorter than a hold's slots, leaves `?` for the rest.
+    public init(commodityNames: [String] = []) {
+        var bytes = ContiguousArray<UInt8>(repeating: UInt8(ascii: "?"), count: CargoHold.maxCommodities * Self.nameColumns)
+        var lengths = ContiguousArray<Int>(repeating: 1, count: CargoHold.maxCommodities)
+        for (slot, name) in commodityNames.prefix(CargoHold.maxCommodities).enumerated() {
+            var length = 0
+            for character in name {
+                guard length < Self.nameColumns else { break }
+                let ascii = character.unicodeScalars.count == 1 ? character.asciiValue : nil
+                bytes[slot * Self.nameColumns + length] =
+                    ascii.flatMap { $0 >= 0x20 && $0 <= 0x7E ? $0 : nil } ?? UInt8(ascii: "?")
+                length += 1
+            }
+            lengths[slot] = max(length, 1)
+        }
+        nameBytes = bytes
+        nameLengths = lengths
+    }
 
     /// Writes this frame's overlay into `buffer`, 8 points in from the safe area's top-left. Allocates
     /// nothing.
@@ -224,6 +308,42 @@ public final class DebugOverlay {
         writeValue(Self.turnLabel, ship.angularVelocity * 180 / .pi, unit: Self.degreesPerSecondUnit, into: buffer)
         buffer.newline()
         writeOrder(ship.order, into: buffer)
+        if showsCargo, let cargo = ship.cargo {
+            writeCargo(cargo, into: buffer)
+        }
+    }
+
+    static let holdLabel: StaticString = "hold    "
+    static let holdSeparator: StaticString = " / "
+    static let holdUnit: StaticString = " t  free "
+    static let cargoIndent: StaticString = "  "
+
+    /// `hold    <used> / <capacity> t  free <free>`, then `  <name> <tons>` per non-zero commodity (022).
+    /// Allocates nothing: numbers go through `write(UInt64)`, names from the pre-encoded table.
+    private func writeCargo(_ cargo: DebugOverlayShip.Cargo, into buffer: TextBuffer) {
+        buffer.newline()
+        buffer.write(Self.holdLabel, limit: buffer.remainingCapacity)
+        buffer.write(UInt64(max(0, cargo.used)), limit: buffer.remainingCapacity)
+        buffer.write(Self.holdSeparator, limit: buffer.remainingCapacity)
+        buffer.write(UInt64(max(0, cargo.capacity)), limit: buffer.remainingCapacity)
+        buffer.write(Self.holdUnit, limit: buffer.remainingCapacity)
+        buffer.write(UInt64(max(0, cargo.free)), limit: buffer.remainingCapacity)
+        var slot = 0
+        while slot < min(cargo.count, CargoHold.maxCommodities) {
+            let tons = cargo.amounts[slot]
+            if tons > 0 {
+                buffer.newline()
+                buffer.write(Self.cargoIndent, limit: buffer.remainingCapacity)
+                nameBytes.withUnsafeBufferPointer { all in
+                    let name = UnsafeBufferPointer(
+                        rebasing: all[(slot * Self.nameColumns)..<(slot * Self.nameColumns + nameLengths[slot])])
+                    buffer.write(asciiBytes: name, limit: buffer.remainingCapacity)
+                }
+                buffer.write(" ", limit: buffer.remainingCapacity)
+                buffer.write(UInt64(tons), limit: buffer.remainingCapacity)
+            }
+            slot += 1
+        }
     }
 
     /// `order   none`, or the phase followed by the destination and distance lines (015 FR-003, FR-004).

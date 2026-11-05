@@ -101,6 +101,19 @@ public final class TextBuffer {
         }
     }
 
+    /// Writes pre-encoded ASCII bytes from a buffer. Safe on the per-frame path: it reads the buffer in
+    /// place and allocates nothing. A byte outside printable ASCII is one `?`; a line feed is not
+    /// special here (the caller breaks lines with `newline()`).
+    ///
+    /// - Parameter limit: the most characters to write.
+    public func write(asciiBytes bytes: UnsafeBufferPointer<UInt8>, limit: Int = .max) {
+        var index = 0
+        while index < bytes.count, index < limit {
+            guard place(GlyphAtlasBitmap.cell(for: bytes[index])) else { return }
+            index += 1
+        }
+    }
+
     /// Writes a whole number in decimal, zero-padded to `minimumDigits`. Never truncates digits:
     /// a number wider than the padding is written in full (FR-013). Allocates nothing.
     public func write(_ value: UInt64, minimumDigits: Int = 1, limit: Int = .max) {

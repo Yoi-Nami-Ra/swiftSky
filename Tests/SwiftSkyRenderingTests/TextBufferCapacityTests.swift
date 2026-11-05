@@ -43,6 +43,20 @@ struct TextBufferCapacityTests {
         #expect(!buffer.didOverflow)
     }
 
+    @Test("write(asciiBytes:) honours limit, stops at capacity and reports the overflow")
+    func asciiBytes() {
+        let bytes = [UInt8](repeating: UInt8(ascii: "a"), count: 2_000)
+        let limited = newTextBuffer()
+        bytes.withUnsafeBufferPointer { limited.write(asciiBytes: $0, limit: 3) }
+        #expect(limited.count == 3)
+        #expect(!limited.didOverflow)
+
+        let full = newTextBuffer()
+        bytes.withUnsafeBufferPointer { full.write(asciiBytes: $0) }
+        #expect(full.count == TextBuffer.capacity)
+        #expect(full.didOverflow)
+    }
+
     @Test("clear() empties the buffer and resets the overflow flag")
     func clearResets() {
         let buffer = newTextBuffer()

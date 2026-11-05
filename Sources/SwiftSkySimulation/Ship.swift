@@ -86,9 +86,12 @@ public struct Ship: Sendable, Equatable {
     /// Fixed for the ship's lifetime (004 FR-003).
     public let limits: ShipLimits
 
+    /// What the ship carries (022). Motion and autopilot never read it.
+    public var hold: CargoHold
+
     /// The launch ship: at the origin, at rest, facing heading zero and not turning (004 FR-002).
-    public init(limits: ShipLimits = .default) {
-        self.init(position: .zero, velocity: .zero, heading: 0, angularVelocity: 0, limits: limits)
+    public init(limits: ShipLimits = .default, hold: CargoHold = .launch) {
+        self.init(position: .zero, velocity: .zero, heading: 0, angularVelocity: 0, limits: limits, hold: hold)
     }
 
     /// A ship mid-flight, for tests. The heading is wrapped into (−π, π]; the angular velocity is taken
@@ -98,13 +101,15 @@ public struct Ship: Sendable, Equatable {
         velocity: Vector2,
         heading: Double,
         angularVelocity: Double,
-        limits: ShipLimits = .default
+        limits: ShipLimits = .default,
+        hold: CargoHold = .launch
     ) {
         self.position = position
         self.velocity = velocity
         self.heading = Self.wrapped(heading)
         self.angularVelocity = angularVelocity
         self.limits = limits
+        self.hold = hold
     }
 
     /// `heading` brought into (−π, π] (004 FR-005, research R5).

@@ -2,7 +2,8 @@
 # swiftSky verification (FR-019a).
 #
 # Builds every destination and runs the headless test suite, then checks that the instrumented macOS
-# build (Scripts/build-instrumented.sh) carries the instrumentation and plain Release does not (019).
+# build (Scripts/build-instrumented.sh) carries the instrumentation and plain Release does not (019);
+# the Release check includes the debug overlay's cargo labels and `--no-debug-cargo` (022).
 # Takes no arguments and needs no setup beyond a clean clone. Exits non-zero if any stage fails. It is
 # the CI job body, verbatim: the `verify` workflow (.github/workflows/verify.yml, spec 018) checks out
 # the commit and runs this file, nothing else, on the self-hosted runner described in .github/RUNNER.md
@@ -217,7 +218,7 @@ if [ -d swiftSky.xcodeproj ]; then
             -derivedDataPath .build/release-check CLANG_MODULES_PRUNE_AFTER=0 \
             CODE_SIGNING_ALLOWED=NO -quiet || return 1
         found=$(strings -a .build/release-check/Build/Products/Release/swiftSky.app/Contents/MacOS/swiftSky |
-            grep -E 'skipped=|dropped=|worst=|SWIFTSKY_INSTRUMENTATION' || true)
+            grep -E 'skipped=|dropped=|worst=|SWIFTSKY_INSTRUMENTATION|no-debug-cargo|hold    | t  free ' || true)
         if [ -n "$found" ]; then
             printf 'instrumentation found in the Release executable:\n%s\n' "$found"
             return 1

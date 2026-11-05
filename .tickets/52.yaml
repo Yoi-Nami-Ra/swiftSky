@@ -10,7 +10,7 @@ description: |
   limit and rejecting negative amounts; the debug overlay (SKY-29) shows the
   used and free capacity.
 platform: macos
-status: ready
+status: in-review
 phase: Backlog
 priority: medium
 parent: 48
