@@ -44,7 +44,9 @@ makes the optimised build with the instrumentation, and `verify.sh` checks it ha
 `specs/020-autopilot-rest-phase` (a ship at rest is never "against its motion" when the phase is named, so a
 re-order after arrival starts `aligning` or `burning`, not `flipping` or `braking`) and
 `specs/021-ios-gpu-frame-capture` (001's checks 4 and 5 closed on iOS, and by SKY-19 on macOS, by an lldb
-probe instead of a GPU capture; no code changes).
+probe instead of a GPU capture; no code changes) and
+`specs/022-ship-cargo-hold` (the ship gets a cargo capacity and a hold of commodity amounts, the commodity list
+from a bundled data file; the debug overlay shows the hold; nothing adds cargo yet).
 Layer libraries and tests live in the root `Package.swift`, and the two app targets live in
 `swiftSky.xcodeproj`, which has two build configurations, Debug and Release.
 `./Scripts/verify.sh` is the single checked-in verification command.
@@ -137,8 +139,16 @@ artifacts, keep them consistent with these templates.
   window, 4 Hz refresh) sits beside `Instrumentation.swift` in the platform layer.
 - `Sources/SwiftSkySimulation/Ship.swift` and `ShipMotion.swift` — the ship, its limits, the control
   input and the per-tick rule. `ShipMotion.swift` imports
-  `Darwin` for `cos`/`sin`. Angles are radians in code; tests compare states bit for bit with
+  `Darwin` for `cos`/`sin`; `Commodity.swift` is the one file that imports `Foundation`. Angles are radians in code; tests compare states bit for bit with
   `Tests/SwiftSkySimulationTests/StateBits.swift`.
+- `Sources/SwiftSkySimulation/Commodity.swift`, `CargoHold.swift` and `Resources/commodities.json` (022, SKY-52) —
+  the commodity list (id, name, base price) loaded once from the bundled JSON with `Bundle.module`, so the
+  logic layer's only `Foundation` file, and `Ship.hold`: a capacity in tons and an amount per commodity, with
+  add and remove that reject a negative amount, an unknown commodity and a total over capacity, leaving the
+  hold unchanged. `Package.swift` declares the resource; the logic layer still has no package dependencies.
+  The overlay's cargo lines are `DebugOverlayShip.Cargo` (taken with the other ship fields in `FrameLoop`
+  step 3a) and `DebugOverlay(commodityNames:)`: `hold    0 / 20 t  free 20`, then one line per commodity held.
+  Names are written with `TextBuffer.write(asciiBytes:limit:)`, which copies bytes without allocating.
 - `Sources/SwiftSkySimulation/Autopilot.swift` and `AutopilotLaw.swift` — the move order, phases,
   arrival tolerances and the autopilot value held in `SimulationState`, and the per-tick law.
   `Simulation.advance(_:ticks:)` is flown by the autopilot when there is an order;
@@ -245,7 +255,7 @@ artifacts, keep them consistent with these templates.
   process-wide), and depend on the counter, the rendering and the logic layers to name `RenderSurface`, `Vector2` and
   `SimulationState`. They must never create a Metal device; `verify.sh` enforces this.
 - Debug launch arguments (Debug and instrumented Release builds only): the live debug overlay is shown by default,
-  and `--no-debug-overlay` hides it. `--no-ship` stops the ship being drawn; together with
+  and `--no-debug-overlay` hides it. `--no-debug-cargo` hides the overlay's cargo lines (022). `--no-ship` stops the ship being drawn; together with
   `--no-debug-overlay` it leaves the uniformly black surface that 001's and 002's visible-output checks
   expect. `--debug-ship-spin` turns the ship counter-clockwise in place at its top rate. `--no-interpolation`
   draws the ship at its latest tick instead of between ticks (013). `--debug-main-stall`

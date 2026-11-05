@@ -9,7 +9,8 @@
 //          ├────────────────────────────────────────────▶
 //          └──▶  SwiftSkyAllocationCounter   (C, Debug-only instrumentation, no dependencies)
 //
-// SwiftSkySimulation declares NO dependencies. Do not add any.
+// SwiftSkySimulation declares NO package dependencies. Do not add any. (It bundles one data file,
+// commodities.json, read through Foundation's Bundle.module in Commodity.swift only: 022, SKY-52.)
 
 import PackageDescription
 
@@ -61,9 +62,11 @@ let package = Package(
     ],
     targets: [
         // LOGIC LAYER — declares no dependencies. Pure value types and pure functions (FR-011, FR-012c).
-        // Its only import is the C library (Darwin), for cos/sin in ShipMotion.swift (004 research R3).
+        // Its imports are the C library (Darwin), for cos/sin in ShipMotion.swift (004 research R3), and
+        // Foundation in Commodity.swift alone, for Bundle.module and JSONDecoder (022 research R1, SKY-52).
         .target(
             name: "SwiftSkySimulation",
+            resources: [.copy("Resources/commodities.json")],
             swiftSettings: layerSettings
         ),
 
