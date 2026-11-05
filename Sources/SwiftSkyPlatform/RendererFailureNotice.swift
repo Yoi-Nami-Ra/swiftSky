@@ -42,9 +42,23 @@ public struct RendererFailureNotice: View {
             }
         }
         .padding(24)
+        // Before the frame below, so the accessibility container is the text block and Quit, not the
+        // whole screen.
         .accessibilityElement(children: .contain)
         .accessibilityLabel("swiftSky cannot start")
         .accessibilityValue(error.userFacingDescription)
+        // The notice brings its own black, filling the space it is given (still centred), rather than
+        // relying on the host. Nothing else is black on the failure path: the black window background
+        // is set by `MetalSurfaceView`, which is never built here, and the apps' `.background(.black)`
+        // is sized to `GameSurfaceView`, so to the notice. Sized to its content, the notice was a black
+        // band and the rest of the window showed the system background: white in light appearance
+        // (SKY-100). The background is on the failure path only, so FR-001 / FR-004a are unaffected.
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.black)
+        // On that black, the default label colour in light appearance is dark, so the heading and body
+        // vanished and only Quit showed (SKY-100). Dark colours, for the notice only, keep it readable
+        // in either appearance; the rest of the app, menus included, still follows the system.
+        .environment(\.colorScheme, .dark)
     }
 
     private var message: some View {
