@@ -798,12 +798,15 @@ dependency: the black window background is set by `MetalSurfaceView`, which the 
 draws its own `.background(.black)` there, and sets `.environment(\.colorScheme, .dark)` on itself only; the rest
 of the app and the menus still follow the system. None of this touches the success path (FR-001 / FR-004a).
 Release builds with the fragment entry point renamed to `swiftsky_quad_fragment_RENAMED_SKY100` (change reverted,
-not committed). The runs below were made before the PR review moved the black into the notice and the
-accessibility modifiers ahead of the frame; the colours and layout drawn are the same.
+not committed). The iPad and macOS runs below were made before the PR review moved the black into the notice and
+the accessibility modifiers ahead of the frame; the iPhone 17e was re-run after that change (`448939a`).
 
 - **iPhone 17e (iOS 27.3), landscape — PASS** in light and dark, at `content_size large` and
   `accessibility-extra-extra-extra-large`: white heading and body, blue Quit, black over the whole screen. At the
   largest size the body scrolls under Quit, as after SKY-38. Checked from `simctl io screenshot` captures.
+  Re-run at `448939a` in the same four cases: PASS, the same picture. In light appearance at the largest size,
+  dragging the body scrolls to its last line ("may be incomplete.") with a visible grey scroll indicator, and
+  tapping Quit ends the process.
 - **iPad Air 11-inch (M4) (iOS 27.3) — PASS** in the same four cases. The simulator was in portrait and the app ran
   full screen in portrait, although the Info.plist allows landscape only on iPad. That contradicts "Portrait
   device orientation — not reachable" above (observed by turning the 17e, not an iPad): iPadOS 27 does not seem
