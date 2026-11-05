@@ -15,9 +15,11 @@ struct SwiftSkyApp: App {
     var body: some Scene {
         WindowGroup {
             GameSurfaceView()
+                // Edge to edge, including under the safe-area insets (FR-003): the colour extends
+                // under them by default, and `GameSurfaceView` lets the Metal surface ignore them.
+                // Not ignored here, so the failure notice stays inside them, clear of the notch and
+                // the Dynamic Island in either landscape orientation.
                 .background(.black)
-                // Edge to edge, including under the safe-area insets (FR-003).
-                .ignoresSafeArea()
                 // No status bar over a game surface.
                 .statusBarHidden()
         }
