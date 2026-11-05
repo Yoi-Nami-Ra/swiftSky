@@ -14,6 +14,8 @@ import os
 public struct RendererFailureNotice: View {
     private let error: RendererError
     private let onDismiss: () -> Void
+    /// The message's full height, measured by the scroll view; `nil` until the first layout.
+    @State private var messageHeight: CGFloat?
 
     public init(error: RendererError, onDismiss: @escaping () -> Void) {
         self.error = error
@@ -21,15 +23,17 @@ public struct RendererFailureNotice: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("swiftSky cannot start")
-                .font(.headline)
-
-            Text(error.userFacingDescription)
-                .font(.body)
-                // No line limit and fixed vertical size so large Dynamic Type sizes wrap rather than
-                // truncate — a truncated error message is no message at all.
-                .fixedSize(horizontal: false, vertical: true)
+        VStack(spacing: 16) {
+            // The message scrolls when it is taller than the space it has, as at the largest Dynamic
+            // Type sizes in landscape. The scroll view is capped at the message's own height, so
+            // when it fits the notice stays one block with Quit, centred, and does not bounce. Quit
+            // sits outside the scroll view, so it is always reachable.
+            ScrollView { message }
+                .scrollBounceBehavior(.basedOnSize)
+                .onScrollGeometryChange(for: CGFloat.self) { $0.contentSize.height } action: { _, height in
+                    messageHeight = height
+                }
+                .frame(maxHeight: messageHeight)
 
             HStack {
                 Spacer()
@@ -38,10 +42,23 @@ public struct RendererFailureNotice: View {
             }
         }
         .padding(24)
-        .frame(minWidth: 320)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("swiftSky cannot start")
         .accessibilityValue(error.userFacingDescription)
+    }
+
+    private var message: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("swiftSky cannot start")
+                .font(.headline)
+
+            Text(error.userFacingDescription)
+                .font(.body)
+                // No line limit and fixed vertical size, so large Dynamic Type sizes wrap rather than
+                // truncate: a truncated error message is no message at all.
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
