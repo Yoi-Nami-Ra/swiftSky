@@ -53,7 +53,7 @@ description: |
   - 001 check 29 is no longer open in the 001 quickstart's roll-up.
 platform: macos
 status: ready
-phase: Backlog
+phase: Phase0
 priority: medium
 parent: null
 blocked_by: []

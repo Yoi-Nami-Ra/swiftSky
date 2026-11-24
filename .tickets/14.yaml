@@ -6,7 +6,7 @@ description: |
   icon (macOS icon grid and shape rules differ from iOS). Needs a design first.
 platform: macos
 status: idea
-phase: Backlog
+phase: Phase0
 priority: low
 parent: null
 blocked_by: []

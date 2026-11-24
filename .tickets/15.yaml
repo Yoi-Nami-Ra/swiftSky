@@ -48,7 +48,7 @@ description: |
   `./Scripts/verify.sh` passes, including the Release strings check.
 platform: macos
 status: ready
-phase: Backlog
+phase: Phase0
 priority: low
 parent: null
 blocked_by: []

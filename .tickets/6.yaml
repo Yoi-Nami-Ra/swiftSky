@@ -16,7 +16,7 @@ description: |
   Split View window.
 platform: ipad
 status: ready
-phase: Backlog
+phase: Phase0
 priority: low
 parent: null
 blocked_by: []
