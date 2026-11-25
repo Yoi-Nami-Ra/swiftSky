@@ -9,6 +9,7 @@ xcuserdata/
 .swiftpm/
 .build/
 *.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/
 *.xcodeproj/project.xcworkspace/xcuserdata/
 
 # Claude Code local (machine-specific) settings
