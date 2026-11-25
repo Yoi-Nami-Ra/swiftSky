@@ -922,7 +922,7 @@ items are accepted and do not block completion — see
 
 ### Status roll-up (2026-07-28)
 
-**31 of 42 checks recorded as PASS. 11 remain open, and none of them failed** — every one is blocked
+**32 of 42 checks recorded as PASS. 10 remain open, and none of them failed** — every one is blocked
 on something this environment cannot provide. Two checks passed only *after* a defect they exposed was
 fixed (14 and 41), and a third gate (24) was passing for the wrong reason until the frame budget was
 corrected.
