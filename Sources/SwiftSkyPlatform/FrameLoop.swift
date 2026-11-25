@@ -1,5 +1,6 @@
 import QuartzCore
 import Synchronization
+import os
 import SwiftSkyRendering
 import SwiftSkySimulation
 
@@ -107,6 +108,10 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
     /// How often the instrumentation summary is emitted, in frames. Once per ~2 seconds at 60 Hz.
     private static let reportInterval: UInt64 = 120
 
+    #if SWIFTSKY_INSTRUMENTATION
+    private static let log = Logger(subsystem: "com.swiftsky.app", category: "frame")
+    #endif
+
     public init(renderer: Renderer, layer: CAMetalLayer) {
         self.renderer = renderer
         self.layer = layer
@@ -162,10 +167,22 @@ public final class FrameLoop: NSObject, @unchecked Sendable {
         loopThread.cancel()
 
         // Bounded wait. A loop that will not drain must not hang the app on exit.
-        let deadline = Date().addingTimeInterval(1.0)
+        let started = Date()
+        let deadline = started.addingTimeInterval(1.0)
         while !drained.withLock({ $0 }), Date() < deadline {
             RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.005))
         }
+
+        // SKY-97 (FR-006d/FR-032): make the drain observable, so a termination can be shown to have
+        // stopped the loop before graphics resources were released. Written here on the main thread,
+        // after the stall probe was uninstalled, so the line itself is outside any counted stretch.
+        // Debug and instrumented Release only; plain Release carries none of it (001 check 27).
+        #if SWIFTSKY_INSTRUMENTATION
+        let didDrain = drained.withLock { $0 }
+        let outcome = didDrain ? "drained" : "timed out"
+        let elapsedMs = Date().timeIntervalSince(started) * 1000
+        Self.log.notice("drain \(outcome, privacy: .public) elapsed=\(elapsedMs, privacy: .public)ms")
+        #endif
 
         thread = nil
     }

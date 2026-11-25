@@ -102,6 +102,14 @@ public struct GameSurfaceView: View {
 
         private var loop: FrameLoop?
 
+        #if os(macOS)
+        /// The app-termination observer, installed by `start` and removed by `stopAndDrain` (SKY-97).
+        /// On macOS closing the window terminates the app (FR-006d), and
+        /// `NSApplication.willTerminateNotification` is the last callback before exit, so the FR-032
+        /// drain is posted from it — through the same event path as every other surface event.
+        private var terminateObserver: NSObjectProtocol?
+        #endif
+
         /// Explicit and `nonisolated` because the synthesised initialiser would otherwise inherit
         /// `setup`'s main-actor isolation, which `@State`'s nonisolated initial value cannot satisfy.
         /// Only the lazy *access* needs the main actor; allocating an empty host does not.
@@ -116,6 +124,17 @@ public struct GameSurfaceView: View {
             #endif
             loop = created
             created.start()
+            #if os(macOS)
+            // Synchronous (queue: nil) on purpose: the notification is posted on the main thread and
+            // the process exits right after, so an async main-queue block could arrive too late to drain.
+            // Captures the loop itself, not the host: `FrameLoop` is `@unchecked Sendable`, so the
+            // `@Sendable` observer closure stays warning-free (SC-015).
+            terminateObserver = NotificationCenter.default.addObserver(
+                forName: NSApplication.willTerminateNotification,
+                object: nil,
+                queue: nil
+            ) { [weak created] _ in created?.post(.willTerminate) }
+            #endif
         }
 
         func post(_ event: SurfaceEvent) {
@@ -123,6 +142,12 @@ public struct GameSurfaceView: View {
         }
 
         func stopAndDrain() {
+            #if os(macOS)
+            if let terminateObserver {
+                NotificationCenter.default.removeObserver(terminateObserver)
+                self.terminateObserver = nil
+            }
+            #endif
             loop?.stopAndDrain()
             loop = nil
         }

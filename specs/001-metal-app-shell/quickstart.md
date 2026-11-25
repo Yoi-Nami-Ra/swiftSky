@@ -283,12 +283,22 @@ thread), and the developer opened the menus and closed the window by hand.
   `Termination complete` at 14:01:03.110. Afterwards `pgrep -x swiftSky` returned nothing: no windowless
   process remained.
 - **Not covered:** with no File menu there is no Close (⌘W) item either, so ⌘W was not tested as a way to
-  close the window (SKY-98). Check 10 asks only that closing the window quits the app, but FR-006d also requires
-  the FR-032 teardown ordering (loop stopped and drained before graphics are released). The app logs
-  nothing of its own at teardown, so this run does not show that ordering, and it is still unverified
-  for a window close: check 31 covered only quits sent by Apple event. In the code, the drain on close
-  depends only on SwiftUI's `.onDisappear` (`GameSurfaceView.swift`); nothing posts
-  `SurfaceEvent.willTerminate`. SKY-97 tracks it.
+  close the window (SKY-98).
+- **FR-006d's ordering half — PASS (2026-11-25, SKY-97).** SKY-97 added a
+  `NSApplication.willTerminateNotification` observer that posts `SurfaceEvent.willTerminate` through the
+  existing event path (`GameSurfaceView.swift`), and `FrameLoop.stopAndDrain()` now logs the drain itself
+  (Debug and instrumented Release builds only). On a window close with the instrumented Release build, the
+  log shows the drain on the main thread before AppKit finishes terminating:
+
+  ```
+  2026-11-25 09:11:09.500 [com.swiftsky.app:frame] frames=2089 … ticks=1887 …        (last frame summary, loop thread)
+  2026-11-25 09:11:09.501 [com.swiftsky.app:frame] drain drained elapsed=4.109979ms   (main thread)
+  2026-11-25 09:11:09.514 [com.apple.AppKit:Application] Termination complete. Exiting without sudden termination.
+  ```
+
+  The loop was stopped and drained 13 ms before "Termination complete", so FR-032's ordering (loop stopped
+  and drained before graphics resources are released) holds on a window close, not only on Apple-event
+  quits (check 31). Afterwards `pgrep -x swiftSky` returned nothing: no windowless process remained.
 
 **Check 11 — PASS (2026-07-28).** Verified by putting the *device* in portrait and observing that the
 app refuses to follow. The simulator's persisted device orientation was set to Portrait, confirmed by
@@ -680,6 +690,10 @@ the `live resize began` / `live resize ended` markers to the log.
   `~/Library/Logs/DiagnosticReports` before or after.
 - **iOS**: 20 `simctl launch` / `simctl terminate` cycles on the iPhone 17 Pro simulator, same
   alternating settled/mid-draw timing. `FAILURES=0`, and zero `.ips` crash reports on the device.
+- Since SKY-97 (2026-11-25) the termination path is also covered for a **window close**, which check 31's
+  Apple-event quits did not exercise: the `willTerminateNotification` observer posts
+  `SurfaceEvent.willTerminate`, and the drain log line (`drain drained elapsed=4.109979ms`, main thread)
+  precedes AppKit's "Termination complete" — see check 10's FR-006d ordering entry.
 
 ### Failure paths
 
@@ -908,7 +922,7 @@ items are accepted and do not block completion — see
 
 ### Status roll-up (2026-07-28)
 
-**31 of 42 checks recorded as PASS. 11 remain open, and none of them failed** — every one is blocked
+**32 of 42 checks recorded as PASS. 10 remain open, and none of them failed** — every one is blocked
 on something this environment cannot provide. Two checks passed only *after* a defect they exposed was
 fixed (14 and 41), and a third gate (24) was passing for the wrong reason until the frame budget was
 corrected.
@@ -924,19 +938,18 @@ verified with lldb rather than the GPU debugger, and are no longer open.
 Checks 7 and 8 passed on 2026-11-04 (SKY-20): window resizing was dragged by hand and the sizes were
 sampled. They are no longer open.
 Checks 9 and 10 passed on 2026-11-04 (SKY-21): the menus were read through lldb and by eye, and the
-window was closed by hand. Check 9 is no longer open. Check 10 stays open for FR-006d's teardown-ordering
-half (FR-032 on a window close), which it does not show.
+window was closed by hand. Check 9 is no longer open. Check 10's teardown-ordering half passed on
+2026-11-25 (SKY-97): a window close now posts `SurfaceEvent.willTerminate`, and the drain log line precedes
+AppKit's "Termination complete". Check 10 is no longer open.
 
 | # | Check | Why it is still open |
 |---|-------|----------------------|
-| 10 | Close-to-quit: FR-032 ordering on a window close | Quit PASS; the teardown ordering is not shown, and the drain depends only on `.onDisappear` (SKY-97) |
 | 12 | iPad Split View | Needs an interactive dock drag |
 | 29 | Continuous resize under TSan | Races PASS; stalls PASS mid-drag; one system-side stall at the end of live resize (SKY-37) |
 | 33 | Notice under VoiceOver, dismiss exits | iOS: dismissal PASS, Dynamic Type PASS after SKY-38 (17e, 17 Pro both landscape orientations, iPad Air; iPhone SE and iPad tall-window not run), VoiceOver needs a device (SKY-39); macOS: PASS (SKY-8), re-checked by hand after SKY-38: PASS; light and dark appearance: PASS after SKY-100 (17e, iPad Air, macOS) |
 | 36, 37 | VoiceOver on the surface, Reduce Motion | iOS: 37 PASS, 36 needs a device (SKY-39); macOS: both PASS (SKY-8) |
 
-Most of these now wait on a device (SKY-39), a system-side stall (SKY-37) or a code change (SKY-38,
-SKY-97). The earlier common blocker, which the closed checks were worked around by hand and with lldb,
+Most of these now wait on a device (SKY-39), a system-side stall (SKY-37) or a code change (SKY-38). The earlier common blocker, which the closed checks were worked around by hand and with lldb,
 was that Accessibility (UI scripting) and Screen Recording permission are not granted to this session, so nothing can drive or capture the UI:
 AppleScript returns `-1743`, `screencapture` returns `could not create image from display`, and the
 simulator-control MCP cannot load at all because
