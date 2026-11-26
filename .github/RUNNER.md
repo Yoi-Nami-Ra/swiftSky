@@ -1,7 +1,8 @@
 # CI runner
 
-The `verify` workflow (`.github/workflows/verify.yml`) runs `./Scripts/verify.sh` on every push to `main`
-and on every pull request against `main`. It runs on a **self-hosted GitHub Actions runner on the
+The `verify` workflow (`.github/workflows/verify.yml`) runs `./Scripts/verify.sh`, started **by hand from
+the Actions tab** (`workflow_dispatch` only — the push and pull-request triggers are disabled in the
+workflow file). It runs on a **self-hosted GitHub Actions runner on the
 developer's Mac**, not on a GitHub-hosted machine: that Mac has the exact Xcode and Metal toolchain the
 script needs, and it costs no build minutes. Design record: `specs/018-ci-verify-workflow/`.
 
@@ -71,11 +72,12 @@ Fallback without the service: `./run.sh` in a terminal, Ctrl-C to stop. Do not r
 gh api repos/Yoi-Nami-Ra/swiftSky/actions/runners --jq '.runners[] | {name, status, busy}'
 ```
 
-## While the Mac is off
+## While the Mac is off (or no runner is registered)
 
-CI runs only while the Mac is on, awake, and the runner is running. A push or pull request made
-meanwhile shows its run **Queued**; it starts when the runner comes back. GitHub cancels a job that has
-waited 24 hours for a runner: re-run it from the run's page (*Re-run jobs*).
+CI runs only while the Mac is on, awake, and the runner is running. A dispatched run made meanwhile shows
+**Queued**; it starts when the runner comes back. GitHub cancels a job that has waited 24 hours for a
+runner: re-run it from the run's page (*Re-run jobs*). With no runner registered, every run queues until
+one is installed as described above; check with `gh api repos/Yoi-Nami-Ra/swiftSky/actions/runners`.
 
 ## When Xcode changes
 
@@ -95,8 +97,12 @@ cd ~/actions-runner/swiftSky
 ./config.sh remove --token <removal token from Settings → Actions → Runners → the runner>
 ```
 
-## Private repositories only
+## Public repository — runner safety
 
-A self-hosted runner runs whatever code a workflow run checks out, on this Mac, as this user. That is
-acceptable only because the repository is private. Never attach this runner to a public repository, and
-do not make this repository public while the runner is registered.
+The repository is **public** (`gh repo view Yoi-Nami-Ra/swiftSky` reports `visibility: public`). A
+self-hosted runner runs whatever code a workflow run checks out, on this Mac, as this user. That is
+acceptable here only because the workflow is `workflow_dispatch`: a run can be started solely by a user
+with write access to the repository, not by anyone who merely opens a pull request. **Never re-enable the
+`push` or `pull_request` triggers in `verify.yml` while a self-hosted runner is attached to this public
+repository** — a fork's pull request would then execute its code on this Mac as this user. If those
+triggers are ever wanted, move the job to a GitHub-hosted runner instead.

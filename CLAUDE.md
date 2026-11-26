@@ -7,13 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a **GitHub Spec Kit** project (v0.14.1) initialized with the Claude integration and
 Spec-Driven Development (SDD) workflow. The project is named `swiftSky`: a **cross-platform game for
 iOS and macOS built in Swift with a Metal rendering pipeline** (SwiftUI shell). It is a git
-repository (`main`) with `origin` set to `git@github.com:Yoi-Nami-Ra/swiftSky.git`, a private
-GitHub repository. On this Mac a plain `git@github.com:` connection signs in as a different account
-and gets "Repository not found", so the repo's local `.git/config` rewrites it:
-`git config url."git@yoinamira-github:".insteadOf "git@github.com:"`, where `yoinamira-github` is a
-host alias in `~/.ssh/config` that signs in with the `Yoi-Nami-Ra` key. `git remote -v` therefore
-prints the alias form; `git config --get remote.origin.url` shows the stored URL. A fresh clone needs
-the rule set again.
+repository (`main`) with `origin` set to `git@github.com:Yoi-Nami-Ra/swiftSky.git`. The repository is
+**public** — `gh repo view Yoi-Nami-Ra/swiftSky` reports `visibility: public` with the description
+"2D Space opera in swift". Machine-specific notes (SSH and `gh` sign-in, runner state) go in the
+uncommitted `CLAUDE.local.md`, not here.
 
 Built so far: `specs/001-metal-app-shell` (a black Metal surface on both platforms, three layers,
 an off-main frame loop, instrumentation), `specs/002-metal-text-rendering` (Metal-drawn text from
@@ -38,7 +35,8 @@ ring around the ship and the remaining planned path, in every build) and
 `specs/015-debug-overlay-ship-order` (the debug overlay's ship and order lines under its frame
 statistics) and `specs/016-frame-budget-learner` (the frame budget learned only from adjacent agreeing
 gaps, never below the display's fastest interval) and `specs/018-ci-verify-workflow` (CI: `verify.sh`
-run on every push to `main` and every pull request, on a self-hosted runner on this Mac) and
+run by hand from the Actions tab — `workflow_dispatch` only, the push and pull-request triggers are
+disabled — on a self-hosted runner on the developer's Mac) and
 `specs/019-instrumented-build-script` (the Profiling configuration removed; `Scripts/build-instrumented.sh`
 makes the optimised build with the instrumentation, and `verify.sh` checks it has it and Release has not) and
 `specs/020-autopilot-rest-phase` (a ship at rest is never "against its motion" when the phase is named, so a
@@ -264,16 +262,17 @@ artifacts, keep them consistent with these templates.
   draws the ship at its latest tick instead of between ticks (013). `--debug-main-stall`
   stalls the main thread once (012). `--debug-text` draws the test string with live FPS, and
   `--debug-text-fill` fills the 1,024-character text capacity. Either one replaces the overlay.
-- `.github/workflows/verify.yml` and `.github/RUNNER.md` (018) — CI. On every push to `main` and every
-  pull request against `main`, the `verify` job checks out the commit and runs `./Scripts/verify.sh`,
-  nothing else, on a self-hosted runner on this Mac (labels `self-hosted`, `macOS`, `xcode-27`; 30-minute
-  limit; a newer push cancels an older pull-request run, never a `main` one). It runs only while the Mac
-  is on and the runner service is running; queued jobs wait. **Merge rule**: merge a pull request only
-  when `verify / verify` passed for its current head (branch protection is not set up). Installing,
-  starting or stopping the runner, pushing, and any GitHub setting are the developer's to do, by hand,
-  following `RUNNER.md`. `actionlint .github/workflows/verify.yml` checks the workflow locally;
-  `.github/actionlint.yaml` declares the `xcode-27` label. When Xcode changes, change the runner label
-  and `runs-on` together.
+- `.github/workflows/verify.yml` and `.github/RUNNER.md` (018) — CI. The `verify` job checks out the
+  commit and runs `./Scripts/verify.sh`, nothing else, on a self-hosted runner on the developer's Mac (labels
+  `self-hosted`, `macOS`, `xcode-27`; 30-minute limit). Triggers are **`workflow_dispatch` only**:
+  automatic runs on push and pull request are disabled in the workflow file, so runs start by hand from
+  the Actions tab. A dispatched run queues until a runner is online, and GitHub cancels a job that has
+  waited 24 h for one.
+  **Merge rule**: merge a pull request only when `verify / verify` passed for its current head (branch
+  protection is not set up). Installing, starting or stopping the runner,
+  pushing, and any GitHub setting are the developer's to do, by hand, following `RUNNER.md`. `actionlint
+  .github/workflows/verify.yml` checks the workflow locally; `.github/actionlint.yaml` declares the
+  `xcode-27` label. When Xcode changes, change the runner label and `runs-on` together.
 - `specs/021-ios-gpu-frame-capture/probe.sh` (021) — builds the Debug iOS app, launches it in the first booted
   simulator with `--no-ship --no-debug-overlay`, attaches lldb and counts Metal calls over 10 s (presents,
   draws, pipeline bindings, `setViewport:`, pipeline-state and buffer creation), then samples the bound

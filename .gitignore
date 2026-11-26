@@ -14,3 +14,6 @@ xcuserdata/
 
 # Claude Code local (machine-specific) settings
 .claude/settings.local.json
+
+# Claude Code notes for this machine only
+CLAUDE.local.md
