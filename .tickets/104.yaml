@@ -32,7 +32,7 @@ description: |
   recommendation for SKY-103: enforce landscape in code or plist, or
   amend FR-006b to accept any iPad window shape.
 platform: ipad
-status: ready
+status: in-progress
 phase: Phase0
 priority: medium
 parent: null

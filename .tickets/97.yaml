@@ -53,7 +53,7 @@ description: |
   - 001's quickstart records FR-006d's ordering half with the log excerpt, and
     `./Scripts/verify.sh` passes.
 platform: macos
-status: in-review
+status: done
 phase: Phase0
 priority: medium
 parent: null
