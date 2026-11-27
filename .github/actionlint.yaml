@@ -1,5 +1,5 @@
-# actionlint configuration (018 research R9). Declares the self-hosted runner's custom label so that
-# `actionlint .github/workflows/verify.yml` accepts runs-on. Keep in step with .github/RUNNER.md.
+# actionlint configuration. `xcode-27` is a GitHub-hosted label that actionlint may not know yet, so it
+# is declared here to keep `actionlint` quiet. No self-hosted runner is used (see CI.md).
 self-hosted-runner:
   labels:
     - xcode-27

@@ -1,5 +1,7 @@
 # Data Model: CI Running the Verification Script
 
+> **Amended 2026-11-26 (SKY-102)**: see the note at the top of [spec.md](./spec.md); `.github/CI.md` describes CI today.
+
 **Feature**: 018-ci-verify-workflow
 
 No application data changes. The entities are configuration and their states.

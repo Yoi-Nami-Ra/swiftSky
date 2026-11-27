@@ -1,5 +1,7 @@
 # Quickstart: CI Running the Verification Script
 
+> **Amended 2026-11-26 (SKY-102)**: see the note at the top of [spec.md](./spec.md); `.github/CI.md` describes CI today. The runner steps (D1, D6) and the self-hosted expectations are **superseded**: **never attach a self-hosted runner.**
+
 **Feature**: 018-ci-verify-workflow
 
 Two kinds of check. **Local checks** (L) change nothing outside this clone and can be run by anyone,
@@ -7,7 +9,7 @@ including an agent. **Developer checks** (D) act on GitHub or install a service 
 developer runs them, by hand (FR-012). No agent pushes, opens pull requests, registers or starts the
 runner, installs a LaunchAgent or changes GitHub settings.
 
-Runner commands are in [`.github/RUNNER.md`](../../.github/RUNNER.md); the workflow's exact shape is in
+Runner commands were in `.github/RUNNER.md` (removed by SKY-102); the original workflow shape is in
 [contracts/verify-workflow.md](./contracts/verify-workflow.md).
 
 ## Local checks

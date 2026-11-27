@@ -24,6 +24,19 @@ the job fail and is then reverted; and the 001 plan and CLAUDE.md no longer say 
 (reached through the `yoinamira-github` ssh host alias, see CLAUDE.md), and `main` is pushed with its full
 history. The ticket's scope items 1 and 2 therefore need no work here, beyond recording that they hold.
 
+> **Amended 2026-11-26 (SKY-102).** The text below records the original design. Today: the job runs on the
+> GitHub-hosted `xcode-27` runner, not a self-hosted one (supersedes FR-003, FR-008, FR-008a, FR-009 and
+> User Story 4); it has one extra step that ensures the Metal toolchain (supersedes FR-004's two steps);
+> the FR-002 triggers apply again, plus `workflow_dispatch`; the repository is public (FR-001 said
+> private); and `.github/CI.md` replaces `.github/RUNNER.md`. The runner and privacy statements elsewhere
+> are replaced too: SC-001's "private", SC-001a's and SC-002's runner, SC-005 (the Metal step), SC-006,
+> the runner and `RUNNER.md` parts of FR-011 and FR-014 (the merge rule now covers every check; see
+> `CI.md`), FR-012 (an agent may push or change a GitHub setting with the developer's explicit
+> go-ahead), the runner, fork, privacy and "nothing extra is added" edge cases, the runner and
+> private-repository assumptions, and "a hosted runner" being out of scope. The same note covers
+> `plan.md`, `data-model.md`, `research.md`, `quickstart.md`, `tasks.md` and the contracts. Between
+> cea2a09 and this change, runs were manual only.
+
 ## Overview
 
 Every change to swiftSky is checked today by one person running `./Scripts/verify.sh` by hand. The

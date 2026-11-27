@@ -1,5 +1,5 @@
 id: 102
-title: "Describe CI as manual-only in CLAUDE.md"
+title: "Enable all free GitHub validation on the public repo"
 type: task
 description: |
   Found in the PR #7 review (SKY-21). Commit 86c3176 made
@@ -18,8 +18,19 @@ description: |
 
   Done when: CLAUDE.md describes how CI is triggered today, and 018's docs
   either note the change or a follow-up ticket says why not.
+
+  Reopened 2026-11-26: widened to enable every validation GitHub offers free
+  to a public repository. `verify` moves to the GitHub-hosted `xcode-27`
+  runner and runs on pushes and pull requests again; add CodeQL (Swift on
+  `macos-26`, since CodeQL stops at Swift 6.3), dependency review and
+  Dependabot; turn on secret scanning with push protection, Dependabot alerts
+  and security updates, and a ruleset on `main`. Decision on 018's docs: a
+  dated amendment note in spec, plan and data model.
+
+  Done when (added): every new check has passed once on GitHub, and the
+  repository settings are on.
 platform: macos
-status: ready
+status: in-progress
 phase: Backlog
 priority: low
 parent: null

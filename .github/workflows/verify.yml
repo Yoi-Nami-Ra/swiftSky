@@ -1,11 +1,13 @@
-# CI: runs Scripts/verify.sh, unchanged, on the self-hosted runner on the developer's Mac.
-# Spec: specs/018-ci-verify-workflow (contract: contracts/verify-workflow.md).
-# Runner install, start/stop and the merge rule: .github/RUNNER.md.
-# Only two steps, by design (018 FR-004): verification is defined by the script, not here.
+# CI: runs Scripts/verify.sh on a GitHub-hosted Apple silicon runner (free for public repositories).
+# Spec: specs/018-ci-verify-workflow, amended by SKY-102 (2026-11-26). Notes and merge rule: .github/CI.md.
+# Verification is defined by the script, not here; the other steps only prepare the toolchain.
 name: verify
 
 on:
-  # Disabled: no automatic runs on push or pull request. Run by hand from the Actions tab (workflow_dispatch).
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -19,10 +21,15 @@ concurrency:
 
 jobs:
   verify:
-    runs-on: [self-hosted, macOS, xcode-27]
+    # GitHub-hosted. Never change this to a self-hosted runner: the repository is public (.github/CI.md).
+    runs-on: xcode-27
     timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+      - name: Ensure the Metal toolchain
+        run: xcrun metal --version || xcodebuild -downloadComponent MetalToolchain
       - run: ./Scripts/verify.sh

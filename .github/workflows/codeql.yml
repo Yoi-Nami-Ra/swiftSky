@@ -1,0 +1,73 @@
+# CodeQL code scanning (free for public repositories). Advanced setup: keep GitHub's "default setup" off.
+name: codeql
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: analyze (${{ matrix.language }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            runner: ubuntu-latest
+            build-mode: none
+          # The C code compiles only with SWIFTSKY_INSTRUMENTATION, which the Debug build defines, and
+          # needs Apple's headers. So it is traced from that build; build-mode none would not define it.
+          - language: c-cpp
+            runner: macos-26
+            build-mode: manual
+          # CodeQL supports Swift up to 6.3, so the manual builds use Xcode 26, not the Xcode 27 that
+          # verify.yml uses. Move them once CodeQL supports the newer Swift.
+          - language: swift
+            runner: macos-26
+            build-mode: manual
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Select Xcode 26 and ensure the Metal toolchain
+        if: matrix.build-mode == 'manual'
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.5.app
+          xcrun metal --version || xcodebuild -downloadComponent MetalToolchain
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-and-quality
+      # Only the macOS app is built, so `#if os(iOS)` code is not scanned. The destination is generic
+      # because on the traced build `platform=macOS,arch=arm64` matched no device (only x86_64 was
+      # offered); ARCHS keeps the build arm64. The shader is left out because on the traced build Xcode
+      # failed with "missing Metal Toolchain" although `metal` ran in the step before; CodeQL does not
+      # scan Metal, and verify.yml still compiles it.
+      - name: Build the macOS app
+        if: matrix.build-mode == 'manual'
+        run: |
+          xcodebuild build -project swiftSky.xcodeproj -scheme 'swiftSky (macOS)' \
+            -configuration Debug -destination 'generic/platform=macOS' ARCHS=arm64 \
+            'EXCLUDED_SOURCE_FILE_NAMES=*.metal' \
+            -derivedDataPath .build/codeql CODE_SIGNING_ALLOWED=NO -quiet
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:${{ matrix.language }}
