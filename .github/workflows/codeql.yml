@@ -58,12 +58,15 @@ jobs:
           queries: security-and-quality
       # Only the macOS app is built, so `#if os(iOS)` code is not scanned. The destination is generic
       # because on the traced build `platform=macOS,arch=arm64` matched no device (only x86_64 was
-      # offered); ARCHS keeps the build arm64.
+      # offered); ARCHS keeps the build arm64. The shader is left out because on the traced build Xcode
+      # failed with "missing Metal Toolchain" although `metal` ran in the step before; CodeQL does not
+      # scan Metal, and verify.yml still compiles it.
       - name: Build the macOS app
         if: matrix.build-mode == 'manual'
         run: |
           xcodebuild build -project swiftSky.xcodeproj -scheme 'swiftSky (macOS)' \
             -configuration Debug -destination 'generic/platform=macOS' ARCHS=arm64 \
+            'EXCLUDED_SOURCE_FILE_NAMES=*.metal' \
             -derivedDataPath .build/codeql CODE_SIGNING_ALLOWED=NO -quiet
       - uses: github/codeql-action/analyze@v4
         with:
