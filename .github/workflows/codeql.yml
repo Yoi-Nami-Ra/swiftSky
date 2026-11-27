@@ -32,11 +32,13 @@ jobs:
           - language: actions
             runner: ubuntu-latest
             build-mode: none
+          # The C code compiles only with SWIFTSKY_INSTRUMENTATION, which the Debug build defines, and
+          # needs Apple's headers. So it is traced from that build; build-mode none would not define it.
           - language: c-cpp
-            runner: ubuntu-latest
-            build-mode: none
-          # CodeQL supports Swift up to 6.3, so this job builds with Xcode 26, not the Xcode 27 that
-          # verify.yml uses. Move it once CodeQL supports the newer Swift.
+            runner: macos-26
+            build-mode: manual
+          # CodeQL supports Swift up to 6.3, so the manual builds use Xcode 26, not the Xcode 27 that
+          # verify.yml uses. Move them once CodeQL supports the newer Swift.
           - language: swift
             runner: macos-26
             build-mode: manual
@@ -45,7 +47,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Select Xcode 26 and ensure the Metal toolchain
-        if: matrix.language == 'swift'
+        if: matrix.build-mode == 'manual'
         run: |
           sudo xcode-select -s /Applications/Xcode_26.5.app
           xcrun metal --version || xcodebuild -downloadComponent MetalToolchain
@@ -54,11 +56,14 @@ jobs:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
           queries: security-and-quality
+      # Only the macOS app is built, so `#if os(iOS)` code is not scanned. The destination is generic
+      # because on the traced build `platform=macOS,arch=arm64` matched no device (only x86_64 was
+      # offered); ARCHS keeps the build arm64.
       - name: Build the macOS app
-        if: matrix.language == 'swift'
+        if: matrix.build-mode == 'manual'
         run: |
           xcodebuild build -project swiftSky.xcodeproj -scheme 'swiftSky (macOS)' \
-            -configuration Debug -destination 'platform=macOS,arch=arm64' \
+            -configuration Debug -destination 'generic/platform=macOS' ARCHS=arm64 \
             -derivedDataPath .build/codeql CODE_SIGNING_ALLOWED=NO -quiet
       - uses: github/codeql-action/analyze@v4
         with:
