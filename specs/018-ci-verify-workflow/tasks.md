@@ -5,6 +5,8 @@ description: "Task list for 018-ci-verify-workflow"
 
 # Tasks: CI Running the Verification Script
 
+> **Amended 2026-11-26 (SKY-102)**: see the note at the top of [spec.md](./spec.md); `.github/CI.md` describes CI today. **Do not run the runner steps** (T003, T011, and the runner parts of other tasks): **never attach a self-hosted runner.**
+
 **Input**: Design documents from `/specs/018-ci-verify-workflow/`
 
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/verify-workflow.md, quickstart.md
@@ -36,7 +38,7 @@ implementing agent leaves them unchecked.
 **Purpose**: The runner's operating notes, which the developer needs before any run can happen.
 
 - [X] T002 Write .github/RUNNER.md per research R6–R8: what the runner is (self-hosted, this Mac, repository-scoped, labels `self-hosted`, `macOS`, `ARM64`, `xcode-27`, runs as the developer's user); **Install** (folder `~/actions-runner/swiftSky`; download and checksum from *Settings → Actions → Runners → New self-hosted runner*, macOS ARM64; `./config.sh --url https://github.com/Yoi-Nami-Ra/swiftSky --token <token> --name swiftsky-<short host name> --labels xcode-27 --unattended` from a normal login shell; `./svc.sh install` then `./svc.sh start`, never with sudo); **Start / Stop / Status** (`./svc.sh start|stop|status`; fallback `./run.sh` in a terminal, Ctrl-C to stop); **Check online** (Settings runner list: Idle / Active / Offline; or `gh api repos/Yoi-Nami-Ra/swiftSky/actions/runners` as the owning account); **While the Mac is off** (jobs queue; the host cancels a job queued 24 hours; re-run it from the run page); **When Xcode changes** (change the runner label and `runs-on` in .github/workflows/verify.yml together); **Remove** (`./svc.sh uninstall`, `./config.sh remove --token <removal token>`); **Merge rule** (FR-014: no merge unless `verify / verify` passed for the pull request's current head — not while red, cancelled, queued or missing; branch protection is not set up); **Private only** (never attach this runner to a public repository)
-- [ ] T003 **DEVELOPER** Quickstart D1: install, register and start the runner following .github/RUNNER.md → Install; confirm it shows Idle with all four labels and `./svc.sh status` reports it running (FR-008a, FR-009)
+- [ ] T003 **SUPERSEDED (SKY-102), do not run.** **DEVELOPER** Quickstart D1: install, register and start the runner following .github/RUNNER.md → Install; confirm it shows Idle with all four labels and `./svc.sh status` reports it running (FR-008a, FR-009)
 
 **Checkpoint**: The runner is online and documented.
 
@@ -88,7 +90,7 @@ implementing agent leaves them unchecked.
 
 **Independent Test**: Stop, see Offline, start, see Idle, following only .github/RUNNER.md (quickstart D6).
 
-- [ ] T011 [US4] **DEVELOPER** Quickstart D6: following only .github/RUNNER.md, stop the runner and see it Offline with a new run Queued; start it and see it Idle and the queued run start (SC-006); fix .github/RUNNER.md if any step was missing
+- [ ] T011 **SUPERSEDED (SKY-102), do not run.** [US4] **DEVELOPER** Quickstart D6: following only .github/RUNNER.md, stop the runner and see it Offline with a new run Queued; start it and see it Idle and the queued run start (SC-006); fix .github/RUNNER.md if any step was missing
 
 **Checkpoint**: The runner can be operated from the repository's own notes.
 

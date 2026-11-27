@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   verify:
-    # GitHub-hosted. Never change this to a self-hosted runner while pull_request is a trigger.
+    # GitHub-hosted. Never change this to a self-hosted runner: the repository is public (.github/CI.md).
     runs-on: xcode-27
     timeout-minutes: 30
     env:

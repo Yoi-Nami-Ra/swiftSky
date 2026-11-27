@@ -1,5 +1,7 @@
 # Contract: the `verify` workflow
 
+> **Amended 2026-11-26 (SKY-102)**: see the note at the top of [spec.md](../spec.md); `.github/CI.md` describes CI today. This contract is **superseded**: do not make the workflow match it. **Never attach a self-hosted runner.**
+
 **Feature**: 018-ci-verify-workflow | File: `.github/workflows/verify.yml`
 
 The workflow MUST be equivalent to the following. Key order and comments may differ; no step, trigger,

@@ -9,7 +9,7 @@ Spec-Driven Development (SDD) workflow. The project is named `swiftSky`: a **cro
 iOS and macOS built in Swift with a Metal rendering pipeline** (SwiftUI shell). It is a git
 repository (`main`) with `origin` set to `git@github.com:Yoi-Nami-Ra/swiftSky.git`. The repository is
 **public** — `gh repo view Yoi-Nami-Ra/swiftSky` reports `visibility: public` with the description
-"2D Space opera in swift". Machine-specific notes (SSH and `gh` sign-in, runner state) go in the
+"2D Space opera in swift". Machine-specific notes (SSH and `gh` sign-in) go in the
 uncommitted `CLAUDE.local.md`, not here.
 
 Built so far: `specs/001-metal-app-shell` (a black Metal surface on both platforms, three layers,
@@ -263,12 +263,14 @@ artifacts, keep them consistent with these templates.
   `--debug-text-fill` fills the 1,024-character text capacity. Either one replaces the overlay.
 - `.github/workflows/` and `.github/CI.md` (018, SKY-102) — CI, all on GitHub-hosted runners. `verify.yml`
   runs `./Scripts/verify.sh` on `xcode-27` (Xcode 27.2; it only makes sure the Metal toolchain is there
-  first; 30-minute limit). `codeql.yml` scans `actions`, `c-cpp` and `swift`; the Swift job builds on
-  `macos-26` with Xcode 26.5 because CodeQL supports Swift up to 6.3. `dependency-review.yml` runs on pull
-  requests, and `dependabot.yml` updates the actions. **Merge rule**: merge a pull request only when its
-  checks passed for its current head. **Never attach a self-hosted runner**: the repository is public and
-  these workflows run on fork pull requests. Pushing and any GitHub setting need the developer's explicit
-  go-ahead. `actionlint` checks the workflows locally.
+  first; 30-minute limit). `codeql.yml` scans `actions`, `c-cpp` and `swift`; the `c-cpp` and Swift jobs
+  build the macOS app (not iOS) on `macos-26` with Xcode 26.5 because CodeQL supports Swift up to 6.3.
+  Both workflows run on pushes to `main`, pull requests against `main` and by hand, and CodeQL also weekly.
+  `dependency-review.yml` runs on those pull requests, and `dependabot.yml` updates the actions weekly.
+  **Merge rule**: merge a pull request only when its checks passed for its current head; it is kept by
+  hand (no branch protection or ruleset is set up). **Never attach a self-hosted runner**: the repository
+  is public and these workflows run on fork pull requests. Pushing and any GitHub setting need the
+  developer's explicit go-ahead. `actionlint` checks the workflows locally.
 - `specs/021-ios-gpu-frame-capture/probe.sh` (021) — builds the Debug iOS app, launches it in the first booted
   simulator with `--no-ship --no-debug-overlay`, attaches lldb and counts Metal calls over 10 s (presents,
   draws, pipeline bindings, `setViewport:`, pipeline-state and buffer creation), then samples the bound
