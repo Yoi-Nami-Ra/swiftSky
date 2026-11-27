@@ -1,0 +1,19 @@
+# Fails a pull request that adds a dependency with a known vulnerability (free for public repositories).
+name: dependency-review
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@v5.0.1

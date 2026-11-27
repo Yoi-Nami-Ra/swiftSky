@@ -6,7 +6,7 @@
 # the Release check includes the debug overlay's cargo labels and `--no-debug-cargo` (022).
 # Takes no arguments and needs no setup beyond a clean clone. Exits non-zero if any stage fails. It is
 # the CI job body, verbatim: the `verify` workflow (.github/workflows/verify.yml, spec 018) checks out
-# the commit and runs this file, nothing else, on the self-hosted runner described in .github/RUNNER.md
+# the commit and runs this file (see .github/CI.md; it first makes sure the Metal toolchain is there)
 # (constitution v1.1.0, Principle II).
 #
 # Usage:  ./Scripts/verify.sh

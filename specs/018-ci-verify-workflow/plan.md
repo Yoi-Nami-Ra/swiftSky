@@ -1,5 +1,7 @@
 # Implementation Plan: CI Running the Verification Script
 
+> **Amended 2026-11-26 (SKY-102)**: see the note at the top of [spec.md](./spec.md); `.github/CI.md` describes CI today.
+
 **Branch**: `018-ci-verify-workflow` | **Date**: 2026-10-07 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `/specs/018-ci-verify-workflow/spec.md`
